@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # Import routers
-from app.routes import health, donations, requests, matches
+from app.routes import health, donations, requests, matches, ai
 from app.config import settings
 
 app = FastAPI(
@@ -25,6 +25,8 @@ app.include_router(health.router, prefix="/api/health", tags=["Health"])
 app.include_router(donations.router)
 app.include_router(requests.router)
 app.include_router(matches.router)
+app.include_router(ai.router)
+
 
 @app.get("/")
 def root():
