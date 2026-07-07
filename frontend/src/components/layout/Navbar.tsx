@@ -1,4 +1,3 @@
-import { Utensils } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export function Navbar() {
@@ -16,12 +15,10 @@ export function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full bg-[#FDFBF7]/80 backdrop-blur-md border-b border-[#33251E]/5">
       <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="bg-[#F07154] p-1.5 rounded-full text-white">
-              <Utensils size={20} strokeWidth={2.5} />
-            </div>
-            <span className="font-serif text-2xl font-medium tracking-tight text-[#33251E]">
+        <div className="flex items-center">
+          <Link to="/" className="flex items-center gap-3 md:gap-4 group">
+            <img src="/logo.png" alt="SharePlate Logo" className="w-10 h-10 md:w-12 md:h-12 lg:w-[52px] lg:h-[52px] object-contain flex-shrink-0 group-hover:scale-105 transition-transform" />
+            <span className="font-serif text-2xl md:text-3xl lg:text-[32px] font-bold tracking-tight text-[#33251E] group-hover:text-[#F07154] transition-colors pt-0.5">
               SharePlate
             </span>
           </Link>

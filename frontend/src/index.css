@@ -17,3 +17,21 @@
     color: var(--color-brown);
   }
 }
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-brand::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-brand::-webkit-scrollbar-thumb {
+    background-color: rgba(238, 115, 78, 0.35);
+    border-radius: 9999px;
+  }
+}

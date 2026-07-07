@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Utensils, ArrowRight, Heart, Store, Truck, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Heart, Store, Truck, Sparkles, CheckCircle2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export function SignUp() {
@@ -34,9 +34,7 @@ export function SignUp() {
               className="bg-white p-8 sm:p-10 lg:p-12 rounded-3xl shadow-[0_8px_30px_-10px_rgba(0,0,0,0.08)] border border-[#33251E]/5 relative"
             >
             <Link to="/" className="inline-flex items-center gap-2 mb-8 text-[#33251E] hover:text-[#F07154] transition-colors">
-              <div className="bg-[#F07154] p-1.5 rounded-full text-white">
-                <Utensils size={18} strokeWidth={2.5} />
-              </div>
+              <img src="/logo.png" alt="SharePlate Logo" className="w-8 h-8 object-contain flex-shrink-0" />
               <span className="font-serif text-xl font-bold tracking-tight">SharePlate</span>
             </Link>
 

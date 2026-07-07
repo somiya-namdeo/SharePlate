@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Utensils, ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 
 export function SignIn() {
   const navigate = useNavigate();
@@ -31,9 +31,7 @@ export function SignIn() {
               className="bg-white p-10 sm:p-12 rounded-3xl shadow-[0_8px_30px_-10px_rgba(0,0,0,0.08)] border border-[#33251E]/5 relative"
             >
             <Link to="/" className="inline-flex items-center gap-2 mb-10 text-[#33251E] hover:text-[#F07154] transition-colors">
-              <div className="bg-[#F07154] p-1.5 rounded-full text-white">
-                <Utensils size={20} strokeWidth={2.5} />
-              </div>
+              <img src="/logo.png" alt="SharePlate Logo" className="w-8 h-8 object-contain flex-shrink-0" />
               <span className="font-serif text-2xl font-bold tracking-tight">SharePlate</span>
             </Link>
 
