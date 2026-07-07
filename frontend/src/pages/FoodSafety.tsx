@@ -167,7 +167,7 @@ export function FoodSafety() {
                   disabled={loading}
                   className="bg-[#F07154] hover:bg-[#E05F42] text-white px-8 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_4px_12px_-4px_rgba(240,113,84,0.6)] hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 w-full"
                 >
-                  {loading ? 'Running prediction...' : 'Run Food Safety Check'}
+                  {loading ? 'Running prediction...' : 'Run AI Safety Analysis'}
                 </button>
               </div>
 
@@ -203,7 +203,7 @@ export function FoodSafety() {
                   <div className="w-12 h-12 rounded-full bg-[#33251E]/5 flex items-center justify-center text-[#33251E]/30 mb-4">
                     <ShieldCheck size={24} />
                   </div>
-                  <p className="text-[#33251E]/60 text-sm font-medium max-w-[250px]">Run a food safety check to view safety, urgency, and pickup priority.</p>
+                  <p className="text-[#33251E]/60 text-sm font-medium max-w-[250px]">Run AI Safety Analysis to view safety, urgency, and pickup priority.</p>
                 </div>
               )}
 
