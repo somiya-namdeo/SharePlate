@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   PackageSearch, 
@@ -14,10 +14,12 @@ import {
 import { cn } from '../../lib/utils';
 
 export function Sidebar() {
+  const location = useLocation();
+
   const navItems = [
-    { icon: LayoutDashboard, label: 'Overview', path: '/dashboard', active: true },
-    { icon: PackageSearch, label: 'Donations', path: '#' },
-    { icon: ShieldCheck, label: 'Food Safety', path: '#' },
+    { icon: LayoutDashboard, label: 'Overview', path: '/dashboard' },
+    { icon: PackageSearch, label: 'Donations', path: '/donations' },
+    { icon: ShieldCheck, label: 'Food Safety', path: '/food-safety' },
     { icon: BrainCircuit, label: 'NLP Intelligence', path: '#' },
     { icon: TrendingUp, label: 'Demand Forecasting', path: '#' },
     { icon: Network, label: 'Smart Matching', path: '#' },
@@ -45,18 +47,20 @@ export function Sidebar() {
       <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1 scrollbar-hide">
         {navItems.map((item, index) => {
           const Icon = item.icon;
+          const isActive = location.pathname === item.path || (item.path !== '#' && location.pathname.startsWith(item.path));
+          
           return (
             <Link
               key={index}
               to={item.path}
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all",
-                item.active 
+                isActive 
                   ? "bg-[#F07154] text-white shadow-sm" 
                   : "text-[#33251E]/70 hover:bg-[#33251E]/5 hover:text-[#33251E]"
               )}
             >
-              <Icon size={18} strokeWidth={item.active ? 2.5 : 2} className={cn("flex-shrink-0", item.active ? "text-white" : "text-[#33251E]/50")} />
+              <Icon size={18} strokeWidth={isActive ? 2.5 : 2} className={cn("flex-shrink-0", isActive ? "text-white" : "text-[#33251E]/50")} />
               {item.label}
             </Link>
           );

@@ -1,0 +1,323 @@
+import React, { useState } from 'react';
+import { Sidebar } from '../components/dashboard/Sidebar';
+import { Topbar } from '../components/dashboard/Topbar';
+import { ShieldAlert, Info, AlertTriangle, ShieldCheck } from 'lucide-react';
+
+interface PredictionResponse {
+  prediction: string;
+  remaining_shelf_life_hr: number;
+  urgency_score: number;
+  urgency_level: string;
+  urgency_priority: number;
+}
+
+export function FoodSafety() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [result, setResult] = useState<PredictionResponse | null>(null);
+
+  // Form State Pre-filled with realistic data
+  const [formData, setFormData] = useState({
+    food_item: 'Dal',
+    food_category: 'Cooked Meal',
+    preparation_method: 'Boiled',
+    storage_condition: 'Refrigerated',
+    packaging_type: 'Sealed Container',
+    temperature_c: '5',
+    humidity_percent: '45',
+    hours_since_prepared: '4',
+    estimated_transport_time_hr: '1',
+    distance_km: '10',
+    quantity_kg: '15',
+    season: 'Summer',
+    event_type: 'Restaurant',
+    city_tier: 'Tier 1',
+    perishability_score: '3',
+    estimated_shelf_life_hr: '24'
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handlePredict = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      // Map frontend values to backend schema
+      const payload = {
+        food_item: formData.food_item || "Unknown",
+        food_category: formData.food_category || "Unknown",
+        preparation_method: formData.preparation_method || "Unknown",
+        storage_condition: formData.storage_condition || "Unknown",
+        packaging_type: formData.packaging_type || "Unknown",
+        temperature_c: Number(formData.temperature_c) || 0,
+        humidity_percent: Number(formData.humidity_percent) || 0,
+        hours_since_prepared: Number(formData.hours_since_prepared) || 0,
+        estimated_transport_time_hr: Number(formData.estimated_transport_time_hr) || 0,
+        distance_km: Number(formData.distance_km) || 0,
+        quantity_kg: Number(formData.quantity_kg) || 0,
+        season: formData.season || "Unknown",
+        event_type: formData.event_type || "Unknown",
+        city_tier: formData.city_tier || "Unknown",
+        perishability_score: Number(formData.perishability_score) || 0,
+        estimated_shelf_life_hr: Number(formData.estimated_shelf_life_hr) || 0
+      };
+
+      const response = await fetch('http://127.0.0.1:8000/api/ai/food-safety', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      setResult(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to connect to the prediction engine.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F8F5F0] font-sans selection:bg-[#F07154]/20 selection:text-[#33251E]">
+      <Sidebar />
+      <Topbar title="Food Safety" />
+        
+      <main className="ml-[280px] pt-[112px] pb-12 px-8 max-w-[1600px] mx-auto">
+        <div className="grid grid-cols-1 xl:grid-cols-[45%_55%] gap-8 items-start">
+          
+          {/* Left Column: Form */}
+          <div className="bg-white rounded-3xl border border-[#33251E]/5 p-6 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] relative overflow-hidden flex flex-col">
+            <div className="flex justify-between items-start mb-6 relative z-10">
+              <div>
+                <div className="text-[10px] uppercase font-bold tracking-wider text-[#F07154] mb-1">Model Inputs</div>
+                <h2 className="font-serif text-2xl text-[#33251E] leading-tight mb-1">Food safety features</h2>
+                <p className="text-[#33251E]/60 text-xs font-medium">Same features used by the ML model.</p>
+              </div>
+            </div>
+
+            <form className="space-y-4 relative z-10" onSubmit={handlePredict}>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Food item</label>
+                <input name="food_item" value={formData.food_item} onChange={handleChange} type="text" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Food category</label>
+                <input name="food_category" value={formData.food_category} onChange={handleChange} type="text" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Preparation method</label>
+                <input name="preparation_method" value={formData.preparation_method} onChange={handleChange} type="text" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Storage condition</label>
+                <input name="storage_condition" value={formData.storage_condition} onChange={handleChange} type="text" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Packaging type</label>
+                <input name="packaging_type" value={formData.packaging_type} onChange={handleChange} type="text" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Temp (°C)</label>
+                <input name="temperature_c" value={formData.temperature_c} onChange={handleChange} type="number" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Humidity (%)</label>
+                <input name="humidity_percent" value={formData.humidity_percent} onChange={handleChange} type="number" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Hrs since prepared</label>
+                <input name="hours_since_prepared" value={formData.hours_since_prepared} onChange={handleChange} type="number" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Est. transport (hr)</label>
+                <input name="estimated_transport_time_hr" value={formData.estimated_transport_time_hr} onChange={handleChange} type="number" step="0.1" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Distance (km)</label>
+                <input name="distance_km" value={formData.distance_km} onChange={handleChange} type="number" step="0.1" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Quantity (kg)</label>
+                <input name="quantity_kg" value={formData.quantity_kg} onChange={handleChange} type="number" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Season</label>
+                <input name="season" value={formData.season} onChange={handleChange} type="text" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Event type</label>
+                <input name="event_type" value={formData.event_type} onChange={handleChange} type="text" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">City tier</label>
+                <input name="city_tier" value={formData.city_tier} onChange={handleChange} type="text" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Perishability score</label>
+                <input name="perishability_score" value={formData.perishability_score} onChange={handleChange} type="number" step="0.01" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Est. shelf life (hrs)</label>
+                <input name="estimated_shelf_life_hr" value={formData.estimated_shelf_life_hr} onChange={handleChange} type="number" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+              </div>
+
+              <div className="pt-2">
+                <button 
+                  type="submit"
+                  disabled={loading}
+                  className="bg-[#F07154] hover:bg-[#E05F42] text-white px-8 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_4px_12px_-4px_rgba(240,113,84,0.6)] hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 w-full"
+                >
+                  {loading ? 'Running prediction...' : 'Run Food Safety Check'}
+                </button>
+              </div>
+
+            </form>
+          </div>
+
+          {/* Right Column: Results */}
+          <div className="space-y-6">
+            
+            <div className="bg-white rounded-3xl border border-[#33251E]/5 p-8 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-64 h-64 bg-[#F07154]/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2 z-0"></div>
+              
+              <div className="flex justify-between items-start mb-8 relative z-10">
+                <div>
+                  <div className="text-[10px] uppercase font-bold tracking-wider text-[#33251E]/50 mb-1">AI Prediction</div>
+                  <h2 className="font-serif text-3xl text-[#33251E] leading-none">Safety & urgency result</h2>
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#33251E]/10 text-[10px] font-bold uppercase tracking-wider text-[#33251E]/70 shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#33251E]"></span>
+                  Auto Priority
+                </div>
+              </div>
+
+              {error && (
+                <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 text-sm font-medium mb-6 relative z-10 flex gap-3 items-start">
+                  <ShieldAlert size={18} className="flex-shrink-0 mt-0.5" />
+                  {error}
+                </div>
+              )}
+
+              {!error && !result && (
+                <div className="h-[220px] flex flex-col items-center justify-center bg-white border border-[#33251E]/10 rounded-2xl relative z-10 text-center px-6">
+                  <div className="w-12 h-12 rounded-full bg-[#33251E]/5 flex items-center justify-center text-[#33251E]/30 mb-4">
+                    <ShieldCheck size={24} />
+                  </div>
+                  <p className="text-[#33251E]/60 text-sm font-medium max-w-[250px]">Run a food safety check to view safety, urgency, and pickup priority.</p>
+                </div>
+              )}
+
+              {!error && result && (
+                <div className="grid grid-cols-3 gap-4 relative z-10">
+                  
+                  {/* Urgency Score Card */}
+                  <div className="bg-[#FDFBF7] p-5 rounded-2xl border border-[#33251E]/5 flex flex-col items-center justify-center text-center col-span-1 shadow-sm">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#33251E]/50 mb-4">Urgency Score</div>
+                    <div className="relative w-24 h-24 flex items-center justify-center mb-4">
+                      {/* Fake Circular Meter */}
+                      <svg className="absolute inset-0 w-full h-full rotate-[-90deg]">
+                        <circle cx="48" cy="48" r="44" stroke="#E5E0DD" strokeWidth="6" fill="none" />
+                        <circle 
+                          cx="48" cy="48" r="44" 
+                          stroke={result.urgency_score > 75 ? "#EF4444" : result.urgency_score > 40 ? "#F59E0B" : "#10B981"} 
+                          strokeWidth="6" fill="none" 
+                          strokeDasharray="276" 
+                          strokeDashoffset={276 - (276 * result.urgency_score) / 100}
+                          className="transition-all duration-1000 ease-out"
+                        />
+                      </svg>
+                      <div className="text-center">
+                        <div className="text-3xl font-serif text-[#33251E] leading-none">{Math.round(result.urgency_score)}</div>
+                        <div className="text-[10px] font-bold text-[#33251E]/40 mt-1">OF 100</div>
+                      </div>
+                    </div>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${result.urgency_level === 'Critical' ? 'bg-red-50 text-red-700 border-red-200' : result.urgency_level === 'High' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                      {result.urgency_level === 'Critical' && <span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5 animate-pulse" />}
+                      {result.urgency_level}
+                    </span>
+                  </div>
+
+                  {/* Safety Card */}
+                  <div className="bg-[#FDFBF7] p-5 rounded-2xl border border-[#33251E]/5 flex flex-col justify-center items-center text-center col-span-1 shadow-sm">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#33251E]/50 mb-3">Safety Prediction</div>
+                    <div className="flex items-center justify-center gap-3 mb-2">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-sm text-white ${result.prediction === 'Yes' ? 'bg-emerald-500' : 'bg-red-500'}`}>
+                        {result.prediction === 'Yes' ? <ShieldCheck size={20} /> : <AlertTriangle size={20} />}
+                      </div>
+                      <span className="text-3xl font-serif text-[#33251E]">{result.prediction}</span>
+                    </div>
+                    <span className={`inline-block mb-6 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${result.prediction === 'Yes' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
+                      {result.prediction === 'Yes' ? 'Safe' : 'Unsafe'}
+                    </span>
+
+                    <div className="w-full">
+                      <div className="flex justify-between text-[10px] font-bold text-[#33251E]/50 mb-1.5">
+                        <span>Shelf-life used</span>
+                        <span>{Math.round(100 - ((result.remaining_shelf_life_hr / (Number(formData.estimated_shelf_life_hr) || 1)) * 100))}%</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-[#E5E0DD] rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${Math.round(100 - ((result.remaining_shelf_life_hr / (Number(formData.estimated_shelf_life_hr) || 1)) * 100))}%` }}></div>
+                      </div>
+                      <div className="text-[10px] text-[#33251E]/50 mt-2 font-medium">
+                        {Math.floor(result.remaining_shelf_life_hr)}h {Math.round((result.remaining_shelf_life_hr % 1) * 60)}m remaining
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Priority Rank Card */}
+                  <div className="bg-[#33251E] p-6 rounded-2xl text-white flex flex-col col-span-1 shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#F07154]/20 rounded-full blur-xl -translate-y-1/2 translate-x-1/2"></div>
+                    
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-white/50 mb-1 relative z-10">Priority Rank</div>
+                    <div className="text-5xl font-serif mb-1 relative z-10">#{result.urgency_priority}</div>
+                    <div className="text-[10px] text-white/50 mb-6 relative z-10">among active donations</div>
+                    
+                    <div className="mt-auto space-y-2 relative z-10">
+                      <div className="flex justify-between text-[11px]">
+                        <span className="text-white/60">Urgency level</span>
+                        <span className={result.urgency_level === 'Critical' ? 'text-[#F07154] font-bold' : 'font-bold'}>{result.urgency_level}</span>
+                      </div>
+                      <div className="flex justify-between text-[11px]">
+                        <span className="text-white/60">Est. shelf life</span>
+                        <span className="font-bold">{formData.estimated_shelf_life_hr || '-'}h</span>
+                      </div>
+                      <div className="flex justify-between text-[11px]">
+                        <span className="text-white/60">Priority band</span>
+                        <span className="font-bold">Top {Math.max(10, result.urgency_priority * 5)}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* Action Panel */}
+              {!error && result && (
+                <div className={`mt-6 p-4 rounded-xl border flex gap-3 items-start relative z-10 shadow-sm ${result.urgency_score > 75 ? 'bg-red-50/50 border-red-100 text-red-800' : 'bg-orange-50/50 border-orange-100 text-orange-800'}`}>
+                  <AlertTriangle size={20} className={result.urgency_score > 75 ? "text-red-500 mt-0.5" : "text-orange-500 mt-0.5"} />
+                  <div>
+                    <h4 className="font-serif text-lg mb-1">{result.prediction === 'Yes' ? 'Safe but prioritize pickup immediately.' : 'Warning: Food may be unsafe.'}</h4>
+                    <p className="text-sm opacity-80 font-medium">Recommended action: {result.prediction === 'Yes' ? 'assign nearest NGO within 40 minutes to preserve safety margin.' : 'discard or re-route for non-human consumption immediately.'}</p>
+                  </div>
+                </div>
+              )}
+
+            </div>
+
+            <div className="bg-[#FDFBF7] rounded-3xl border border-[#33251E]/5 p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <Info size={16} className="text-[#33251E]/40" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#33251E]/60">How this score works</h4>
+              </div>
+              <p className="text-xs text-[#33251E]/70 leading-relaxed">
+                Urgency is calculated based on shelf-life utilization, transport distance, ambient temperature exposure and category perishability. Scores above 75 trigger auto-priority routing.
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+      </main>
+    </div>
+  );
+}

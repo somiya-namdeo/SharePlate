@@ -13,7 +13,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-[#F8F5F0] font-sans selection:bg-[#F07154]/20 selection:text-[#33251E]">
       <Sidebar />
-      <Topbar />
+      <Topbar title="Overview" />
         
       <main className="ml-[280px] pt-[112px] pb-12 px-8 max-w-[1600px] mx-auto flex flex-col gap-8">
           

@@ -1,13 +1,13 @@
 import { Search, MapPin, Bell, Plus } from 'lucide-react';
 
-export function Topbar() {
+export function Topbar({ title = 'Overview' }: { title?: string }) {
   return (
     <header className="h-[80px] bg-[#FDFBF7] border-b border-[#33251E]/10 shadow-sm flex items-center justify-between px-8 fixed top-0 right-0 left-[280px] z-20">
       
       {/* Left - Page Title */}
       <div>
         <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#33251E]/40 mb-1">SharePlate</div>
-        <h1 className="font-serif text-2xl text-[#33251E] leading-none">Overview</h1>
+        <h1 className="font-serif text-2xl text-[#33251E] leading-none">{title}</h1>
       </div>
 
       {/* Center - Search */}
