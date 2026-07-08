@@ -4,9 +4,35 @@ import { Topbar } from '../components/dashboard/Topbar';
 import { Download, Key } from 'lucide-react';
 
 export function Settings() {
+  const initialState = {
+    fullName: "Ananya Kapoor",
+    email: "ananya@shareplate.org",
+    phone: "+91 98xxxx01",
+    orgName: "SharePlate Bhopal Chapter",
+    orgType: "NGO / Food rescue collective",
+    address: "MP Nagar",
+    city: "Bhopal",
+    serviceArea: "Central MP",
+    radius: "8",
+    window: "15 - 30 mins",
+    vehicles: "Van, 2-wheeler",
+    route: "Fastest (Time-optimized)",
+    
+    criticalAlerts: true,
+    matchSuggestions: false,
+    weeklyDigest: true,
+    autoAccept: true,
+    
+    autoPriority: 75,
+    matchConfidence: 70,
+    manualReview: 40
+  };
+
+  const [settings, setSettings] = useState(initialState);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const handleInputChange = () => {
+  const handleChange = (key: keyof typeof initialState, value: any) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
     setHasChanges(true);
   };
 
@@ -15,6 +41,7 @@ export function Settings() {
   };
 
   const handleDiscard = () => {
+    setSettings(initialState);
     setHasChanges(false);
   };
 
@@ -76,16 +103,16 @@ export function Settings() {
                 <div className="space-y-5">
                    <div>
                       <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Full name</label>
-                      <input onChange={handleInputChange} type="text" defaultValue="Ananya Kapoor" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                      <input value={settings.fullName} onChange={(e) => handleChange('fullName', e.target.value)} type="text" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
                    </div>
                    <div>
                       <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Email</label>
-                      <input onChange={handleInputChange} type="email" defaultValue="ananya@shareplate.org" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                      <input value={settings.email} onChange={(e) => handleChange('email', e.target.value)} type="email" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
                       <p className="text-[11px] text-[#33251E]/50 mt-1.5 ml-1">Used for account notifications.</p>
                    </div>
                    <div>
                       <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Phone</label>
-                      <input onChange={handleInputChange} type="text" defaultValue="+91 98xxxx01" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                      <input value={settings.phone} onChange={(e) => handleChange('phone', e.target.value)} type="text" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
                    </div>
                 </div>
              </div>
@@ -115,8 +142,8 @@ export function Settings() {
                          <div className="font-semibold text-sm text-[#33251E]">Critical pickup alerts</div>
                          <div className="text-xs text-[#33251E]/60">Push me the moment shelf life {'<'} 2h</div>
                       </div>
-                      <div onClick={handleInputChange} className="w-10 h-6 bg-[#F07154] rounded-full relative cursor-pointer shadow-inner flex shrink-0">
-                         <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1 shadow-sm transition-all"></div>
+                      <div onClick={() => handleChange('criticalAlerts', !settings.criticalAlerts)} className={`w-10 h-6 rounded-full relative cursor-pointer shadow-inner flex shrink-0 transition-colors duration-300 ${settings.criticalAlerts ? 'bg-[#F07154]' : 'bg-[#E5E0DA]'}`}>
+                         <div className={`w-4 h-4 bg-white rounded-full absolute left-1 top-1 shadow-sm transition-transform duration-300 ${settings.criticalAlerts ? 'translate-x-4' : 'translate-x-0'}`}></div>
                       </div>
                    </div>
                    <div className="flex justify-between items-center">
@@ -124,8 +151,8 @@ export function Settings() {
                          <div className="font-semibold text-sm text-[#33251E]">Match suggestions</div>
                          <div className="text-xs text-[#33251E]/60">Every time AI proposes an NGO match</div>
                       </div>
-                      <div onClick={handleInputChange} className="w-10 h-6 bg-[#E5E0DA] rounded-full relative cursor-pointer shadow-inner flex shrink-0">
-                         <div className="w-4 h-4 bg-white rounded-full absolute left-1 top-1 shadow-sm transition-all"></div>
+                      <div onClick={() => handleChange('matchSuggestions', !settings.matchSuggestions)} className={`w-10 h-6 rounded-full relative cursor-pointer shadow-inner flex shrink-0 transition-colors duration-300 ${settings.matchSuggestions ? 'bg-[#F07154]' : 'bg-[#E5E0DA]'}`}>
+                         <div className={`w-4 h-4 bg-white rounded-full absolute left-1 top-1 shadow-sm transition-transform duration-300 ${settings.matchSuggestions ? 'translate-x-4' : 'translate-x-0'}`}></div>
                       </div>
                    </div>
                    <div className="flex justify-between items-center">
@@ -133,8 +160,8 @@ export function Settings() {
                          <div className="font-semibold text-sm text-[#33251E]">Weekly impact digest</div>
                          <div className="text-xs text-[#33251E]/60">Every Monday, meals rescued & CO₂ saved</div>
                       </div>
-                      <div onClick={handleInputChange} className="w-10 h-6 bg-[#F07154] rounded-full relative cursor-pointer shadow-inner flex shrink-0">
-                         <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1 shadow-sm transition-all"></div>
+                      <div onClick={() => handleChange('weeklyDigest', !settings.weeklyDigest)} className={`w-10 h-6 rounded-full relative cursor-pointer shadow-inner flex shrink-0 transition-colors duration-300 ${settings.weeklyDigest ? 'bg-[#F07154]' : 'bg-[#E5E0DA]'}`}>
+                         <div className={`w-4 h-4 bg-white rounded-full absolute left-1 top-1 shadow-sm transition-transform duration-300 ${settings.weeklyDigest ? 'translate-x-4' : 'translate-x-0'}`}></div>
                       </div>
                    </div>
                 </div>
@@ -149,36 +176,45 @@ export function Settings() {
                    <div>
                       <div className="flex justify-between items-center mb-2">
                          <span className="font-semibold text-sm text-[#33251E]">Auto-priority urgency score</span>
-                         <span className="bg-[#F07154]/10 text-[#F07154] px-2 py-0.5 rounded-md font-bold text-xs">75</span>
+                         <span className="bg-[#F07154]/10 text-[#F07154] px-2 py-0.5 rounded-md font-bold text-xs">{settings.autoPriority}</span>
                       </div>
-                      <div className="h-1.5 bg-gray-100 rounded-full relative cursor-pointer" onClick={handleInputChange}>
-                         <div className="h-full bg-[#F07154] rounded-full w-[75%]"></div>
-                         <div className="w-4 h-4 bg-white border-2 border-[#F07154] rounded-full absolute top-1/2 -translate-y-1/2 left-[75%] -ml-2 shadow-sm"></div>
+                      <div className="relative h-4 flex items-center">
+                         <div className="h-1.5 w-full bg-gray-100 rounded-full relative pointer-events-none">
+                            <div className="h-full bg-[#F07154] rounded-full" style={{ width: `${settings.autoPriority}%` }}></div>
+                            <div className="w-4 h-4 bg-white border-2 border-[#F07154] rounded-full absolute top-1/2 -translate-y-1/2 shadow-sm" style={{ left: `${settings.autoPriority}%`, marginLeft: '-8px' }}></div>
+                         </div>
+                         <input type="range" min="0" max="100" value={settings.autoPriority} onChange={(e) => handleChange('autoPriority', parseInt(e.target.value))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                       </div>
                    </div>
                    <div>
                       <div className="flex justify-between items-center mb-2">
                          <span className="font-semibold text-sm text-[#33251E]">Match confidence floor</span>
-                         <span className="bg-[#F07154]/10 text-[#F07154] px-2 py-0.5 rounded-md font-bold text-xs">70</span>
+                         <span className="bg-[#F07154]/10 text-[#F07154] px-2 py-0.5 rounded-md font-bold text-xs">{settings.matchConfidence}</span>
                       </div>
-                      <div className="h-1.5 bg-gray-100 rounded-full relative cursor-pointer" onClick={handleInputChange}>
-                         <div className="h-full bg-[#F07154] rounded-full w-[70%]"></div>
-                         <div className="w-4 h-4 bg-white border-2 border-[#F07154] rounded-full absolute top-1/2 -translate-y-1/2 left-[70%] -ml-2 shadow-sm"></div>
+                      <div className="relative h-4 flex items-center">
+                         <div className="h-1.5 w-full bg-gray-100 rounded-full relative pointer-events-none">
+                            <div className="h-full bg-[#F07154] rounded-full" style={{ width: `${settings.matchConfidence}%` }}></div>
+                            <div className="w-4 h-4 bg-white border-2 border-[#F07154] rounded-full absolute top-1/2 -translate-y-1/2 shadow-sm" style={{ left: `${settings.matchConfidence}%`, marginLeft: '-8px' }}></div>
+                         </div>
+                         <input type="range" min="0" max="100" value={settings.matchConfidence} onChange={(e) => handleChange('matchConfidence', parseInt(e.target.value))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                       </div>
                    </div>
                    <div>
                       <div className="flex justify-between items-center mb-2">
                          <span className="font-semibold text-sm text-[#33251E]">Manual review trigger</span>
-                         <span className="bg-[#F07154]/10 text-[#F07154] px-2 py-0.5 rounded-md font-bold text-xs">40</span>
+                         <span className="bg-[#F07154]/10 text-[#F07154] px-2 py-0.5 rounded-md font-bold text-xs">{settings.manualReview}</span>
                       </div>
-                      <div className="h-1.5 bg-gray-100 rounded-full relative cursor-pointer" onClick={handleInputChange}>
-                         <div className="h-full bg-[#F07154] rounded-full w-[40%]"></div>
-                         <div className="w-4 h-4 bg-white border-2 border-[#F07154] rounded-full absolute top-1/2 -translate-y-1/2 left-[40%] -ml-2 shadow-sm"></div>
+                      <div className="relative h-4 flex items-center">
+                         <div className="h-1.5 w-full bg-gray-100 rounded-full relative pointer-events-none">
+                            <div className="h-full bg-[#F07154] rounded-full" style={{ width: `${settings.manualReview}%` }}></div>
+                            <div className="w-4 h-4 bg-white border-2 border-[#F07154] rounded-full absolute top-1/2 -translate-y-1/2 shadow-sm" style={{ left: `${settings.manualReview}%`, marginLeft: '-8px' }}></div>
+                         </div>
+                         <input type="range" min="0" max="100" value={settings.manualReview} onChange={(e) => handleChange('manualReview', parseInt(e.target.value))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                       </div>
                    </div>
                 </div>
                 <div className="mt-8 pt-6 border-t border-[#33251E]/5">
-                   <button onClick={handleInputChange} className="text-sm font-semibold text-[#33251E]/70 hover:text-[#33251E] transition-colors bg-white border border-[#33251E]/10 rounded-xl px-5 py-2.5">
+                   <button onClick={() => { handleChange('autoPriority', 75); handleChange('matchConfidence', 70); handleChange('manualReview', 40); }} className="text-sm font-semibold text-[#33251E]/70 hover:text-[#33251E] transition-colors bg-white border border-[#33251E]/10 rounded-xl px-5 py-2.5">
                       Reset AI thresholds
                    </button>
                 </div>
@@ -194,24 +230,24 @@ export function Settings() {
                 <div className="space-y-5">
                    <div>
                       <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Organization name</label>
-                      <input onChange={handleInputChange} type="text" defaultValue="SharePlate Bhopal Chapter" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                      <input value={settings.orgName} onChange={(e) => handleChange('orgName', e.target.value)} type="text" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
                    </div>
                    <div>
                       <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Type</label>
-                      <input onChange={handleInputChange} type="text" defaultValue="NGO / Food rescue collective" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                      <input value={settings.orgType} onChange={(e) => handleChange('orgType', e.target.value)} type="text" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
                    </div>
                    <div>
                       <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Address</label>
-                      <input onChange={handleInputChange} type="text" defaultValue="MP Nagar" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                      <input value={settings.address} onChange={(e) => handleChange('address', e.target.value)} type="text" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
                    </div>
                    <div className="grid grid-cols-2 gap-4">
                       <div>
                          <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">City</label>
-                         <input onChange={handleInputChange} type="text" defaultValue="Bhopal" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                         <input value={settings.city} onChange={(e) => handleChange('city', e.target.value)} type="text" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
                       </div>
                       <div>
                          <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Service area</label>
-                         <input onChange={handleInputChange} type="text" defaultValue="Central MP" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                         <input value={settings.serviceArea} onChange={(e) => handleChange('serviceArea', e.target.value)} type="text" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
                       </div>
                    </div>
                 </div>
@@ -224,20 +260,20 @@ export function Settings() {
                    <div className="grid grid-cols-2 gap-4">
                       <div>
                          <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Preferred radius (km)</label>
-                         <input onChange={handleInputChange} type="text" defaultValue="8" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                         <input value={settings.radius} onChange={(e) => handleChange('radius', e.target.value)} type="text" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
                       </div>
                       <div>
                          <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Default pickup window</label>
-                         <input onChange={handleInputChange} type="text" defaultValue="15 - 30 mins" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                         <input value={settings.window} onChange={(e) => handleChange('window', e.target.value)} type="text" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
                       </div>
                    </div>
                    <div>
                       <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Available vehicle types</label>
-                      <input onChange={handleInputChange} type="text" defaultValue="Van, 2-wheeler" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                      <input value={settings.vehicles} onChange={(e) => handleChange('vehicles', e.target.value)} type="text" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
                    </div>
                    <div>
                       <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Preferred route mode</label>
-                      <select onChange={handleInputChange} className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors appearance-none cursor-pointer">
+                      <select value={settings.route} onChange={(e) => handleChange('route', e.target.value)} className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors appearance-none cursor-pointer">
                          <option>Fastest (Time-optimized)</option>
                          <option>Shortest (Distance-optimized)</option>
                          <option>Safest (Avoid heavy traffic)</option>
@@ -249,8 +285,8 @@ export function Settings() {
                       <div className="font-semibold text-sm text-[#33251E]">Auto-accept nearby matches</div>
                       <div className="text-xs text-[#33251E]/60">Assign automatically if score {'>'} 90%</div>
                    </div>
-                   <div onClick={handleInputChange} className="w-10 h-6 bg-[#F07154] rounded-full relative cursor-pointer shadow-inner flex shrink-0">
-                      <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1 shadow-sm transition-all"></div>
+                   <div onClick={() => handleChange('autoAccept', !settings.autoAccept)} className={`w-10 h-6 rounded-full relative cursor-pointer shadow-inner flex shrink-0 transition-colors duration-300 ${settings.autoAccept ? 'bg-[#F07154]' : 'bg-[#E5E0DA]'}`}>
+                      <div className={`w-4 h-4 bg-white rounded-full absolute left-1 top-1 shadow-sm transition-transform duration-300 ${settings.autoAccept ? 'translate-x-4' : 'translate-x-0'}`}></div>
                    </div>
                 </div>
              </div>
