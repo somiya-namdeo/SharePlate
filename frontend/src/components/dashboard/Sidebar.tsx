@@ -24,9 +24,9 @@ export function Sidebar() {
     { icon: TrendingUp, label: 'Demand Forecasting', path: '/forecasting' },
     { icon: Network, label: 'Smart Matching', path: '/matching' },
     { icon: MapIcon, label: 'Map & Logistics', path: '/logistics' },
-    { icon: BarChart3, label: 'Analytics', path: '#' },
-    { icon: HeartHandshake, label: 'NGO Requests', path: '#' },
-    { icon: Settings, label: 'Settings', path: '#' },
+    { icon: BarChart3, label: 'Analytics', path: '/analytics' },
+    { icon: HeartHandshake, label: 'NGO Requests', path: '/requests' },
+    { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
   return (

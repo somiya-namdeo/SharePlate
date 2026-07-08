@@ -9,6 +9,9 @@ import { NLPIntelligence } from './pages/NLPIntelligence';
 import { DemandForecasting } from './pages/DemandForecasting';
 import { SmartMatching } from './pages/SmartMatching';
 import { MapLogistics } from './pages/MapLogistics';
+import { Analytics } from './pages/Analytics';
+import { NGORequests } from './pages/NGORequests';
+import { Settings } from './pages/Settings';
 
 function App() {
   return (
@@ -24,6 +27,9 @@ function App() {
         <Route path="/forecasting" element={<DemandForecasting />} />
         <Route path="/matching" element={<SmartMatching />} />
         <Route path="/logistics" element={<MapLogistics />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/requests" element={<NGORequests />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </BrowserRouter>
   );
