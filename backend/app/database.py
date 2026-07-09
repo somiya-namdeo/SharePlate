@@ -1,11 +1,20 @@
-# In-memory storage for MVP
+import sys
+from supabase import create_client, Client
+from app.config import settings
 
-DONATIONS_DB = []
-REQUESTS_DB = []
+if not settings.supabase_url or not settings.supabase_key:
+    print("Warning: SUPABASE_URL or SUPABASE_KEY is missing. Database operations will fail.")
 
-def get_db():
+# Initialize Supabase Client globally
+try:
+    supabase: Client = create_client(settings.supabase_url, settings.supabase_key)
+except Exception as e:
+    print(f"Error initializing Supabase client: {e}")
+    supabase = None # Will fail later but allows the app to load
+
+def get_db() -> Client:
     """
-    Dependency to get the database connection.
-    (Currently unused as we use in-memory lists for MVP)
+    Dependency to get the Supabase database connection.
+    Returns a fresh client per request to avoid cross-request session leakage.
     """
-    pass
+    return create_client(settings.supabase_url, settings.supabase_key)
