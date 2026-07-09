@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Literal
 
 class FoodSafetyRequest(BaseModel):
     food_item: str
@@ -23,7 +23,7 @@ class FoodSafetyResponse(BaseModel):
     prediction: str
     remaining_shelf_life_hr: float
     urgency_score: float
-    urgency_level: str
+    urgency_level: Literal["Low", "Medium", "High", "Critical"]
     urgency_priority: int
 
 class SurplusPredictionRequest(BaseModel):

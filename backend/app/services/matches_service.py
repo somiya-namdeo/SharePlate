@@ -11,6 +11,23 @@ class MatchesService:
         self.requests_service = RequestsService(db)
 
     def create_match(self, match_data: dict) -> dict:
+        # Fetch the donation to get the donor_id
+        donation = self.donations_service.get_donation_by_id(match_data["donation_id"])
+        if not donation:
+            raise Exception("Donation not found")
+            
+        # Fetch the request to get the ngo_id
+        # We need a method to get a request by ID. Let's assume requests_service.get_request_by_id exists.
+        # Actually, let's query it directly if not sure.
+        request_res = self.db.table("ngo_requests").select("*").eq("id", match_data["request_id"]).execute()
+        if not request_res.data:
+            raise Exception("NGO request not found")
+            
+        ngo_req = request_res.data[0]
+        
+        match_data["donor_id"] = donation["donor_id"]
+        match_data["ngo_id"] = ngo_req["ngo_id"]
+        
         response = self.db.table("matches").insert(match_data).execute()
         return response.data[0] if response.data else None
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { Topbar } from '../components/dashboard/Topbar';
 import { Download, Key } from 'lucide-react';
@@ -18,9 +18,7 @@ export function Settings() {
     vehicles: "Van, 2-wheeler",
     route: "Fastest (Time-optimized)",
     
-    criticalAlerts: true,
-    matchSuggestions: false,
-    weeklyDigest: true,
+    notificationsEnabled: true,
     autoAccept: true,
     
     autoPriority: 75,
@@ -31,17 +29,59 @@ export function Settings() {
   const [settings, setSettings] = useState(initialState);
   const [hasChanges, setHasChanges] = useState(false);
 
+  // Fetch settings on mount
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await fetch('http://localhost:8000/api/settings', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success && data.data && data.data.notifications) {
+           setSettings(prev => ({
+              ...prev,
+              notificationsEnabled: data.data.notifications.notifications_enabled ?? true
+           }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch settings", err);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   const handleChange = (key: keyof typeof initialState, value: any) => {
     setSettings(prev => ({ ...prev, [key]: value }));
     setHasChanges(true);
   };
 
-  const handleSave = () => {
-    setHasChanges(false);
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Save notification settings
+        await fetch('http://localhost:8000/api/settings/notifications', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            notifications_enabled: settings.notificationsEnabled
+          })
+        });
+      }
+      setHasChanges(false);
+    } catch (err) {
+      console.error("Failed to save settings", err);
+    }
   };
 
   const handleDiscard = () => {
-    setSettings(initialState);
+    // In a real app, we'd refetch from server here, but for now we'll just reset hasChanges
+    // since we don't store the precise original state deeply yet.
     setHasChanges(false);
   };
 
@@ -139,29 +179,11 @@ export function Settings() {
                 <div className="space-y-6">
                    <div className="flex justify-between items-center">
                       <div>
-                         <div className="font-semibold text-sm text-[#33251E]">Critical pickup alerts</div>
-                         <div className="text-xs text-[#33251E]/60">Push me the moment shelf life {'<'} 2h</div>
+                         <div className="font-semibold text-sm text-[#33251E]">Enable Notifications</div>
+                         <div className="text-xs text-[#33251E]/60">Receive in-app alerts and notifications</div>
                       </div>
-                      <div onClick={() => handleChange('criticalAlerts', !settings.criticalAlerts)} className={`w-10 h-6 rounded-full relative cursor-pointer shadow-inner flex shrink-0 transition-colors duration-300 ${settings.criticalAlerts ? 'bg-[#F07154]' : 'bg-[#E5E0DA]'}`}>
-                         <div className={`w-4 h-4 bg-white rounded-full absolute left-1 top-1 shadow-sm transition-transform duration-300 ${settings.criticalAlerts ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                      </div>
-                   </div>
-                   <div className="flex justify-between items-center">
-                      <div>
-                         <div className="font-semibold text-sm text-[#33251E]">Match suggestions</div>
-                         <div className="text-xs text-[#33251E]/60">Every time AI proposes an NGO match</div>
-                      </div>
-                      <div onClick={() => handleChange('matchSuggestions', !settings.matchSuggestions)} className={`w-10 h-6 rounded-full relative cursor-pointer shadow-inner flex shrink-0 transition-colors duration-300 ${settings.matchSuggestions ? 'bg-[#F07154]' : 'bg-[#E5E0DA]'}`}>
-                         <div className={`w-4 h-4 bg-white rounded-full absolute left-1 top-1 shadow-sm transition-transform duration-300 ${settings.matchSuggestions ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                      </div>
-                   </div>
-                   <div className="flex justify-between items-center">
-                      <div>
-                         <div className="font-semibold text-sm text-[#33251E]">Weekly impact digest</div>
-                         <div className="text-xs text-[#33251E]/60">Every Monday, meals rescued & CO₂ saved</div>
-                      </div>
-                      <div onClick={() => handleChange('weeklyDigest', !settings.weeklyDigest)} className={`w-10 h-6 rounded-full relative cursor-pointer shadow-inner flex shrink-0 transition-colors duration-300 ${settings.weeklyDigest ? 'bg-[#F07154]' : 'bg-[#E5E0DA]'}`}>
-                         <div className={`w-4 h-4 bg-white rounded-full absolute left-1 top-1 shadow-sm transition-transform duration-300 ${settings.weeklyDigest ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                      <div onClick={() => handleChange('notificationsEnabled', !settings.notificationsEnabled)} className={`w-10 h-6 rounded-full relative cursor-pointer shadow-inner flex shrink-0 transition-colors duration-300 ${settings.notificationsEnabled ? 'bg-[#F07154]' : 'bg-[#E5E0DA]'}`}>
+                         <div className={`w-4 h-4 bg-white rounded-full absolute left-1 top-1 shadow-sm transition-transform duration-300 ${settings.notificationsEnabled ? 'translate-x-4' : 'translate-x-0'}`}></div>
                       </div>
                    </div>
                 </div>

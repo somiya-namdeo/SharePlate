@@ -114,8 +114,7 @@ ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
 -- 5. NOTIFICATION PREFERENCES
 CREATE TABLE notification_preferences (
     user_id UUID PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,
-    email_alerts BOOLEAN DEFAULT true,
-    push_notifications BOOLEAN DEFAULT true,
+    notifications_enabled BOOLEAN DEFAULT true,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 

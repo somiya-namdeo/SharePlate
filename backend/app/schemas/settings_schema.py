@@ -2,9 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, Dict, Any
 
 class NotificationPreferencesUpdate(BaseModel):
-    email_alerts: Optional[bool] = None
-    push_notifications: Optional[bool] = None
-    sms_alerts: Optional[bool] = None
+    notifications_enabled: Optional[bool] = None
 
 class AIThresholdSettingsUpdate(BaseModel):
     safety_threshold: Optional[float] = None

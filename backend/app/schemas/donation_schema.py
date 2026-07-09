@@ -7,7 +7,7 @@ class DonationCreate(BaseModel):
     food_type: str
     quantity: float
     description: Optional[str] = None
-    location: str
+    address: str
     latitude: float
     longitude: float
     

@@ -1,13 +1,13 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Literal
 from datetime import datetime
 
 class RequestCreate(BaseModel):
-    ngo_id: str
+    ngo_id: Optional[str] = None
     meals_needed: int
     preferred_food_type: Optional[str] = None
-    urgency_level: str
-    location: str
+    urgency_level: Literal["Low", "Medium", "High"]
+    address: str
     latitude: float
     longitude: float
 
