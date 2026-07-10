@@ -103,7 +103,7 @@ CREATE TABLE matches (
     priority_level VARCHAR(50),
     recommended_pickup_time TIMESTAMP WITH TIME ZONE,
     estimated_eta INTEGER,
-    status VARCHAR(50) NOT NULL CHECK (status IN ('suggested', 'accepted', 'rejected', 'completed')) DEFAULT 'suggested',
+    status VARCHAR(50) NOT NULL CHECK (status IN ('pending', 'suggested', 'accepted', 'rejected', 'picked_up', 'completed', 'cancelled')) DEFAULT 'pending',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );

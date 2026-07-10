@@ -307,7 +307,30 @@ export function Donations() {
                   {isLoading ? <Loader2 size={16} className="animate-spin text-[#33251E]/60" /> : <Save size={16} className="text-[#33251E]/60" />}
                   {formData.id ? 'Update donation' : 'Save donation'}
                 </button>
-                <button className="bg-white hover:bg-[#33251E]/5 border border-[#33251E]/10 text-[#33251E] px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+                <button 
+                  type="button"
+                  disabled={isLoading}
+                  onClick={async () => {
+                    if (!formData.id && !formData.foodItem && !formData.quantity && !formData.pickupLocation) {
+                      import('react-hot-toast').then(({ default: toast }) => {
+                        toast.error('Please select or save a donation first.');
+                      });
+                      return;
+                    }
+
+                    let currentId = formData.id;
+                    if (!currentId) {
+                      const newId = await handleSave();
+                      if (!newId) return; // Save failed
+                      currentId = newId;
+                    }
+                    
+                    navigate('/matching', { 
+                      state: { donationId: currentId } 
+                    });
+                  }}
+                  className="bg-white hover:bg-[#33251E]/5 border border-[#33251E]/10 text-[#33251E] px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+                >
                   <Network size={16} className="text-[#33251E]/60" />
                   Match
                 </button>
