@@ -100,6 +100,25 @@ class AIService:
             logger.error(f"Error loading demand forecasting model: {e}")
 
     def predict_food_safety(self, request: FoodSafetyRequest) -> FoodSafetyResponse:
+        # Auto-derive missing fields
+        if not request.season:
+            request.season = "Summer" if request.temperature_c > 25 else "Winter"
+        if not request.city_tier:
+            request.city_tier = "Tier-1" # Default assumption
+        if not request.event_type:
+            request.event_type = "Regular"
+            
+        if request.perishability_score is None:
+            # Simple heuristic
+            request.perishability_score = 3 if "cooked" in request.food_category.lower() else 1
+            
+        if request.estimated_shelf_life_hr is None:
+            # Basic shelf life estimation
+            if "cooked" in request.food_category.lower():
+                request.estimated_shelf_life_hr = 12.0 if request.temperature_c > 10 else 48.0
+            else:
+                request.estimated_shelf_life_hr = 72.0
+
         # 1. Calculate urgency based on formula: (hours_since_prepared / estimated_shelf_life_hr) * 100
         if request.estimated_shelf_life_hr > 0:
             urgency_score = (request.hours_since_prepared / request.estimated_shelf_life_hr) * 100

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
+from typing import Dict, Any
 from app.schemas.donation_schema import DonationCreate
 from app.database import get_db
 from app.core.security import get_current_user
@@ -38,5 +39,27 @@ def get_donations(service: DonationsService = Depends(get_donations_service)):
             "message": "Donations retrieved successfully",
             "data": result
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/{donation_id}")
+def update_donation(
+    donation_id: str,
+    update_data: Dict[str, Any] = Body(...),
+    service: DonationsService = Depends(get_donations_service),
+    current_user = Depends(get_current_user)
+):
+    try:
+        donor_id = current_user.id
+        result = service.update_donation(donation_id, update_data, donor_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="Donation not found or unauthorized")
+        return {
+            "success": True,
+            "message": "Donation updated successfully",
+            "data": result
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

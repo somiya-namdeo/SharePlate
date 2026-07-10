@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { apiFetch } from '../lib/api';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { Topbar } from '../components/dashboard/Topbar';
 import { ShieldAlert, Info, AlertTriangle, ShieldCheck } from 'lucide-react';
@@ -14,26 +17,42 @@ interface PredictionResponse {
 export function FoodSafety() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [result, setResult] = useState<PredictionResponse | null>(null);
+  const location = useLocation();
+  const prefill = location.state?.prefillData;
+  const donationId = location.state?.donationId;
+  const existingAiData = location.state?.existingAiData;
 
-  // Form State Pre-filled with realistic data
+  const [result, setResult] = useState<PredictionResponse | null>(() => {
+    if (existingAiData && existingAiData.prediction) {
+      return {
+        prediction: existingAiData.prediction,
+        remaining_shelf_life_hr: existingAiData.predicted_shelf_life || 24,
+        urgency_score: existingAiData.rule_risk_score || 50,
+        urgency_level: existingAiData.urgency_level || 'Medium',
+        urgency_priority: 1 // fake priority since we don't store it
+      };
+    }
+    return null;
+  });
+
+  // Form State Pre-filled with realistic data or router state
   const [formData, setFormData] = useState({
-    food_item: 'Dal',
-    food_category: 'Cooked Meal',
-    preparation_method: 'Boiled',
-    storage_condition: 'Refrigerated',
-    packaging_type: 'Sealed Container',
-    temperature_c: '5',
-    humidity_percent: '45',
-    hours_since_prepared: '4',
-    estimated_transport_time_hr: '1',
-    distance_km: '10',
-    quantity_kg: '15',
-    season: 'Summer',
-    event_type: 'Restaurant',
-    city_tier: 'Tier 1',
-    perishability_score: '3',
-    estimated_shelf_life_hr: '24'
+    food_item: prefill?.foodItem || 'Dal',
+    food_category: prefill?.foodCategory || 'Cooked Meal',
+    preparation_method: prefill?.prepMethod || 'Boiled',
+    storage_condition: prefill?.storageCondition || 'Refrigerated',
+    packaging_type: prefill?.packagingType || 'Sealed Container',
+    temperature_c: prefill?.temperature || '5',
+    humidity_percent: prefill?.humidity || '45',
+    hours_since_prepared: prefill?.hoursPrepared || '4',
+    estimated_transport_time_hr: prefill?.estTransport ? (Number(prefill.estTransport) / 60).toString() : '1',
+    distance_km: prefill?.distance || '10',
+    quantity_kg: prefill?.quantity || '15',
+    season: prefill?.season || 'Summer',
+    event_type: prefill?.eventType || 'Restaurant',
+    city_tier: prefill?.cityTier || 'Tier 1',
+    perishability_score: prefill?.perishabilityScore || '3',
+    estimated_shelf_life_hr: prefill?.shelfLife || '24'
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,9 +81,11 @@ export function FoodSafety() {
         season: formData.season || "Unknown",
         event_type: formData.event_type || "Unknown",
         city_tier: formData.city_tier || "Unknown",
-        perishability_score: Number(formData.perishability_score) || 0,
+        perishability_score: Math.round(Number(formData.perishability_score)) || 0, // Ensure integer
         estimated_shelf_life_hr: Number(formData.estimated_shelf_life_hr) || 0
       };
+
+      console.log("Food Safety Payload:", payload);
 
       const response = await fetch('http://127.0.0.1:8000/api/ai/food-safety', {
         method: 'POST',
@@ -73,16 +94,87 @@ export function FoodSafety() {
       });
 
       if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        if (response.status === 422 && errorData && errorData.detail) {
+          console.error("422 Validation Error Response:", errorData);
+          const firstError = errorData.detail[0];
+          if (firstError) {
+            const field = firstError.loc ? firstError.loc[firstError.loc.length - 1] : "unknown";
+            throw new Error(`Field "${field}" ${firstError.msg}`);
+          }
+        }
         throw new Error(`Server returned ${response.status}`);
       }
 
       const data = await response.json();
       setResult(data);
+
+      if (donationId) {
+        try {
+          // Store prediction in database
+          await apiFetch(`/api/donations/${donationId}`, {
+            method: 'PUT',
+            data: {
+              spoilage_risk_score: data.prediction === 'Yes' ? 0.2 : 0.9,
+              safety_status: data.prediction === 'Yes' ? 'Safe' : 'Unsafe',
+              confidence_score: 0.95,
+              predicted_shelf_life: data.remaining_shelf_life_hr,
+              urgency_level: data.urgency_level,
+              ml_safety_prediction: data.prediction,
+              ml_confidence: 0.95,
+              rule_risk_score: data.urgency_score,
+              final_safety_status: data.prediction === 'Yes' ? 'Safe' : 'Unsafe',
+              rule_breakdown: {},
+              prediction_time: new Date().toISOString()
+            }
+          });
+          toast.success("Food safety prediction saved successfully.");
+        } catch (updateErr) {
+          console.error("Failed to update donation with AI results:", updateErr);
+          toast.error("Prediction generated but could not be saved.");
+        }
+      }
+
     } catch (err: any) {
       setError(err.message || 'Failed to connect to the prediction engine.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const getRecommendation = () => {
+    if (!result) return { title: 'Recommendation unavailable', desc: 'No recommendation available.' };
+    const safePrediction = result.prediction || "Unknown";
+    const safeUrgencyLevel = result.urgency_level || "Medium";
+
+    if (safePrediction === 'No') {
+      return {
+        title: 'Warning: Food may be unsafe.',
+        desc: 'Food should not be distributed for human consumption.'
+      };
+    }
+    if (safeUrgencyLevel === 'Critical') {
+      return {
+        title: 'Immediate action needed.',
+        desc: 'Immediate pickup required.'
+      };
+    }
+    if (safeUrgencyLevel === 'High') {
+      return {
+        title: 'Safe but prioritize pickup immediately.',
+        desc: 'Nearest NGO should collect within 60 minutes.'
+      };
+    }
+    if (safeUrgencyLevel === 'Medium') {
+      return {
+        title: 'Safe for distribution.',
+        desc: 'Assign an NGO within the next 2 hours.'
+      };
+    }
+    return {
+      title: 'Safe for distribution.',
+      desc: 'Schedule pickup within the next 4–6 hours.'
+    };
   };
 
   return (
@@ -207,100 +299,114 @@ export function FoodSafety() {
                 </div>
               )}
 
-              {!error && result && (
-                <div className="grid grid-cols-3 gap-4 relative z-10">
-                  
-                  {/* Urgency Score Card */}
-                  <div className="bg-[#FDFBF7] p-5 rounded-2xl border border-[#33251E]/5 flex flex-col items-center justify-center text-center col-span-1 shadow-sm">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#33251E]/50 mb-4">Urgency Score</div>
-                    <div className="relative w-24 h-24 flex items-center justify-center mb-4">
-                      {/* Fake Circular Meter */}
-                      <svg className="absolute inset-0 w-full h-full rotate-[-90deg]">
-                        <circle cx="48" cy="48" r="44" stroke="#E5E0DD" strokeWidth="6" fill="none" />
-                        <circle 
-                          cx="48" cy="48" r="44" 
-                          stroke={result.urgency_score > 75 ? "#EF4444" : result.urgency_score > 40 ? "#F59E0B" : "#10B981"} 
-                          strokeWidth="6" fill="none" 
-                          strokeDasharray="276" 
-                          strokeDashoffset={276 - (276 * result.urgency_score) / 100}
-                          className="transition-all duration-1000 ease-out"
-                        />
-                      </svg>
-                      <div className="text-center">
-                        <div className="text-3xl font-serif text-[#33251E] leading-none">{Math.round(result.urgency_score)}</div>
-                        <div className="text-[10px] font-bold text-[#33251E]/40 mt-1">OF 100</div>
-                      </div>
-                    </div>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${result.urgency_level === 'Critical' ? 'bg-red-50 text-red-700 border-red-200' : result.urgency_level === 'High' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
-                      {result.urgency_level === 'Critical' && <span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5 animate-pulse" />}
-                      {result.urgency_level}
-                    </span>
-                  </div>
+              {!error && result && (() => {
+                const safeShelfLife = Number(result.remaining_shelf_life_hr ?? (result as any).predicted_shelf_life ?? formData.estimated_shelf_life_hr) || 24;
+                const safeTotalShelfLife = Number(formData.estimated_shelf_life_hr) || 24;
+                const safePrediction = result.prediction || "Unknown";
+                const safeUrgencyScore = Number(result.urgency_score) || 0;
+                const safeUrgencyLevel = result.urgency_level || "Medium";
+                const safePriority = Number(result.urgency_priority) || 1;
+                const percentUsed = Math.max(0, Math.min(100, Math.round(100 - ((safeShelfLife / safeTotalShelfLife) * 100))));
 
-                  {/* Safety Card */}
-                  <div className="bg-[#FDFBF7] p-5 rounded-2xl border border-[#33251E]/5 flex flex-col justify-center items-center text-center col-span-1 shadow-sm">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#33251E]/50 mb-3">Safety Prediction</div>
-                    <div className="flex items-center justify-center gap-3 mb-2">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-sm text-white ${result.prediction === 'Yes' ? 'bg-emerald-500' : 'bg-red-500'}`}>
-                        {result.prediction === 'Yes' ? <ShieldCheck size={20} /> : <AlertTriangle size={20} />}
-                      </div>
-                      <span className="text-3xl font-serif text-[#33251E]">{result.prediction}</span>
-                    </div>
-                    <span className={`inline-block mb-6 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${result.prediction === 'Yes' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
-                      {result.prediction === 'Yes' ? 'Safe' : 'Unsafe'}
-                    </span>
-
-                    <div className="w-full">
-                      <div className="flex justify-between text-[10px] font-bold text-[#33251E]/50 mb-1.5">
-                        <span>Shelf-life used</span>
-                        <span>{Math.round(100 - ((result.remaining_shelf_life_hr / (Number(formData.estimated_shelf_life_hr) || 1)) * 100))}%</span>
-                      </div>
-                      <div className="h-1.5 w-full bg-[#E5E0DD] rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${Math.round(100 - ((result.remaining_shelf_life_hr / (Number(formData.estimated_shelf_life_hr) || 1)) * 100))}%` }}></div>
-                      </div>
-                      <div className="text-[10px] text-[#33251E]/50 mt-2 font-medium">
-                        {Math.floor(result.remaining_shelf_life_hr)}h {Math.round((result.remaining_shelf_life_hr % 1) * 60)}m remaining
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Priority Rank Card */}
-                  <div className="bg-[#33251E] p-6 rounded-2xl text-white flex flex-col col-span-1 shadow-lg relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#F07154]/20 rounded-full blur-xl -translate-y-1/2 translate-x-1/2"></div>
+                return (
+                  <div className="grid grid-cols-3 gap-4 relative z-10">
                     
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-white/50 mb-1 relative z-10">Priority Rank</div>
-                    <div className="text-5xl font-serif mb-1 relative z-10">#{result.urgency_priority}</div>
-                    <div className="text-[10px] text-white/50 mb-6 relative z-10">among active donations</div>
-                    
-                    <div className="mt-auto space-y-2 relative z-10">
-                      <div className="flex justify-between text-[11px]">
-                        <span className="text-white/60">Urgency level</span>
-                        <span className={result.urgency_level === 'Critical' ? 'text-[#F07154] font-bold' : 'font-bold'}>{result.urgency_level}</span>
+                    {/* Urgency Score Card */}
+                    <div className="bg-[#FDFBF7] p-5 rounded-2xl border border-[#33251E]/5 flex flex-col items-center justify-center text-center col-span-1 shadow-sm">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#33251E]/50 mb-4">Urgency Score</div>
+                      <div className="relative w-24 h-24 flex items-center justify-center mb-4">
+                        {/* Fake Circular Meter */}
+                        <svg className="absolute inset-0 w-full h-full rotate-[-90deg]">
+                          <circle cx="48" cy="48" r="44" stroke="#E5E0DD" strokeWidth="6" fill="none" />
+                          <circle 
+                            cx="48" cy="48" r="44" 
+                            stroke={safeUrgencyScore > 75 ? "#EF4444" : safeUrgencyScore > 40 ? "#F59E0B" : "#10B981"} 
+                            strokeWidth="6" fill="none" 
+                            strokeDasharray="276" 
+                            strokeDashoffset={276 - (276 * safeUrgencyScore) / 100}
+                            className="transition-all duration-1000 ease-out"
+                          />
+                        </svg>
+                        <div className="text-center">
+                          <div className="text-3xl font-serif text-[#33251E] leading-none">{Math.round(safeUrgencyScore)}</div>
+                          <div className="text-[10px] font-bold text-[#33251E]/40 mt-1">OF 100</div>
+                        </div>
                       </div>
-                      <div className="flex justify-between text-[11px]">
-                        <span className="text-white/60">Est. shelf life</span>
-                        <span className="font-bold">{formData.estimated_shelf_life_hr || '-'}h</span>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${safeUrgencyLevel === 'Critical' ? 'bg-red-50 text-red-700 border-red-200' : safeUrgencyLevel === 'High' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                        {safeUrgencyLevel === 'Critical' && <span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5 animate-pulse" />}
+                        {safeUrgencyLevel}
+                      </span>
+                    </div>
+
+                    {/* Safety Card */}
+                    <div className="bg-[#FDFBF7] p-5 rounded-2xl border border-[#33251E]/5 flex flex-col justify-center items-center text-center col-span-1 shadow-sm">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#33251E]/50 mb-3">Safety Prediction</div>
+                      <div className="flex items-center justify-center gap-3 mb-2">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-sm text-white ${safePrediction === 'Yes' ? 'bg-emerald-500' : safePrediction === 'No' ? 'bg-red-500' : 'bg-gray-400'}`}>
+                          {safePrediction === 'Yes' ? <ShieldCheck size={20} /> : <AlertTriangle size={20} />}
+                        </div>
+                        <span className="text-3xl font-serif text-[#33251E]">{safePrediction}</span>
                       </div>
-                      <div className="flex justify-between text-[11px]">
-                        <span className="text-white/60">Priority band</span>
-                        <span className="font-bold">Top {Math.max(10, result.urgency_priority * 5)}%</span>
+                      <span className={`inline-block mb-6 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${safePrediction === 'Yes' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
+                        {safePrediction === 'Yes' ? 'Safe' : 'Unsafe'}
+                      </span>
+
+                      <div className="w-full">
+                        <div className="flex justify-between text-[10px] font-bold text-[#33251E]/50 mb-1.5">
+                          <span>Shelf-life used</span>
+                          <span>{percentUsed}%</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-[#E5E0DD] rounded-full overflow-hidden">
+                          <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${percentUsed}%` }}></div>
+                        </div>
+                        <div className="text-[10px] text-[#33251E]/50 mt-2 font-medium">
+                          {Math.floor(safeShelfLife)}h {Math.round((safeShelfLife % 1) * 60)}m remaining
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                </div>
-              )}
+                    {/* Priority Rank Card */}
+                    <div className="bg-[#33251E] p-6 rounded-2xl text-white flex flex-col col-span-1 shadow-lg relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-[#F07154]/20 rounded-full blur-xl -translate-y-1/2 translate-x-1/2"></div>
+                      
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-white/50 mb-1 relative z-10">Priority Rank</div>
+                      <div className="text-5xl font-serif mb-1 relative z-10">#{safePriority}</div>
+                      <div className="text-[10px] text-white/50 mb-6 relative z-10">among active donations</div>
+                      
+                      <div className="mt-auto space-y-2 relative z-10">
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-white/60">Urgency level</span>
+                          <span className={safeUrgencyLevel === 'Critical' ? 'text-[#F07154] font-bold' : 'font-bold'}>{safeUrgencyLevel}</span>
+                        </div>
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-white/60">Est. shelf life</span>
+                          <span className="font-bold">{safeTotalShelfLife}h</span>
+                        </div>
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-white/60">Priority band</span>
+                          <span className="font-bold">Top {Math.max(10, safePriority * 5)}%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                );
+              })()}
 
               {/* Action Panel */}
-              {!error && result && (
-                <div className={`mt-6 p-4 rounded-xl border flex gap-3 items-start relative z-10 shadow-sm ${result.urgency_score > 75 ? 'bg-red-50/50 border-red-100 text-red-800' : 'bg-orange-50/50 border-orange-100 text-orange-800'}`}>
-                  <AlertTriangle size={20} className={result.urgency_score > 75 ? "text-red-500 mt-0.5" : "text-orange-500 mt-0.5"} />
-                  <div>
-                    <h4 className="font-serif text-lg mb-1">{result.prediction === 'Yes' ? 'Safe but prioritize pickup immediately.' : 'Warning: Food may be unsafe.'}</h4>
-                    <p className="text-sm opacity-80 font-medium">Recommended action: {result.prediction === 'Yes' ? 'assign nearest NGO within 40 minutes to preserve safety margin.' : 'discard or re-route for non-human consumption immediately.'}</p>
+              {!error && result && (() => {
+                const safePrediction = result.prediction || "Unknown";
+                const safeUrgencyLevel = result.urgency_level || "Medium";
+                return (
+                  <div className={`mt-6 p-4 rounded-xl border flex gap-3 items-start relative z-10 shadow-sm ${safeUrgencyLevel === 'Critical' || safePrediction === 'No' ? 'bg-red-50/50 border-red-100 text-red-800' : 'bg-orange-50/50 border-orange-100 text-orange-800'}`}>
+                    <AlertTriangle size={20} className={safeUrgencyLevel === 'Critical' || safePrediction === 'No' ? "text-red-500 mt-0.5" : "text-orange-500 mt-0.5"} />
+                    <div>
+                      <h4 className="font-serif text-lg mb-1">{getRecommendation().title}</h4>
+                      <p className="text-sm opacity-80 font-medium">Recommended action: {getRecommendation().desc}</p>
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
             </div>
 

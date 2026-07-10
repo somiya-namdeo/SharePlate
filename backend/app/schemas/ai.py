@@ -13,11 +13,11 @@ class FoodSafetyRequest(BaseModel):
     estimated_transport_time_hr: float
     distance_km: float
     quantity_kg: float
-    season: str
-    event_type: str
-    city_tier: str
-    perishability_score: int
-    estimated_shelf_life_hr: float
+    season: Optional[str] = None
+    event_type: Optional[str] = None
+    city_tier: Optional[str] = None
+    perishability_score: Optional[int] = None
+    estimated_shelf_life_hr: Optional[float] = None
 
 class FoodSafetyResponse(BaseModel):
     prediction: str

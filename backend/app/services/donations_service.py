@@ -1,14 +1,97 @@
 from supabase import Client
 from typing import List, Dict, Any
+from app.services.ai_service import AIService
+from app.services.rule_engine import RuleEngine
+from app.schemas.ai import FoodSafetyRequest, SurplusPredictionRequest, DemandForecastRequest
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DonationsService:
     def __init__(self, db: Client):
         self.db = db
+        self.ai_service = AIService()
 
     def create_donation(self, donation_data: dict, donor_id: str) -> dict:
         donation_data["donor_id"] = donor_id
+        donation_data["status"] = "pending"
+        
+        # 1. Save initial user-entered fields
         response = self.db.table("donations").insert(donation_data).execute()
-        return response.data[0] if response.data else None
+        if not response.data:
+            raise Exception("Failed to create donation record")
+            
+        saved_donation = response.data[0]
+        donation_id = saved_donation["id"]
+        
+        # 2. Run Food Safety Model
+        try:
+            food_safety_req = FoodSafetyRequest(
+                food_item=donation_data.get("food_type", ""),
+                food_category=donation_data.get("food_category", ""),
+                preparation_method=donation_data.get("preparation_method", ""),
+                storage_condition=donation_data.get("storage_condition", ""),
+                packaging_type=donation_data.get("packaging_type", ""),
+                temperature_c=float(donation_data.get("temperature") or 0),
+                humidity_percent=float(donation_data.get("humidity") or 0),
+                hours_since_prepared=float(donation_data.get("hours_since_prepared") or 0),
+                estimated_transport_time_hr=float(donation_data.get("estimated_transport_time") or 0) / 60.0,
+                distance_km=float(donation_data.get("distance") or 0),
+                quantity_kg=float(donation_data.get("quantity") or 0),
+            )
+            fs_response = self.ai_service.predict_food_safety(food_safety_req)
+            ai_prediction = fs_response.prediction
+            urgency_level = fs_response.urgency_level
+        except Exception as e:
+            logger.error(f"Food safety error during donation creation: {e}")
+            ai_prediction = "Unknown"
+            urgency_level = "Medium"
+            
+        # 3. Run Rule Engine
+        rule_results = RuleEngine.evaluate_food_safety(donation_data, ai_prediction)
+        
+        # 4. Run Surplus Prediction
+        try:
+            surplus_req = SurplusPredictionRequest(features={"quantity": donation_data.get("quantity")})
+            surplus_res = self.ai_service.predict_surplus(surplus_req)
+            surplus = surplus_res.predicted_surplus_quantity
+        except Exception as e:
+            logger.error(f"Surplus prediction error: {e}")
+            surplus = None
+            
+        # 5. Run Demand Forecast
+        try:
+            features_order = [
+                "week", "center_id", "meal_id", "checkout_price", "base_price",
+                "emailer_for_promotion", "homepage_featured", "category", "cuisine",
+                "city_code", "region_code", "center_type", "op_area", "discount",
+                "discount_percent", "price_diff", "is_discounted"
+            ]
+            demand_features = {f: 0 for f in features_order}
+            demand_req = DemandForecastRequest(features=demand_features)
+            demand_res = self.ai_service.predict_demand(demand_req)
+            demand = demand_res.predicted_demand
+        except Exception as e:
+            logger.error(f"Demand forecast error: {e}")
+            demand = 0.0
+            
+        # 6. Prepare update payload with all AI outputs
+        update_data = {
+            "ml_safety_prediction": ai_prediction,
+            "final_safety_status": rule_results["final_safety_status"],
+            "rule_risk_score": rule_results["rule_risk_score"],
+            "urgency_level": urgency_level,
+            "predicted_surplus": surplus,
+            "predicted_demand": demand,
+            "rule_breakdown": rule_results["rule_breakdown"]
+        }
+        
+        # 7. Update database with AI results
+        update_res = self.db.table("donations").update(update_data).eq("id", donation_id).execute()
+        if update_res.data:
+            return update_res.data[0]
+            
+        return {**saved_donation, **update_data}
 
     def get_donations(self, limit: int = 100) -> List[dict]:
         response = self.db.table("donations").select("*").order("created_at", desc=True).limit(limit).execute()
@@ -19,10 +102,8 @@ class DonationsService:
         return response.data[0] if response.data else None
 
     def update_donation(self, donation_id: str, update_data: dict, donor_id: str) -> dict:
-        # Security check: ensure only the owner can update
         existing = self.get_donation_by_id(donation_id)
         if not existing or existing.get("donor_id") != donor_id:
             raise Exception("Unauthorized to update this donation or donation not found")
-
         response = self.db.table("donations").update(update_data).eq("id", donation_id).execute()
         return response.data[0] if response.data else None
