@@ -174,3 +174,7 @@ CREATE POLICY "Allow authenticated users full access to profiles" ON profiles FO
 CREATE POLICY "Allow authenticated users full access to donations" ON donations FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Allow authenticated users full access to ngo_requests" ON ngo_requests FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Allow authenticated users full access to matches" ON matches FOR ALL USING (auth.role() = 'authenticated');
+
+-- Add contact_phone columns
+ALTER TABLE donations ADD COLUMN IF NOT EXISTS contact_phone VARCHAR(50);
+ALTER TABLE ngo_requests ADD COLUMN IF NOT EXISTS contact_phone VARCHAR(50);

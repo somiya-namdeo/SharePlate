@@ -118,32 +118,47 @@ class MatchesService:
     def update_match_status(self, match_id: str, new_status: str) -> dict:
         valid_statuses = ['pending', 'accepted', 'rejected', 'picked_up', 'completed', 'cancelled']
         if new_status not in valid_statuses:
-            raise Exception(f"Invalid status. Must be one of {valid_statuses}")
+            raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of {valid_statuses}")
             
         # Get existing match
         match_res = self.db.table("matches").select("*").eq("id", match_id).execute()
         if not match_res.data:
-            raise Exception("Match not found")
+            raise HTTPException(status_code=404, detail="Match not found")
         match = match_res.data[0]
+        
+        current_status = match["status"]
+        
+        # Prevent transitions from terminal states or invalid forward transitions
+        if current_status in ['completed', 'rejected', 'cancelled']:
+            raise HTTPException(status_code=400, detail=f"Cannot transition from terminal state '{current_status}'")
+            
+        if current_status == 'pending' and new_status not in ['accepted', 'rejected', 'cancelled']:
+            raise HTTPException(status_code=400, detail=f"Invalid transition from {current_status} to {new_status}")
+            
+        if current_status == 'accepted' and new_status not in ['completed', 'cancelled']:
+            raise HTTPException(status_code=400, detail=f"Invalid transition from {current_status} to {new_status}")
         
         # Update match status
         update_res = self.db.table("matches").update({"status": new_status}).eq("id", match_id).execute()
         if not update_res.data:
-            raise Exception("Failed to update match status")
+            raise HTTPException(status_code=500, detail="Failed to update match status")
             
         updated_match = update_res.data[0]
         
-        # If accepted, update donation status and matched_ngo
+        donation_id = match["donation_id"]
+        request_id = match["request_id"]
+        
+        # Synchronize parents
         if new_status == 'accepted':
-            donation_id = match["donation_id"]
-            donation_update = {
-                "status": "matched",
-                "matched_ngo": match["ngo_id"]
-            }
-            self.db.table("donations").update(donation_update).eq("id", donation_id).execute()
+            self.db.table("donations").update({"status": "matched", "matched_ngo": match["ngo_id"]}).eq("id", donation_id).execute()
+        elif new_status == 'completed':
+            self.db.table("donations").update({"status": "completed"}).eq("id", donation_id).execute()
+            self.db.table("ngo_requests").update({"status": "fulfilled"}).eq("id", request_id).execute()
+        elif new_status in ['rejected', 'cancelled']:
+            self.db.table("donations").update({"status": "pending", "matched_ngo": None}).eq("id", donation_id).execute()
+            self.db.table("ngo_requests").update({"status": "open"}).eq("id", request_id).execute()
             
         return updated_match
-
     def _format_match_list(self, matches: List[dict]) -> List[dict]:
         formatted = []
         for m in matches:
@@ -180,9 +195,9 @@ class MatchesService:
                 "urgency": request.get("urgency_level"),
                 "donor_name": donor_profile.get("full_name") or donor_profile.get("organization"),
                 "ngo_name": ngo_profile.get("organization") or ngo_profile.get("full_name"),
-                "donor_phone": donor_profile.get("phone"),
+                "donor_phone": donation.get("contact_phone") or donor_profile.get("phone"),
                 "donor_email": donor_profile.get("email"),
-                "ngo_phone": ngo_profile.get("phone"),
+                "ngo_phone": request.get("contact_phone") or ngo_profile.get("phone"),
                 "ngo_email": ngo_profile.get("email")
             }
             formatted.append(item)

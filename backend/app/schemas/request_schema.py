@@ -10,6 +10,7 @@ class RequestCreate(BaseModel):
     address: str
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    contact_phone: Optional[str] = None
 
 class RequestResponse(RequestCreate):
     id: str

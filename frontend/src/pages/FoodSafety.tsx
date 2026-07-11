@@ -119,7 +119,6 @@ export function FoodSafety() {
               spoilage_risk_score: data.urgency_score ? data.urgency_score / 100 : (data.prediction === 'Yes' ? 0.2 : 0.9),
               safety_status: data.prediction === 'Yes' ? 'Safe' : 'Unsafe',
               confidence_score: 0.95,
-              predicted_shelf_life: data.remaining_shelf_life_hr,
               urgency_level: data.urgency_level,
               prediction_time: new Date().toISOString()
             }
@@ -296,8 +295,11 @@ export function FoodSafety() {
               )}
 
               {!error && result && (() => {
-                const safeShelfLife = Number(result.remaining_shelf_life_hr ?? (result as any).predicted_shelf_life ?? formData.estimated_shelf_life_hr) || 24;
-                const safeTotalShelfLife = Number(formData.estimated_shelf_life_hr) || 24;
+                const parsedRemaining = Number(result.remaining_shelf_life_hr ?? (result as any).predicted_shelf_life ?? formData.estimated_shelf_life_hr);
+                const safeShelfLife = !isNaN(parsedRemaining) ? parsedRemaining : 24;
+                
+                const parsedTotal = Number(formData.estimated_shelf_life_hr);
+                const safeTotalShelfLife = (!isNaN(parsedTotal) && parsedTotal > 0) ? parsedTotal : 24;
                 const safePrediction = result.prediction || "Unknown";
                 const safeUrgencyScore = Number(result.urgency_score) || 0;
                 const safeUrgencyLevel = result.urgency_level || "Medium";

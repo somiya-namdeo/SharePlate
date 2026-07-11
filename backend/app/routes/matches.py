@@ -76,6 +76,8 @@ def update_match_status(
             "message": f"Match status updated to {update_data.status}",
             "data": jsonable_encoder(result)
         }
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error updating match status: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

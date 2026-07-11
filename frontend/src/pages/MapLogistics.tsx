@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { Topbar } from '../components/dashboard/Topbar';
-import { ChevronDown, Phone, Route as RouteIcon, MapPin, Loader2 } from 'lucide-react';
+import { ChevronDown, Phone, Route as RouteIcon, MapPin } from 'lucide-react';
 import { apiFetch } from '../lib/api';
 import { getUser } from '../lib/auth';
-import { cn } from '../lib/utils';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -51,6 +51,9 @@ function MapBounds({ markers }: { markers: [number, number][] }) {
 export function MapLogistics() {
   const filters = ["Urgency", "Safety", "Category", "NGO Request", "Pickup Status"];
   
+  const [searchParams] = useSearchParams();
+  const requestIdParam = searchParams.get('request');
+
   const [donations, setDonations] = useState<any[]>([]);
   const [requests, setRequests] = useState<any[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
@@ -62,38 +65,88 @@ export function MapLogistics() {
     setIsContactModalOpen(false);
   }, [selectedPickup]);
   
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [donRes, reqRes] = await Promise.all([
-          apiFetch('/api/donations/'),
-          apiFetch('/api/requests/')
-        ]);
-        
-        const donList = Array.isArray(donRes) ? donRes : (donRes.data || []);
-        const reqList = Array.isArray(reqRes) ? reqRes : (reqRes.data || []);
-        
-        setDonations(donList.filter((d: any) => d.latitude !== null && d.longitude !== null));
-        setRequests(reqList.filter((r: any) => r.latitude !== null && r.longitude !== null && (r.status || 'open').toLowerCase() === 'open'));
-        
-        const user = getUser();
-        if (user && user.id) {
-          const role = user.user_metadata?.role === 'ngo' ? 'ngo' : 'donor';
-          const matchRes = await apiFetch(`/api/matches/${role}/${user.id}`);
-          if (matchRes.success && Array.isArray(matchRes.data)) {
-             setMatches(matchRes.data);
-          }
+  const fetchData = async () => {
+    try {
+      const [donRes, reqRes] = await Promise.all([
+        apiFetch('/api/donations/'),
+        apiFetch('/api/requests/')
+      ]);
+      
+      const donList = Array.isArray(donRes) ? donRes : (donRes.data || []);
+      const reqList = Array.isArray(reqRes) ? reqRes : (reqRes.data || []);
+      
+      setDonations(donList.filter((d: any) => d.latitude !== null && d.longitude !== null && ['pending', 'matched', 'picked_up'].includes((d.status || 'pending').toLowerCase())));
+      setRequests(reqList.filter((r: any) => r.latitude !== null && r.longitude !== null && (r.status || 'open').toLowerCase() === 'open'));
+      
+      const user = getUser();
+      if (user && user.id) {
+        const role = user.user_metadata?.role === 'ngo' ? 'ngo' : 'donor';
+        const matchRes = await apiFetch(`/api/matches/${role}/${user.id}`);
+        if (matchRes.success && Array.isArray(matchRes.data)) {
+           setMatches(matchRes.data.filter((m: any) => ['pending', 'accepted', 'picked_up'].includes((m.status || 'pending').toLowerCase())));
         }
-      } catch (err) {
-        console.error("Failed to fetch map data:", err);
       }
-    };
+    } catch (err) {
+      console.error("Failed to fetch map data:", err);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
+  // Handle auto-selection for deep-linked requests
+  useEffect(() => {
+    if (requestIdParam && donations.length > 0 && requests.length > 0 && matches.length > 0 && !selectedPickup) {
+      const activeMatchForRequest = matches.find((m: any) => 
+        m.request_id === requestIdParam && 
+        ['pending', 'accepted'].includes((m.status || '').toLowerCase())
+      );
+      if (activeMatchForRequest) {
+        const donationForMatch = donations.find((d: any) => d.id === activeMatchForRequest.donation_id);
+        if (donationForMatch) {
+          setSelectedPickup({ ...donationForMatch, type: 'donation' });
+        }
+      }
+    }
+  }, [requestIdParam, donations, requests, matches, selectedPickup]);
+
+  const updateMatchStatus = async (matchId: string, status: string) => {
+    try {
+      const res = await apiFetch(`/api/matches/${matchId}/status`, {
+        method: 'PUT',
+        data: { status }
+      });
+      if (res.success) {
+        toast.success(`Match marked as ${status}`);
+        if (['completed', 'rejected', 'cancelled'].includes(status)) {
+          setSelectedPickup(null);
+        }
+        fetchData();
+      } else {
+        toast.error(res.detail || res.message || 'Failed to update match status');
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to update match status');
+    }
+  };
+
   // Apply deterministic display offset for overlapping coordinates
   const displayDonations = useMemo(() => {
-    return donations.map((d, i) => {
+    let filteredDonations = donations;
+    
+    // Deep-link isolation: if request ID is passed, only show its matched donation
+    if (requestIdParam && matches.length > 0) {
+      const activeMatch = matches.find((m: any) => 
+        m.request_id === requestIdParam && 
+        ['pending', 'accepted'].includes((m.status || '').toLowerCase())
+      );
+      if (activeMatch) {
+        filteredDonations = donations.filter(d => d.id === activeMatch.donation_id);
+      }
+    }
+
+    return filteredDonations.map((d, i) => {
       const angle = i * 137.5 * (Math.PI / 180);
       const radius = 0.0003 + (0.0001 * (i % 3));
       return { 
@@ -102,10 +155,17 @@ export function MapLogistics() {
         displayLng: d.longitude + Math.cos(angle) * radius 
       };
     });
-  }, [donations]);
+  }, [donations, requestIdParam, matches]);
 
   const displayRequests = useMemo(() => {
-    return requests.map((r, i) => {
+    let filteredRequests = requests;
+    
+    // Deep-link isolation: if request ID is passed, only show that specific request
+    if (requestIdParam) {
+      filteredRequests = requests.filter(r => r.id === requestIdParam);
+    }
+
+    return filteredRequests.map((r, i) => {
       const angle = (i * 137.5 + 45) * (Math.PI / 180);
       const radius = 0.0003 + (0.0001 * (i % 3));
       return { 
@@ -114,15 +174,16 @@ export function MapLogistics() {
         displayLng: r.longitude + Math.cos(angle) * radius 
       };
     });
-  }, [requests]);
+  }, [requests, requestIdParam]);
 
   const allValidCoords = useMemo(() => {
     const coords: [number, number][] = [];
     
-    donations.forEach((d: any) => {
+    // Use the filtered display collections to determine bounds so the map focuses
+    // strictly on the isolated deep-link pair if applicable.
+    displayDonations.forEach((d: any) => {
       const lat = d.latitude;
       const lng = d.longitude;
-      // Bhopal operational region check for Viewport only
       if (lat > 22 && lat < 24.5 && lng > 76 && lng < 79) {
         coords.push([lat, lng]);
       } else if (lat && lng) {
@@ -130,10 +191,9 @@ export function MapLogistics() {
       }
     });
 
-    requests.forEach((r: any) => {
+    displayRequests.forEach((r: any) => {
       const lat = r.latitude;
       const lng = r.longitude;
-      // Bhopal operational region check for Viewport only
       if (lat > 22 && lat < 24.5 && lng > 76 && lng < 79) {
         coords.push([lat, lng]);
       } else if (lat && lng) {
@@ -142,7 +202,7 @@ export function MapLogistics() {
     });
     
     return coords;
-  }, [donations, requests]);
+  }, [displayDonations, displayRequests]);
   
   const defaultCenter: [number, number] = [23.2599, 77.4126];
 
@@ -327,6 +387,29 @@ export function MapLogistics() {
              
              {/* Footer Area */}
              <div className="p-6 bg-[#FDFBF7] border-t border-[#33251E]/10 shrink-0">
+               {selectedMatch && (
+                 <div className="mb-3 space-y-2">
+                   {(() => {
+                     const currentUserId = getUser()?.id;
+                     const isNgo = currentUserId === selectedMatch.ngo_id;
+                     
+                     if (selectedMatch.status === 'pending' && isNgo) {
+                       return (
+                         <div className="flex gap-2">
+                           <button onClick={() => updateMatchStatus(selectedMatch.id, 'accepted')} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-2.5 text-sm font-bold transition-colors shadow-sm border border-emerald-700">Accept Match</button>
+                           <button onClick={() => updateMatchStatus(selectedMatch.id, 'rejected')} className="flex-1 bg-white border border-red-200 text-red-600 hover:bg-red-50 rounded-xl py-2.5 text-sm font-bold transition-colors">Reject</button>
+                         </div>
+                       );
+                     }
+                     if (selectedMatch.status === 'accepted') {
+                       return (
+                         <button onClick={() => updateMatchStatus(selectedMatch.id, 'completed')} className="w-full bg-[#33251E] hover:bg-black text-white rounded-xl py-2.5 text-sm font-bold transition-colors shadow-sm">Complete Rescue</button>
+                       );
+                     }
+                     return null;
+                   })()}
+                 </div>
+               )}
                <div className="flex gap-3">
                  <button 
                     disabled={!selectedPickup || !selectedNGO || !selectedPickup.latitude || !selectedNGO.latitude}

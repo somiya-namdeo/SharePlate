@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiFetch } from '../lib/api';
+import { getUser } from '../lib/auth';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { Topbar } from '../components/dashboard/Topbar';
@@ -8,8 +10,12 @@ import { cn } from '../lib/utils';
 
 export function NGORequests() {
   const [requestsList, setRequestsList] = useState<any[]>([]);
+  const [matchesList, setMatchesList] = useState<any[]>([]);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     foodCategory: '',
     quantity: '',
@@ -26,6 +32,17 @@ export function NGORequests() {
       const res = await apiFetch('/api/requests/');
       if (res.success && Array.isArray(res.data)) {
         setRequestsList(res.data);
+        if (res.data.length > 0 && !selectedRequestId) {
+          setSelectedRequestId(res.data[0].id);
+        }
+      }
+      
+      const user = getUser();
+      if (user?.id) {
+        const matchesRes = await apiFetch(`/api/matches/ngo/${user.id}`);
+        if (matchesRes.success && Array.isArray(matchesRes.data)) {
+          setMatchesList(matchesRes.data);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -59,7 +76,8 @@ export function NGORequests() {
         preferred_food_type: formData.foodCategory,
         meals_needed: meals,
         address: formData.location,
-        urgency_level: formData.urgency === 'Critical' ? 'High' : formData.urgency // Map to valid schema enum
+        urgency_level: formData.urgency === 'Critical' ? 'High' : formData.urgency, // Map to valid schema enum
+        contact_phone: formData.contactPerson || null
       };
       
       const response = await apiFetch('/api/requests/', {
@@ -89,6 +107,12 @@ export function NGORequests() {
       setLoading(false);
     }
   };
+
+  const selectedRequest = requestsList.find(r => r.id === selectedRequestId) || requestsList[0];
+  const activeMatch = selectedRequest ? 
+    (matchesList.find(m => m.request_id === selectedRequest.id && ['pending', 'accepted', 'picked_up'].includes(m.status?.toLowerCase())) ||
+     matchesList.find(m => m.request_id === selectedRequest.id && m.status?.toLowerCase() === 'completed')) 
+    : null;
 
   return (
     <div className="min-h-screen bg-[#F8F5F0] font-sans selection:bg-[#F07154]/20 selection:text-[#33251E]">
@@ -209,10 +233,14 @@ export function NGORequests() {
                       </thead>
                       <tbody>
                         {requestsList.length > 0 ? requestsList.map((r, i) => {
-                           const color = (r.urgency_level || '').toLowerCase() === 'high' ? 'red' : 
+                           const color = (r.urgency_level || '').toLowerCase() === 'high' || (r.urgency_level || '').toLowerCase() === 'critical' ? 'red' : 
                                          (r.urgency_level || '').toLowerCase() === 'medium' ? 'amber' : 'emerald';
+                           
+                           const rowMatch = matchesList.find(m => m.request_id === r.id && ['pending', 'accepted', 'picked_up'].includes(m.status?.toLowerCase())) ||
+                                            matchesList.find(m => m.request_id === r.id && m.status?.toLowerCase() === 'completed');
+
                            return (
-                           <tr key={i} className="border-b border-[#33251E]/5 hover:bg-gray-50/80 transition-colors cursor-pointer group">
+                           <tr key={i} onClick={() => setSelectedRequestId(r.id)} className={cn("border-b border-[#33251E]/5 hover:bg-gray-50/80 transition-colors cursor-pointer group", selectedRequestId === r.id ? "bg-[#FDF6F4]/50" : "")}>
                               <td className="py-3.5">
                                  <div className="font-bold text-sm text-[#33251E]">{r.ngo_name || 'NGO'}</div>
                                  <div className="text-xs text-[#33251E]/50 font-medium font-mono mt-0.5">REQ-{r.id?.substring(0,6).toUpperCase()}</div>
@@ -238,11 +266,11 @@ export function NGORequests() {
                               </td>
                               <td className="py-3.5">
                                  <div className="flex items-center gap-2">
-                                    <span className={cn("w-2 h-2 rounded-full", (r.status || 'open').toLowerCase() === 'open' ? 'bg-emerald-500' : 'bg-[#33251E]/30')}></span>
-                                    <span className="text-sm font-bold text-[#33251E]/70 capitalize">{r.status || 'Open'}</span>
+                                    <span className={cn("w-2 h-2 rounded-full", r.status?.toLowerCase() === 'fulfilled' || (rowMatch ? rowMatch.status : 'awaiting').toLowerCase() === 'accepted' ? 'bg-emerald-500' : (rowMatch ? 'bg-amber-500' : 'bg-[#33251E]/30'))}></span>
+                                    <span className="text-sm font-bold text-[#33251E]/70 capitalize">{r.status?.toLowerCase() === 'fulfilled' ? 'Fulfilled' : (rowMatch ? rowMatch.status : 'Awaiting')}</span>
                                  </div>
                               </td>
-                              <td className="py-3.5 text-sm text-[#33251E]/50 font-mono font-medium">{r.status !== 'open' ? 'Matched' : '-'}</td>
+                              <td className="py-3.5 text-sm text-[#33251E]/50 font-mono font-medium">{rowMatch ? `D-${rowMatch.donation_id?.substring(0,6).toUpperCase()}` : '-'}</td>
                            </tr>
                            );
                         }) : (
@@ -256,14 +284,22 @@ export function NGORequests() {
              </div>
              
              {/* Request Detail Card */}
+             {selectedRequest && (
              <div className="bg-[#FDF6F4] border border-[#F07154]/20 rounded-2xl p-6 shrink-0 relative overflow-hidden">
                 <div className="flex justify-between items-start mb-6">
                    <div>
                       <span className="text-[11px] font-bold text-[#F07154] uppercase tracking-[0.1em] mb-1 block">REQUEST DETAIL</span>
-                      <h3 className="font-serif text-2xl font-bold text-[#33251E]">R-221 • Roti Bank</h3>
+                      <h3 className="font-serif text-2xl font-bold text-[#33251E]">REQ-{(selectedRequest.id || '').substring(0,6).toUpperCase()} • {selectedRequest.ngo_name || 'Your NGO'}</h3>
                    </div>
-                   <span className="bg-red-50 border border-red-200 text-red-700 text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_4px_rgba(239,68,68,0.5)]"></span> CRITICAL
+                   <span className={cn(
+                      "text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1.5 border",
+                      (selectedRequest.urgency_level || '').toLowerCase() === 'high' || (selectedRequest.urgency_level || '').toLowerCase() === 'critical' ? 'bg-red-50 border-red-200 text-red-700' :
+                      (selectedRequest.urgency_level || '').toLowerCase() === 'medium' ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                   )}>
+                      <span className={cn("w-1.5 h-1.5 rounded-full",
+                         (selectedRequest.urgency_level || '').toLowerCase() === 'high' || (selectedRequest.urgency_level || '').toLowerCase() === 'critical' ? 'bg-red-500 shadow-[0_0_4px_rgba(239,68,68,0.5)]' :
+                         (selectedRequest.urgency_level || '').toLowerCase() === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
+                      )}></span> {selectedRequest.urgency_level || 'Medium'}
                    </span>
                 </div>
                 
@@ -272,39 +308,132 @@ export function NGORequests() {
                       <div className="w-8 h-8 rounded-full bg-[#FDF6F4] flex items-center justify-center text-[#F07154]"><Heart size={14} /></div>
                       <div>
                          <div className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest mb-1">Demand need</div>
-                         <div className="font-semibold text-sm text-[#33251E]">80 kg cooked meal</div>
+                         <div className="font-semibold text-sm text-[#33251E]">{selectedRequest.meals_needed} meals • {selectedRequest.preferred_food_type}</div>
                       </div>
                    </div>
                    <div className="bg-white/60 rounded-xl p-5 border border-[#33251E]/5 flex flex-col items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-[#FDF6F4] flex items-center justify-center text-[#F07154]"><Package size={14} /></div>
                       <div>
                          <div className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest mb-1">Matched donation</div>
-                         <div className="font-semibold text-sm text-[#33251E] font-mono">D-1042 • <span className="font-sans">Dal & Rice</span></div>
+                         <div className="font-semibold text-sm text-[#33251E] font-mono">
+                           {activeMatch ? (
+                             <>D-{activeMatch.donation_id?.substring(0,6).toUpperCase()} • <span className="font-sans">{activeMatch.food_type}</span></>
+                           ) : (
+                             <span className="font-sans text-[#33251E]/60 italic">Not matched yet</span>
+                           )}
+                         </div>
                       </div>
                    </div>
                    <div className="bg-white/60 rounded-xl p-5 border border-[#33251E]/5 flex flex-col items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600"><Truck size={14} /></div>
                       <div>
-                         <div className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest mb-1">Delivery status</div>
-                         <div className="font-semibold text-sm text-[#33251E]">In transit • ETA 14 min</div>
+                         <div className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest mb-1">Status</div>
+                         <div className="font-semibold text-sm text-[#33251E] capitalize">
+                           {selectedRequest.status?.toLowerCase() === 'fulfilled' ? 'Fulfilled' : (activeMatch ? activeMatch.status : 'Awaiting match')}
+                         </div>
                       </div>
                    </div>
                 </div>
                 
                 <div className="flex gap-3">
-                   <button className="bg-[#F07154] hover:bg-[#E05F42] text-white rounded-xl px-6 py-3 text-sm font-bold flex items-center gap-2 transition-colors shadow-sm">
-                      <Phone size={16} /> Call NGO
+                   <button 
+                     onClick={() => {
+                        if (activeMatch?.donor_phone) {
+                           setIsContactModalOpen(true);
+                        }
+                     }}
+                     disabled={!activeMatch?.donor_phone}
+                     className="bg-[#F07154] hover:bg-[#E05F42] text-white rounded-xl px-6 py-3 text-sm font-bold flex items-center gap-2 transition-colors shadow-sm disabled:bg-[#33251E]/10 disabled:text-[#33251E]/40 disabled:cursor-not-allowed">
+                      <Phone size={16} /> {activeMatch?.donor_phone ? 'Contact Donor' : 'Phone Unavailable'}
                    </button>
-                   <button className="bg-white border border-[#33251E]/10 hover:border-[#33251E]/30 text-[#33251E] rounded-xl px-6 py-3 text-sm font-bold flex items-center gap-2 transition-colors">
+                   <button 
+                     onClick={() => navigate(`/logistics?request=${selectedRequest.id}`)}
+                     className="bg-white border border-[#33251E]/10 hover:border-[#33251E]/30 text-[#33251E] rounded-xl px-6 py-3 text-sm font-bold flex items-center gap-2 transition-colors">
                       <MapPin size={16} /> View on map
                    </button>
                 </div>
              </div>
+             )}
              
           </div>
         </div>
 
       </main>
+
+      {/* Contact Modal */}
+      {isContactModalOpen && activeMatch && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setIsContactModalOpen(false)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-b border-[#33251E]/10">
+              <h3 className="font-serif text-2xl font-bold text-[#33251E]">Contact Details</h3>
+            </div>
+            <div className="p-6 space-y-4">
+              {(() => {
+                const contactName = activeMatch.donor_name;
+                const contactPhone = activeMatch.donor_phone;
+                const contactEmail = activeMatch.donor_email;
+                
+                return (
+                  <>
+                    <div>
+                       <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest block mb-1">Organization / Name</span>
+                       <div className="text-base font-semibold text-[#33251E]">{contactName || 'Not available'}</div>
+                    </div>
+                    
+                    {contactPhone ? (
+                      <div>
+                         <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest block mb-1">Phone Number</span>
+                         <div className="text-base font-semibold text-[#33251E]">{contactPhone}</div>
+                      </div>
+                    ) : (
+                      <div>
+                         <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest block mb-1">Phone Number</span>
+                         <div className="text-sm font-medium text-[#33251E]/60 italic">Phone number not available</div>
+                      </div>
+                    )}
+
+                    {contactEmail && (
+                      <div>
+                         <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest block mb-1">Email</span>
+                         <div className="text-base font-semibold text-[#33251E]">{contactEmail}</div>
+                      </div>
+                    )}
+                    
+                    <div className="mt-6 flex flex-col gap-2 pt-2 border-t border-[#33251E]/10">
+                       {contactPhone && (
+                         <div className="flex gap-2">
+                           <a href={`tel:${contactPhone}`} className="flex-1 bg-[#33251E] hover:bg-black text-white text-sm font-bold py-2.5 rounded-xl flex justify-center items-center transition-colors">
+                             Call
+                           </a>
+                           <button onClick={() => { navigator.clipboard.writeText(contactPhone); toast.success('Copied to clipboard'); }} className="flex-1 bg-white border border-[#33251E]/10 hover:border-[#33251E]/30 text-[#33251E] text-sm font-bold py-2.5 rounded-xl transition-colors">
+                             Copy Number
+                           </button>
+                         </div>
+                       )}
+                       {contactEmail && (
+                         <button 
+                           onClick={() => {
+                             const encodedEmail = encodeURIComponent(contactEmail);
+                             const encodedSubject = encodeURIComponent('SharePlate Donation Coordination');
+                             const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodedEmail}&su=${encodedSubject}`;
+                             window.open(url, '_blank', 'noopener,noreferrer');
+                           }}
+                           className="w-full bg-white border border-[#33251E]/10 hover:border-[#33251E]/30 text-[#33251E] text-sm font-bold py-2.5 rounded-xl flex justify-center items-center transition-colors"
+                         >
+                           Email
+                         </button>
+                       )}
+                       <button onClick={() => setIsContactModalOpen(false)} className="w-full text-[#33251E]/60 hover:text-[#33251E] text-sm font-bold py-2.5 transition-colors mt-2">
+                         Close
+                       </button>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

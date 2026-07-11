@@ -1,6 +1,6 @@
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { Topbar } from '../components/dashboard/Topbar';
-import { Sparkles, Save, ChevronDown, ShieldCheck, Network, Loader2 } from 'lucide-react';
+import { Sparkles, Save, ShieldCheck, Network, Loader2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { apiFetch } from '../lib/api';
@@ -31,6 +31,8 @@ export function Donations() {
   const [donations, setDonations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [urgencyFilter, setUrgencyFilter] = useState('All');
+  const [safetyFilter, setSafetyFilter] = useState('All');
 
   const [formData, setFormData] = useState({
     id: prefill?.id || '',
@@ -52,6 +54,8 @@ export function Donations() {
     shelfLife: prefill?.shelfLife !== undefined && prefill?.shelfLife !== null ? String(prefill.shelfLife) : '',
     pickupLocation: prefill?.pickupLocation || '',
     donorContact: prefill?.donorContact || '',
+    latitude: prefill?.latitude !== undefined ? Number(prefill.latitude) : 23.2599,
+    longitude: prefill?.longitude !== undefined ? Number(prefill.longitude) : 77.4126,
     existingAiData: prefill?.existingAiData || null as any
   });
 
@@ -103,7 +107,8 @@ export function Donations() {
         donor_id: user.id,
         food_type: formData.foodItem,
         quantity: formData.quantity !== '' ? parseFloat(formData.quantity) : null,
-        description: `Category: ${formData.foodCategory} | Contact: ${formData.donorContact}`,
+        description: formData.foodCategory,
+        contact_phone: formData.donorContact || null,
         address: formData.pickupLocation,
         
         food_category: formData.foodCategory || null,
@@ -147,6 +152,7 @@ export function Donations() {
         packagingType: '', temperature: '', humidity: '', hoursPrepared: '',
         estTransport: '', distance: '', quantity: '', season: '', eventType: '',
         cityTier: '', perishabilityScore: '', shelfLife: '', pickupLocation: '', donorContact: '',
+        latitude: 23.2599, longitude: 77.4126,
         existingAiData: null
       });
       fetchDonations();
@@ -351,12 +357,26 @@ export function Donations() {
                 <h2 className="font-serif text-2xl text-[#33251E] leading-none">Live rescue list</h2>
               </div>
               <div className="flex gap-2">
-                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#33251E]/10 rounded-full text-xs font-semibold text-[#33251E]/70 hover:text-[#33251E] hover:border-[#33251E]/30 transition-colors">
-                  Urgency <ChevronDown size={14} />
-                </button>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#33251E]/10 rounded-full text-xs font-semibold text-[#33251E]/70 hover:text-[#33251E] hover:border-[#33251E]/30 transition-colors">
-                  Safety <ChevronDown size={14} />
-                </button>
+                <select 
+                  value={urgencyFilter}
+                  onChange={(e) => setUrgencyFilter(e.target.value)}
+                  className="bg-white border border-[#33251E]/10 rounded-xl px-3 py-1.5 text-xs font-semibold text-[#33251E]/70 hover:border-[#33251E]/30 transition-colors focus:outline-none cursor-pointer"
+                >
+                  <option value="All">All Urgency</option>
+                  <option value="Critical">Critical</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+                <select 
+                  value={safetyFilter}
+                  onChange={(e) => setSafetyFilter(e.target.value)}
+                  className="bg-white border border-[#33251E]/10 rounded-xl px-3 py-1.5 text-xs font-semibold text-[#33251E]/70 hover:border-[#33251E]/30 transition-colors focus:outline-none cursor-pointer"
+                >
+                  <option value="All">All Safety</option>
+                  <option value="Safe">Safe</option>
+                  <option value="Unsafe">Unsafe</option>
+                </select>
               </div>
             </div>
 
@@ -365,12 +385,27 @@ export function Donations() {
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="animate-spin text-[#F07154]" size={24} />
                 </div>
-              ) : donations.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-[#33251E]/50 text-sm">
-                  No donations found
-                </div>
-              ) : (
-                donations.map((row) => (
+              ) : (() => {
+                const filteredDonations = donations.filter(row => {
+                  const isSafe = row.spoilage_risk_score && row.spoilage_risk_score > 0.8 ? 'Unsafe' : 'Safe';
+                  const urgency = row.urgency_level || 'Medium';
+                  const activeStatus = ['pending', 'matched', 'picked_up'].includes((row.status || 'pending').toLowerCase());
+
+                  if (!activeStatus) return false;
+                  if (urgencyFilter !== 'All' && urgency !== urgencyFilter) return false;
+                  if (safetyFilter !== 'All' && isSafe !== safetyFilter) return false;
+                  return true;
+                });
+
+                if (filteredDonations.length === 0) {
+                  return (
+                    <div className="flex items-center justify-center h-full text-[#33251E]/50 text-sm">
+                      No donations found
+                    </div>
+                  );
+                }
+
+                return filteredDonations.map((row) => (
                   <div key={row.id} onClick={() => {
                     setFormData({
                       id: row.id,
@@ -391,7 +426,7 @@ export function Donations() {
                       perishabilityScore: row.spoilage_risk_score !== null && row.spoilage_risk_score !== undefined ? String(row.spoilage_risk_score) : '',
                       shelfLife: row.predicted_shelf_life !== null && row.predicted_shelf_life !== undefined ? String(row.predicted_shelf_life) : '',
                       pickupLocation: row.address || '',
-                      donorContact: row.description?.includes('Contact: ') ? row.description.split('Contact: ')[1] : '',
+                      donorContact: row.contact_phone || '',
                       latitude: row.latitude !== null && row.latitude !== undefined ? row.latitude : 23.2599,
                       longitude: row.longitude !== null && row.longitude !== undefined ? row.longitude : 77.4126,
                       existingAiData: {
@@ -411,7 +446,7 @@ export function Donations() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge text={row.spoilage_risk_score && row.spoilage_risk_score > 0.8 ? 'Unsafe' : 'Safe'} />
-                        <Badge text="High" />
+                        <Badge text={row.urgency_level || 'Medium'} />
                       </div>
                     </div>
                     
@@ -435,9 +470,57 @@ export function Donations() {
                       </div>
                     </div>
                   </div>
-                ))
-              )}
+                ));
+              })()}
             </div>
+
+            {/* Rescue History */}
+            <div className="p-6 border-t border-b border-[#33251E]/5 flex justify-between items-end flex-shrink-0 bg-[#FDFBF7]">
+              <div>
+                <div className="text-[10px] uppercase font-bold tracking-wider text-[#33251E]/50 mb-1">Historical</div>
+                <h2 className="font-serif text-2xl text-[#33251E] leading-none">Rescue history</h2>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-brand bg-[#FDFBF7]">
+              {(() => {
+                const historyDonations = donations.filter(row => {
+                  return ['completed', 'delivered'].includes((row.status || 'pending').toLowerCase());
+                });
+
+                if (historyDonations.length === 0) {
+                  return (
+                    <div className="flex items-center justify-center h-full text-[#33251E]/50 text-sm">
+                      No completed rescues
+                    </div>
+                  );
+                }
+
+                return historyDonations.map((row) => (
+                  <div key={row.id} className="bg-white border border-[#33251E]/10 p-4 rounded-2xl flex flex-col gap-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="text-xs font-bold text-[#33251E]/50 mb-0.5">{row.id.substring(0,8)}</div>
+                        <h4 className="font-bold text-[#33251E] text-[15px]">{row.food_type}</h4>
+                      </div>
+                      <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                         Completed
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs">
+                      <div>
+                        <span className="text-[#33251E]/50 block mb-0.5 font-medium">Quantity</span>
+                        <span className="text-[#33251E] font-medium">{row.quantity}</span>
+                      </div>
+                      <div>
+                        <span className="text-[#33251E]/50 block mb-0.5 font-medium">Location</span>
+                        <span className="text-[#33251E] font-medium">{row.address}</span>
+                      </div>
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+
 
           </div>
 
