@@ -1,17 +1,96 @@
+import { useState, useEffect } from 'react';
+import { apiFetch } from '../lib/api';
+import toast from 'react-hot-toast';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { Topbar } from '../components/dashboard/Topbar';
-import { Phone, MapPin, Package, Heart, Truck } from 'lucide-react';
+import { Phone, MapPin, Package, Heart, Truck, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export function NGORequests() {
-  const requests = [
-    { ngo: "Roti Bank", id: "R-221", needs: "Cooked meal", qty: "80 kg", loc: "Old Bhopal", urgency: "Critical", status: "Open", match: "D-1042", color: "red" },
-    { ngo: "Aasha Foundation", id: "R-220", needs: "Bakery", qty: "50 loaves", loc: "New Market", urgency: "Medium", status: "Fulfilled", match: "D-1010", color: "amber" },
-    { ngo: "Feeding Hands", id: "R-219", needs: "Fresh produce", qty: "40 boxes", loc: "Bhauri", urgency: "High", status: "In transit", match: "D-1039", color: "amber" },
-    { ngo: "Annadaan Trust", id: "R-218", needs: "Dry ration", qty: "200 kg", loc: "Kolar", urgency: "Low", status: "Open", match: "-", color: "emerald" },
-    { ngo: "Seva Kitchen", id: "R-217", needs: "Cooked meal", qty: "120 meals", loc: "Habibganj", urgency: "High", status: "Open", match: "-", color: "red" },
-    { ngo: "Hope Shelter", id: "R-216", needs: "Packaged", qty: "20 boxes", loc: "Bairagarh", urgency: "Medium", status: "Open", match: "-", color: "amber" }
-  ];
+  const [requestsList, setRequestsList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    foodCategory: '',
+    quantity: '',
+    location: '',
+    urgency: 'Medium',
+    ngoName: '',
+    pickupTime: '',
+    contactPerson: '',
+    notes: ''
+  });
+
+  const fetchRequests = async () => {
+    try {
+      const res = await apiFetch('/api/requests/');
+      if (res.success && Array.isArray(res.data)) {
+        setRequestsList(res.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    // Validation
+    if (!formData.foodCategory) { setError('Food category is required'); return; }
+    if (!formData.quantity) { setError('Quantity is required'); return; }
+    if (!formData.location) { setError('Location is required'); return; }
+    if (!formData.urgency) { setError('Urgency is required'); return; }
+
+    const meals = parseInt(formData.quantity.replace(/\D/g, ''), 10) || 0;
+    if (meals <= 0) { setError('Please enter a valid numeric quantity (e.g., 50)'); return; }
+
+    setLoading(true);
+    try {
+      const payload = {
+        preferred_food_type: formData.foodCategory,
+        meals_needed: meals,
+        address: formData.location,
+        urgency_level: formData.urgency === 'Critical' ? 'High' : formData.urgency, // Map to valid schema enum
+        latitude: 23.2599, // default fallback
+        longitude: 77.4126
+      };
+      
+      const response = await apiFetch('/api/requests/', {
+        method: 'POST',
+        data: payload
+      });
+      
+      if (response.success) {
+        toast.success('Request posted successfully!');
+        setFormData({
+          foodCategory: '',
+          quantity: '',
+          location: '',
+          urgency: 'Medium',
+          ngoName: '',
+          pickupTime: '',
+          contactPerson: '',
+          notes: ''
+        });
+        await fetchRequests();
+      } else {
+        setError(response.message || 'Failed to post request');
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while posting the request');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F8F5F0] font-sans selection:bg-[#F07154]/20 selection:text-[#33251E]">
@@ -30,55 +109,61 @@ export function NGORequests() {
                 <p className="text-sm text-[#33251E]/70 mt-2">We'll match it with nearby surplus donations in real time.</p>
              </div>
              
-             <div className="flex flex-col gap-6">
-                <div>
+             <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                 {error && (
+                   <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100 font-medium">
+                     {error}
+                   </div>
+                 )}
+                 <div>
                    <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">NGO name<span className="text-red-500 ml-1">*</span></label>
-                   <input type="text" placeholder="e.g. Roti Bank" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                   <div>
-                      <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Food category<span className="text-red-500 ml-1">*</span></label>
-                      <input type="text" placeholder="e.g. Cooked meal" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
-                   </div>
-                   <div>
-                      <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Quantity<span className="text-red-500 ml-1">*</span></label>
-                      <input type="text" placeholder="e.g. 80 kg" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
-                   </div>
-                </div>
-                <div>
-                   <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Location<span className="text-red-500 ml-1">*</span></label>
-                   <input type="text" placeholder="e.g. Old Bhopal" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                   <div>
-                      <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Preferred pickup time<span className="text-red-500 ml-1">*</span></label>
-                      <input type="text" placeholder="e.g. 7 - 9 PM" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
-                   </div>
-                   <div>
-                      <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Urgency<span className="text-red-500 ml-1">*</span></label>
-                      <select className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors appearance-none">
-                        <option>High</option>
-                        <option>Critical</option>
-                        <option>Medium</option>
-                        <option>Low</option>
-                      </select>
-                   </div>
-                </div>
-                <div>
-                   <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Contact person</label>
-                   <input type="text" placeholder="+91 98xxx xx" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
-                </div>
-                <div>
-                   <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Notes</label>
-                   <textarea placeholder="Anything the donor should know..." rows={4} className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors resize-none"></textarea>
-                </div>
-             </div>
+                   <input type="text" name="ngoName" value={formData.ngoName} onChange={handleChange} placeholder="e.g. Roti Bank" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <div>
+                       <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Food category<span className="text-red-500 ml-1">*</span></label>
+                       <input type="text" name="foodCategory" value={formData.foodCategory} onChange={handleChange} placeholder="e.g. Cooked meal" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                    </div>
+                    <div>
+                       <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Quantity<span className="text-red-500 ml-1">*</span></label>
+                       <input type="text" name="quantity" value={formData.quantity} onChange={handleChange} placeholder="e.g. 80 meals" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                    </div>
+                 </div>
+                 <div>
+                    <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Location<span className="text-red-500 ml-1">*</span></label>
+                    <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. Old Bhopal" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <div>
+                       <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Preferred pickup time</label>
+                       <input type="text" name="pickupTime" value={formData.pickupTime} onChange={handleChange} placeholder="e.g. 7 - 9 PM" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                    </div>
+                    <div>
+                       <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Urgency<span className="text-red-500 ml-1">*</span></label>
+                       <select name="urgency" value={formData.urgency} onChange={handleChange} className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors appearance-none">
+                         <option value="High">High</option>
+                         <option value="Critical">Critical</option>
+                         <option value="Medium">Medium</option>
+                         <option value="Low">Low</option>
+                       </select>
+                    </div>
+                 </div>
+                 <div>
+                    <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Contact person</label>
+                    <input type="text" name="contactPerson" value={formData.contactPerson} onChange={handleChange} placeholder="+91 98xxx xx" className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" />
+                 </div>
+                 <div>
+                    <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Notes</label>
+                    <textarea name="notes" value={formData.notes} onChange={handleChange} placeholder="Anything the donor should know..." rows={4} className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors resize-none"></textarea>
+                 </div>
+                 <div className="shrink-0 pt-2">
+                    <button type="submit" disabled={loading} className="w-full bg-[#F07154] hover:bg-[#E05F42] text-white rounded-xl py-3.5 text-sm font-bold transition-colors shadow-sm disabled:opacity-70 flex justify-center items-center gap-2">
+                       {loading && <Loader2 size={16} className="animate-spin" />}
+                       Post request
+                    </button>
+                 </div>
+             </form>
              
-             <div className="shrink-0 mt-6 pt-4">
-                <button className="w-full bg-[#F07154] hover:bg-[#E05F42] text-white rounded-xl py-3.5 text-sm font-bold transition-colors shadow-sm">
-                   Post request
-                </button>
-             </div>
           </div>
           
           {/* Right Column: Board & Detail */}
@@ -125,35 +210,48 @@ export function NGORequests() {
                         </tr>
                       </thead>
                       <tbody>
-                        {requests.map((r, i) => (
+                        {requestsList.length > 0 ? requestsList.map((r, i) => {
+                           const color = (r.urgency_level || '').toLowerCase() === 'high' ? 'red' : 
+                                         (r.urgency_level || '').toLowerCase() === 'medium' ? 'amber' : 'emerald';
+                           return (
                            <tr key={i} className="border-b border-[#33251E]/5 hover:bg-gray-50/80 transition-colors cursor-pointer group">
                               <td className="py-3.5">
-                                 <div className="font-bold text-sm text-[#33251E]">{r.ngo}</div>
-                                 <div className="text-xs text-[#33251E]/50 font-medium font-mono mt-0.5">{r.id}</div>
+                                 <div className="font-bold text-sm text-[#33251E]">{r.ngo_name || 'NGO'}</div>
+                                 <div className="text-xs text-[#33251E]/50 font-medium font-mono mt-0.5">REQ-{r.id?.substring(0,6).toUpperCase()}</div>
                               </td>
-                              <td className="py-3.5 text-sm text-[#33251E]/80 pr-4">{r.needs}</td>
-                              <td className="py-3.5 text-sm text-[#33251E]/80 pr-4">{r.qty}</td>
-                              <td className="py-3.5 text-sm text-[#33251E]/80 pr-4">{r.loc}</td>
+                              <td className="py-3.5 text-sm text-[#33251E]/80 pr-4">{r.preferred_food_type || '-'}</td>
+                              <td className="py-3.5 text-sm text-[#33251E]/80 pr-4">{r.meals_needed} meals</td>
+                              <td className="py-3.5 text-sm text-[#33251E]/80 pr-4">{r.address}</td>
                               <td className="py-3.5">
                                  <span className={cn(
                                     "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest min-w-[80px] justify-center",
-                                    r.color === 'red' ? 'bg-red-50 text-red-700' :
-                                    r.color === 'amber' ? 'bg-amber-50 text-amber-700' :
+                                    color === 'red' ? 'bg-red-50 text-red-700' :
+                                    color === 'amber' ? 'bg-amber-50 text-amber-700' :
                                     'bg-emerald-50 text-emerald-700'
                                  )}>
                                     <span className={cn(
                                        "w-1.5 h-1.5 rounded-full",
-                                       r.color === 'red' ? 'bg-red-500' :
-                                       r.color === 'amber' ? 'bg-amber-500' :
+                                       color === 'red' ? 'bg-red-500' :
+                                       color === 'amber' ? 'bg-amber-500' :
                                        'bg-emerald-500'
                                     )}></span>
-                                    {r.urgency}
+                                    {r.urgency_level || 'Medium'}
                                  </span>
                               </td>
-                              <td className="py-3.5 text-sm text-[#33251E]/80">{r.status}</td>
-                              <td className="py-3.5 text-sm font-semibold text-[#33251E] font-mono">{r.match}</td>
+                              <td className="py-3.5">
+                                 <div className="flex items-center gap-2">
+                                    <span className={cn("w-2 h-2 rounded-full", (r.status || 'open').toLowerCase() === 'open' ? 'bg-emerald-500' : 'bg-[#33251E]/30')}></span>
+                                    <span className="text-sm font-bold text-[#33251E]/70 capitalize">{r.status || 'Open'}</span>
+                                 </div>
+                              </td>
+                              <td className="py-3.5 text-sm text-[#33251E]/50 font-mono font-medium">{r.status !== 'open' ? 'Matched' : '-'}</td>
                            </tr>
-                        ))}
+                           );
+                        }) : (
+                          <tr>
+                            <td colSpan={7} className="py-8 text-center text-[#33251E]/50 text-sm">No live requests available.</td>
+                          </tr>
+                        )}
                       </tbody>
                    </table>
                 </div>

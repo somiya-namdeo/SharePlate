@@ -19,6 +19,8 @@ export function SmartMatching() {
   const [hasSearched, setHasSearched] = useState(false);
   const [assigningMatch, setAssigningMatch] = useState<string | null>(null);
   const [isMatched, setIsMatched] = useState(false);
+  const [ngoRequestsList, setNgoRequestsList] = useState<any[]>([]);
+  const [selectedNgoRequestId, setSelectedNgoRequestId] = useState<string>('');
   
   // Assignment queue state
   const [queue, setQueue] = useState<any[]>([]);
@@ -60,8 +62,20 @@ export function SmartMatching() {
         console.error("Failed to fetch donations", error);
       }
     };
+    const fetchNgoRequests = async () => {
+      try {
+        const response = await apiFetch('/api/requests/');
+        const list = Array.isArray(response) ? response : (response.data || []);
+        const openReqs = list.filter((r: any) => (r.status || '').toLowerCase() === 'open');
+        setNgoRequestsList(openReqs);
+      } catch (error) {
+        console.error("Failed to fetch NGO requests", error);
+      }
+    };
+
     fetchDonations();
     fetchQueue();
+    fetchNgoRequests();
   }, [stateDonationId]);
 
   const handleFindMatches = async () => {
@@ -75,7 +89,10 @@ export function SmartMatching() {
     setIsMatched(false);
     
     try {
-      const response = await apiFetch(`/api/matches/suggest/${donationId}`);
+      const url = selectedNgoRequestId 
+        ? `/api/matches/suggest/${donationId}?ngo_request_id=${selectedNgoRequestId}` 
+        : `/api/matches/suggest/${donationId}`;
+      const response = await apiFetch(url);
       if (response.success && response.data?.best_matches) {
         setMatches(response.data.best_matches);
       } else {
@@ -162,11 +179,22 @@ export function SmartMatching() {
                 <ChevronDown size={16} className="text-[#33251E]/40 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
-            <div className="flex-1 min-w-[200px]">
-              <button className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E]/60 flex items-center justify-between hover:border-[#33251E]/30 transition-colors">
-                Select NGO request (Optional)
-                <ChevronDown size={16} className="text-[#33251E]/40" />
-              </button>
+            <div className="flex-1 min-w-[200px] relative">
+              <div className="relative">
+                <select 
+                  value={selectedNgoRequestId}
+                  onChange={(e) => setSelectedNgoRequestId(e.target.value)}
+                  className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors appearance-none pr-10 truncate cursor-pointer"
+                >
+                  <option value="">Select NGO request (Optional)</option>
+                  {ngoRequestsList.map(req => (
+                    <option key={req.id} value={req.id}>
+                      {req.preferred_food_type || 'Food'} - {req.meals_needed} meals ({req.urgency_level} Priority)
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={16} className="text-[#33251E]/40 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
             </div>
             <div className="flex-1 min-w-[200px] flex items-center gap-3">
               <button 

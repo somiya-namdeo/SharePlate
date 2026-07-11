@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
+from typing import Optional
 from app.schemas.match_schema import (
     MatchCreate, MatchStatusUpdate, 
     MatchCreateAPIResponse, MatchSuggestionAPIResponse, 
@@ -39,11 +40,12 @@ def create_match(
 @router.get("/suggest/{donation_id}", response_model=MatchSuggestionAPIResponse)
 def suggest_matches(
     donation_id: str, 
+    ngo_request_id: Optional[str] = None,
     service: MatchesService = Depends(get_matches_service),
     current_user = Depends(get_current_user)
 ):
     try:
-        result = service.suggest_matches(donation_id)
+        result = service.suggest_matches(donation_id, ngo_request_id)
         if not result:
             raise HTTPException(status_code=404, detail="Donation not found")
         

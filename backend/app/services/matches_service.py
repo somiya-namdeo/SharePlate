@@ -43,13 +43,18 @@ class MatchesService:
         response = self.db.table("matches").insert(match_data).execute()
         return response.data[0] if response.data else None
 
-    def suggest_matches(self, donation_id: str) -> dict:
+    def suggest_matches(self, donation_id: str, ngo_request_id: str = None) -> dict:
         donation = self.donations_service.get_donation_by_id(donation_id)
         if not donation:
             return None
         
-        # Get all open requests along with NGO profiles
-        response = self.db.table("ngo_requests").select("*, profiles!ngo_requests_ngo_id_fkey(organization, full_name)").eq("status", "open").execute()
+        # Get open requests along with NGO profiles
+        query = self.db.table("ngo_requests").select("*, profiles!ngo_requests_ngo_id_fkey(organization, full_name)").eq("status", "open")
+        
+        if ngo_request_id:
+            query = query.eq("id", ngo_request_id)
+            
+        response = query.execute()
         requests = response.data
         
         best_matches = []
