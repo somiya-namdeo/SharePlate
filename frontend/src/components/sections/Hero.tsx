@@ -37,7 +37,7 @@ export function Hero() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-lg text-[#33251E]/70 mb-10 leading-relaxed"
           >
-            SharePlate uses AI to rescue safe surplus food, prioritize urgent pickups, forecast demand, and connect meals with communities that need them most.
+            SharePlate uses AI to rescue safe surplus food, prioritize urgent pickups, and connect meals with communities that need them most.
           </motion.p>
 
           <motion.div 

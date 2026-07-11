@@ -43,20 +43,7 @@ This document outlines the artificial intelligence and machine learning pipeline
 
 ---
 
-## 4. NGO Demand Forecasting
-**Purpose**: Predict future food demand for specific NGOs based on historical request data, time of year, and local events.
-**Input**: Historical request volume, dates, holidays, weather conditions.
-**Output**: Predicted number of meals needed for the upcoming week/month.
-**Example**: (NGO: "City Shelter", Date: "Dec 20") -> `Predicted Demand: 500 meals`.
-**Dataset Needed**: Historical time-series data of NGO requests mapped with exogenous variables (holidays, weather).
-**Model/Algorithm**: Time-series forecasting.
-**Evaluation Metrics**: Mean Absolute Percentage Error (MAPE), RMSE.
-**MVP Version**: Moving averages or simple linear regression based on recent historical data.
-**Advanced Version**: LSTM/GRU networks capable of capturing complex temporal dependencies and seasonality.
-
----
-
-## 5. Surplus Food Prediction
+## 4. Surplus Food Prediction
 **Purpose**: Anticipate when and where large surpluses of food (e.g., from restaurants or banquet halls) are likely to occur.
 **Input**: Historical donation data, day of the week, local event schedules, weather.
 **Output**: Probability and expected volume of surplus food generation in a given area.
@@ -69,7 +56,7 @@ This document outlines the artificial intelligence and machine learning pipeline
 
 ---
 
-## 6. Smart Matching Engine
+## 5. Smart Matching Engine
 **Purpose**: Optimally pair food donations with NGO requests considering distance, urgency, food type, and spoilage risk.
 **Input**: Donation details (location, type, expiry, risk score) + NGO request details (location, need, urgency).
 **Output**: Ranked list of best NGO matches for a given donation (or vice versa) with a match score.
@@ -79,3 +66,12 @@ This document outlines the artificial intelligence and machine learning pipeline
 **Evaluation Metrics**: Mean Reciprocal Rank (MRR), Normalized Discounted Cumulative Gain (NDCG), average distance per match.
 **MVP Version**: Weighted scoring formula (e.g., `Score = (w1 * Distance) + (w2 * Urgency) + (w3 * FoodMatch)`).
 **Advanced Version**: XGBoost-based Learning-to-Rank algorithms or Graph Neural Networks (GNN) to dynamically weight features based on historical match success.
+
+---
+
+## Research / Experimental Models
+
+### Demand Forecasting
+- A DNN-based food demand forecasting model was developed using an external historical food-order dataset.
+- The notebook, trained model, scalers, and related artifacts are retained for research, experimentation, and reproducibility.
+- The model is not used by the active SharePlate production application because the source dataset represents commercial food-order demand and is not sufficiently aligned with NGO surplus-food rescue demand.

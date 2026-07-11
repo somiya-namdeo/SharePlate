@@ -2,7 +2,7 @@ from supabase import Client
 from typing import List, Dict, Any
 from app.services.ai_service import AIService
 from app.services.rule_engine import RuleEngine
-from app.schemas.ai import FoodSafetyRequest, SurplusPredictionRequest, DemandForecastRequest
+from app.schemas.ai import FoodSafetyRequest, SurplusPredictionRequest
 from app.services.geocoding_service import GeocodingService
 from fastapi import HTTPException
 import logging
@@ -71,22 +71,7 @@ class DonationsService:
             logger.error(f"Surplus prediction error: {e}")
             surplus = None
             
-        # 5. Run Demand Forecast
-        try:
-            features_order = [
-                "week", "center_id", "meal_id", "checkout_price", "base_price",
-                "emailer_for_promotion", "homepage_featured", "category", "cuisine",
-                "city_code", "region_code", "center_type", "op_area", "discount",
-                "discount_percent", "price_diff", "is_discounted"
-            ]
-            demand_features = {f: 0 for f in features_order}
-            demand_req = DemandForecastRequest(features=demand_features)
-            demand_res = self.ai_service.predict_demand(demand_req)
-            demand = demand_res.predicted_demand
-        except Exception as e:
-            logger.error(f"Demand forecast error: {e}")
-            demand = 0.0
-            
+
         import datetime
         # 6. Prepare update payload with all AI outputs
         update_data = {

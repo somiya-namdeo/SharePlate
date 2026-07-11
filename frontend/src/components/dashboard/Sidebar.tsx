@@ -4,7 +4,6 @@ import {
   PackageSearch, 
   ShieldCheck, 
   BrainCircuit, 
-  TrendingUp, 
   Network, 
   Map as MapIcon, 
   BarChart3, 
@@ -21,7 +20,7 @@ export function Sidebar() {
     { icon: PackageSearch, label: 'Donations', path: '/donations' },
     { icon: ShieldCheck, label: 'Food Safety', path: '/food-safety' },
     { icon: BrainCircuit, label: 'NLP Intelligence', path: '/nlp' },
-    { icon: TrendingUp, label: 'Demand Forecasting', path: '/forecasting' },
+
     { icon: Network, label: 'Smart Matching', path: '/matching' },
     { icon: MapIcon, label: 'Map & Logistics', path: '/logistics' },
     { icon: BarChart3, label: 'Analytics', path: '/analytics' },

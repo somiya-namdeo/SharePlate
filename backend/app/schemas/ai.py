@@ -32,12 +32,6 @@ class SurplusPredictionRequest(BaseModel):
 class SurplusPredictionResponse(BaseModel):
     predicted_surplus_quantity: float
 
-class DemandForecastRequest(BaseModel):
-    features: Dict[str, Any] = Field(default_factory=dict, description="Dictionary of input features for the demand forecasting model")
-
-class DemandForecastResponse(BaseModel):
-    predicted_demand: float
-
 class DonationNERRequest(BaseModel):
     text: str
 

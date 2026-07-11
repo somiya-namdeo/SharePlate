@@ -4,8 +4,7 @@ from app.schemas.ai import (
     FoodSafetyResponse, 
     SurplusPredictionRequest, 
     SurplusPredictionResponse, 
-    DemandForecastRequest, 
-    DemandForecastResponse, 
+
     DonationNERRequest, 
     DonationNERResponse
 )
@@ -33,12 +32,7 @@ async def predict_surplus(request: SurplusPredictionRequest, service: AIService 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/demand-forecast", response_model=DemandForecastResponse, summary="Forecast Food Demand")
-async def forecast_demand(request: DemandForecastRequest, service: AIService = Depends(get_ai_service)):
-    try:
-        return service.predict_demand(request)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/donation-ner", response_model=DonationNERResponse, summary="Extract Entities from Donation Text")
 async def extract_donation_ner(request: DonationNERRequest, service: AIService = Depends(get_ai_service)):

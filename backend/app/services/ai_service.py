@@ -5,24 +5,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-class DemandForecastingNN(nn.Module):
-    def __init__(self, input_dim):
-        super().__init__()
-        self.fc1 = nn.Linear(input_dim, 128)
-        self.fc2 = nn.Linear(128, 64)
-        self.fc3 = nn.Linear(64, 32)
-        self.fc4 = nn.Linear(32, 1)
-        self.relu = nn.ReLU()
-        self.dropout1 = nn.Dropout(0.3)
-        self.dropout2 = nn.Dropout(0.2)
-
-    def forward(self, x):
-        x = self.dropout1(self.relu(self.fc1(x)))
-        x = self.dropout2(self.relu(self.fc2(x)))
-        x = self.relu(self.fc3(x))
-        x = self.fc4(x)
-        return x
-
 class BiLSTMAttentionNER(nn.Module):
     def __init__(self, vocab_size, embedding_dim, hidden_dim, num_tags):
         super().__init__()
@@ -45,8 +27,7 @@ from app.schemas.ai import (
     FoodSafetyResponse, 
     SurplusPredictionRequest, 
     SurplusPredictionResponse, 
-    DemandForecastRequest, 
-    DemandForecastResponse, 
+
     DonationNERRequest, 
     DonationNERResponse
 )
@@ -65,10 +46,6 @@ class AIService:
         self.food_safety_features = None
         self.surplus_model = None
         
-        # Demand Forecast model and scalers
-        self.demand_model = None
-        self.demand_feature_scaler = None
-        self.demand_target_scaler = None
 
         # NER model and vocab
         self.ner_model = None
@@ -103,23 +80,6 @@ class AIService:
         except Exception as e:
             logger.error(f"Error loading surplus prediction model: {e}")
 
-        try:
-            demand_model_path = os.path.join(MODELS_DIR, "shareplate_demand_forecasting_dnn.pth")
-            feature_scaler_path = os.path.join(BASE_DIR, "artifacts", "feature_scaler.pkl")
-            target_scaler_path = os.path.join(BASE_DIR, "artifacts", "target_scaler.pkl")
-
-            if os.path.exists(demand_model_path) and os.path.exists(feature_scaler_path) and os.path.exists(target_scaler_path):
-                self.demand_feature_scaler = joblib.load(feature_scaler_path)
-                self.demand_target_scaler = joblib.load(target_scaler_path)
-                
-                self.demand_model = DemandForecastingNN(17)
-                self.demand_model.load_state_dict(torch.load(demand_model_path, map_location=torch.device('cpu')))
-                self.demand_model.eval()
-                logger.info("Demand forecasting model and scalers loaded successfully.")
-            else:
-                logger.warning("Demand forecasting model or scalers not found. Inference will fail.")
-        except Exception as e:
-            logger.error(f"Error loading demand forecasting model: {e}")
 
         try:
             ner_model_path = os.path.join(MODELS_DIR, "shareplate_ner_bilstm_attention_v2.pth")
@@ -280,53 +240,6 @@ class AIService:
             
         return SurplusPredictionResponse(predicted_surplus_quantity=round(prediction, 2))
 
-    def predict_demand(self, request: DemandForecastRequest) -> DemandForecastResponse:
-        if not self.demand_model or not self.demand_feature_scaler or not self.demand_target_scaler:
-            raise RuntimeError("Demand forecasting model or scalers are not loaded")
-
-        features_order = [
-            "week", "center_id", "meal_id", "checkout_price", "base_price",
-            "emailer_for_promotion", "homepage_featured", "category", "cuisine",
-            "city_code", "region_code", "center_type", "op_area", "discount",
-            "discount_percent", "price_diff", "is_discounted"
-        ]
-
-        if not request.features:
-            raise ValueError("No features provided for demand forecast")
-
-        # Extract features in the exact order expected by the model
-        try:
-            feature_values = []
-            for feat in features_order:
-                if feat not in request.features:
-                    raise ValueError(f"Missing required feature: {feat}")
-                feature_values.append(float(request.features[feat]))
-        except Exception as e:
-            raise ValueError(f"Invalid input features: {e}")
-
-        try:
-            # 1. Scale features
-            features_array = np.array([feature_values])
-            features_scaled = self.demand_feature_scaler.transform(features_array)
-            
-            # 2. Convert to tensor
-            features_tensor = torch.tensor(features_scaled, dtype=torch.float32)
-            
-            # 3. Run inference
-            with torch.no_grad():
-                prediction_scaled = self.demand_model(features_tensor).numpy()
-                
-            # 4. Inverse transform prediction
-            prediction_actual = self.demand_target_scaler.inverse_transform(prediction_scaled)
-            
-            # Ensure no negative demand
-            predicted_demand = float(prediction_actual[0][0])
-            predicted_demand = max(0.0, predicted_demand)
-            
-            return DemandForecastResponse(predicted_demand=round(predicted_demand, 2))
-        except Exception as e:
-            logger.error(f"Demand inference error: {e}")
-            raise RuntimeError(f"Demand inference failed: {str(e)}")
 
     @staticmethod
     def _normalize_ner_outputs(food_item: str, quantity: str):
