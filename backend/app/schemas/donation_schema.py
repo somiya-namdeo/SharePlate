@@ -8,8 +8,8 @@ class DonationCreate(BaseModel):
     quantity: float
     description: Optional[str] = None
     address: str
-    latitude: float
-    longitude: float
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
     # Basic Information
     food_category: Optional[str] = None

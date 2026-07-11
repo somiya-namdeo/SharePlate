@@ -52,8 +52,6 @@ export function Donations() {
     shelfLife: prefill?.shelfLife !== undefined && prefill?.shelfLife !== null ? String(prefill.shelfLife) : '',
     pickupLocation: prefill?.pickupLocation || '',
     donorContact: prefill?.donorContact || '',
-    latitude: prefill?.latitude !== undefined ? prefill.latitude : 23.2599,
-    longitude: prefill?.longitude !== undefined ? prefill.longitude : 77.4126,
     existingAiData: prefill?.existingAiData || null as any
   });
 
@@ -107,8 +105,6 @@ export function Donations() {
         quantity: formData.quantity !== '' ? parseFloat(formData.quantity) : null,
         description: `Category: ${formData.foodCategory} | Contact: ${formData.donorContact}`,
         address: formData.pickupLocation,
-        latitude: formData.latitude,
-        longitude: formData.longitude,
         
         food_category: formData.foodCategory || null,
         preparation_method: formData.prepMethod || null,
@@ -136,6 +132,13 @@ export function Donations() {
         method,
         data: payload
       });
+
+      if (!res.success) {
+        toast.error(res.message || 'Failed to save donation. Please check your address and try again.');
+        setIsLoading(false);
+        return null;
+      }
+
       toast.success('Donation saved successfully!');
       
       const newId = res.data.id;
@@ -149,8 +152,7 @@ export function Donations() {
       fetchDonations();
       return newId;
     } catch (error: any) {
-      toast.error(error.message || 'Failed to save donation');
-      return null;
+      toast.error(error.message || 'An error occurred while saving the donation');
     } finally {
       setIsLoading(false);
     }

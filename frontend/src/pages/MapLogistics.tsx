@@ -147,26 +147,41 @@ export function MapLogistics() {
   const defaultCenter: [number, number] = [23.2599, 77.4126];
 
   // Selected Data Computations
-  const getSelectedMatch = () => {
+  const activeMatches = useMemo(() => {
+    return matches.filter((m: any) => {
+      const status = (m.status || '').toLowerCase();
+      return ['pending', 'accepted'].includes(status);
+    });
+  }, [matches]);
+
+  const selectedActiveMatch = useMemo(() => {
     if (!selectedPickup || selectedPickup.type !== 'donation') return null;
-    return matches.find(m => m.donation_id === selectedPickup.id);
-  };
-  const selectedMatch = getSelectedMatch();
+    return activeMatches.find((m: any) => m.donation_id === selectedPickup.id);
+  }, [activeMatches, selectedPickup]);
+
+  const visibleMatches = useMemo(() => {
+    if (selectedPickup && selectedPickup.type === 'donation') {
+      return selectedActiveMatch ? [selectedActiveMatch] : [];
+    }
+    return activeMatches;
+  }, [activeMatches, selectedPickup, selectedActiveMatch]);
+
+  const selectedMatch = selectedActiveMatch;
   
   const getSelectedNGO = () => {
     if (!selectedMatch) return null;
-    return requests.find(r => r.id === selectedMatch.request_id || r.ngo_id === selectedMatch.ngo_id);
+    return requests.find((r: any) => r.id === selectedMatch.request_id);
   };
   const selectedNGO = getSelectedNGO();
 
   // Polylines using original coordinates
-  const matchLines = matches.map((m, i) => {
-    const d = donations.find(don => don.id === m.donation_id);
-    const r = requests.find(req => req.id === m.request_id || req.ngo_id === m.ngo_id);
+  const matchLines = visibleMatches.map((m: any, i: number) => {
+    const d = donations.find((don: any) => don.id === m.donation_id);
+    const r = requests.find((req: any) => req.id === m.request_id);
     if (d && r) {
       return (
         <Polyline 
-          key={`match-${i}`} 
+          key={`match-${m.id || i}`} 
           positions={[[d.latitude, d.longitude], [r.latitude, r.longitude]]} 
           pathOptions={{ color: '#34d399', dashArray: '5, 5', weight: 3 }} 
         />
@@ -294,7 +309,7 @@ export function MapLogistics() {
                       </div>
                       <div className="flex justify-between items-center py-2.5 border-b border-[#33251E]/5">
                          <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">Assigned NGO</span>
-                         <span className="text-sm font-semibold text-[#33251E] truncate max-w-[120px]" title={selectedNGO?.ngo_name || selectedNGO?.organization || 'Not assigned'}>{selectedNGO?.ngo_name || selectedNGO?.organization || 'Not assigned'}</span>
+                         <span className="text-sm font-semibold text-[#33251E] truncate max-w-[120px]" title={selectedMatch?.ngo_name || selectedNGO?.ngo_name || selectedNGO?.organization || 'Not assigned'}>{selectedMatch?.ngo_name || selectedNGO?.ngo_name || selectedNGO?.organization || 'Not assigned'}</span>
                       </div>
                       <div className="flex justify-between items-center py-2.5">
                          <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">Distance</span>
@@ -346,7 +361,7 @@ export function MapLogistics() {
            <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 p-6">
               <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest block mb-2">Active Matches</span>
               <div className="font-serif text-3xl font-bold text-[#33251E]">
-                {matches.length} 
+                {activeMatches.length} 
                 <span className="text-sm font-sans font-semibold text-emerald-500 uppercase tracking-wider ml-1">Live</span>
               </div>
            </div>
@@ -370,10 +385,12 @@ export function MapLogistics() {
             </div>
             <div className="p-6 space-y-4">
               {(() => {
-                const userRole = getUser()?.user_metadata?.role;
-                const contactName = userRole === 'ngo' ? selectedMatch.donor_name : selectedMatch.ngo_name;
-                const contactPhone = userRole === 'ngo' ? selectedMatch.donor_phone : selectedMatch.ngo_phone;
-                const contactEmail = userRole === 'ngo' ? selectedMatch.donor_email : selectedMatch.ngo_email;
+                const currentUserId = getUser()?.id;
+                const isNgo = currentUserId === selectedMatch.ngo_id;
+                
+                const contactName = isNgo ? selectedMatch.donor_name : selectedMatch.ngo_name;
+                const contactPhone = isNgo ? selectedMatch.donor_phone : selectedMatch.ngo_phone;
+                const contactEmail = isNgo ? selectedMatch.donor_email : selectedMatch.ngo_email;
                 
                 return (
                   <>
@@ -413,9 +430,17 @@ export function MapLogistics() {
                          </div>
                        )}
                        {contactEmail && (
-                         <a href={`mailto:${contactEmail}`} className="w-full bg-white border border-[#33251E]/10 hover:border-[#33251E]/30 text-[#33251E] text-sm font-bold py-2.5 rounded-xl flex justify-center items-center transition-colors">
+                         <button 
+                           onClick={() => {
+                             const encodedEmail = encodeURIComponent(contactEmail);
+                             const encodedSubject = encodeURIComponent('SharePlate Donation Coordination');
+                             const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodedEmail}&su=${encodedSubject}`;
+                             window.open(url, '_blank', 'noopener,noreferrer');
+                           }}
+                           className="w-full bg-white border border-[#33251E]/10 hover:border-[#33251E]/30 text-[#33251E] text-sm font-bold py-2.5 rounded-xl flex justify-center items-center transition-colors"
+                         >
                            Email
-                         </a>
+                         </button>
                        )}
                        <button onClick={() => setIsContactModalOpen(false)} className="w-full text-[#33251E]/60 hover:text-[#33251E] text-sm font-bold py-2.5 transition-colors mt-2">
                          Close

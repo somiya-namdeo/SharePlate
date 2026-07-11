@@ -40,6 +40,10 @@ class MatchDetailResponse(BaseModel):
     urgency: Optional[str] = None
     ngo_name: Optional[str] = None
     donor_name: Optional[str] = None
+    donor_phone: Optional[str] = None
+    donor_email: Optional[str] = None
+    ngo_phone: Optional[str] = None
+    ngo_email: Optional[str] = None
 
     class Config:
         from_attributes = True

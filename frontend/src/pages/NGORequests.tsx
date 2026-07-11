@@ -59,9 +59,7 @@ export function NGORequests() {
         preferred_food_type: formData.foodCategory,
         meals_needed: meals,
         address: formData.location,
-        urgency_level: formData.urgency === 'Critical' ? 'High' : formData.urgency, // Map to valid schema enum
-        latitude: 23.2599, // default fallback
-        longitude: 77.4126
+        urgency_level: formData.urgency === 'Critical' ? 'High' : formData.urgency // Map to valid schema enum
       };
       
       const response = await apiFetch('/api/requests/', {

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { Topbar } from '../components/dashboard/Topbar';
 import { Download, Key } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { apiFetch } from '../lib/api';
 
 export function Settings() {
   const initialState = {
@@ -29,27 +31,30 @@ export function Settings() {
   const [settings, setSettings] = useState(initialState);
   const [hasChanges, setHasChanges] = useState(false);
 
+  const loadData = async () => {
+    try {
+      const [settingsRes, profileRes] = await Promise.all([
+        apiFetch('/api/settings'),
+        apiFetch('/api/users/profile')
+      ]);
+      
+      setSettings(prev => ({
+        ...prev,
+        notificationsEnabled: settingsRes.data?.notifications?.notifications_enabled ?? true,
+        fullName: profileRes.data?.full_name || '',
+        phone: profileRes.data?.phone || '',
+        orgName: profileRes.data?.organization || '',
+        city: profileRes.data?.city || '',
+        email: profileRes.data?.email || prev.email,
+      }));
+    } catch (err: any) {
+      toast.error(err.message || "Failed to load settings");
+    }
+  };
+
   // Fetch settings on mount
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        const res = await fetch('http://localhost:8000/api/settings', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.success && data.data && data.data.notifications) {
-           setSettings(prev => ({
-              ...prev,
-              notificationsEnabled: data.data.notifications.notifications_enabled ?? true
-           }));
-        }
-      } catch (err) {
-        console.error("Failed to fetch settings", err);
-      }
-    };
-    fetchSettings();
+    loadData();
   }, []);
 
   const handleChange = (key: keyof typeof initialState, value: any) => {
@@ -59,29 +64,34 @@ export function Settings() {
 
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        // Save notification settings
-        await fetch('http://localhost:8000/api/settings/notifications', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            notifications_enabled: settings.notificationsEnabled
-          })
-        });
-      }
+      // 1. Save profile fields
+      await apiFetch('/api/users/profile', {
+        method: 'PUT',
+        data: {
+          full_name: settings.fullName,
+          phone: settings.phone,
+          organization: settings.orgName,
+          city: settings.city
+        }
+      });
+
+      // 2. Save notification settings
+      await apiFetch('/api/settings/notifications', {
+        method: 'PUT',
+        data: {
+          notifications_enabled: settings.notificationsEnabled
+        }
+      });
+      
       setHasChanges(false);
-    } catch (err) {
-      console.error("Failed to save settings", err);
+      toast.success("Settings saved successfully.");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save settings");
     }
   };
 
   const handleDiscard = () => {
-    // In a real app, we'd refetch from server here, but for now we'll just reset hasChanges
-    // since we don't store the precise original state deeply yet.
+    loadData();
     setHasChanges(false);
   };
 

@@ -33,6 +33,8 @@ def create_match(
             "message": "Match created successfully",
             "data": jsonable_encoder(result)
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating match: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

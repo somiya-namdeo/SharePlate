@@ -8,8 +8,8 @@ class RequestCreate(BaseModel):
     preferred_food_type: Optional[str] = None
     urgency_level: Literal["Low", "Medium", "High"]
     address: str
-    latitude: float
-    longitude: float
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 class RequestResponse(RequestCreate):
     id: str
