@@ -156,7 +156,11 @@ class MatchesService:
                 "quantity": donation.get("quantity"),
                 "urgency": request.get("urgency_level"),
                 "donor_name": donor_profile.get("full_name") or donor_profile.get("organization"),
-                "ngo_name": ngo_profile.get("organization") or ngo_profile.get("full_name")
+                "ngo_name": ngo_profile.get("organization") or ngo_profile.get("full_name"),
+                "donor_phone": donor_profile.get("phone"),
+                "donor_email": donor_profile.get("email"),
+                "ngo_phone": ngo_profile.get("phone"),
+                "ngo_email": ngo_profile.get("email")
             }
             formatted.append(item)
         return formatted
@@ -164,7 +168,7 @@ class MatchesService:
     def get_matches_by_donor(self, donor_id: str) -> List[dict]:
         # Using string based joins. We alias profiles twice since matches has both donor_id and ngo_id
         response = self.db.table("matches") \
-            .select("*, donations(*), ngo_requests(*), donor_profile:profiles!matches_donor_id_fkey(full_name, organization), ngo_profile:profiles!matches_ngo_id_fkey(full_name, organization)") \
+            .select("*, donations(*), ngo_requests(*), donor_profile:profiles!matches_donor_id_fkey(full_name, organization, phone, email), ngo_profile:profiles!matches_ngo_id_fkey(full_name, organization, phone, email)") \
             .eq("donor_id", donor_id) \
             .order("created_at", desc=True) \
             .execute()
@@ -172,7 +176,7 @@ class MatchesService:
 
     def get_matches_by_ngo(self, ngo_id: str) -> List[dict]:
         response = self.db.table("matches") \
-            .select("*, donations(*), ngo_requests(*), donor_profile:profiles!matches_donor_id_fkey(full_name, organization), ngo_profile:profiles!matches_ngo_id_fkey(full_name, organization)") \
+            .select("*, donations(*), ngo_requests(*), donor_profile:profiles!matches_donor_id_fkey(full_name, organization, phone, email), ngo_profile:profiles!matches_ngo_id_fkey(full_name, organization, phone, email)") \
             .eq("ngo_id", ngo_id) \
             .order("created_at", desc=True) \
             .execute()
