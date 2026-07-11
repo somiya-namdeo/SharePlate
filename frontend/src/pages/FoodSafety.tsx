@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { apiFetch } from '../lib/api';
 import { Sidebar } from '../components/dashboard/Sidebar';
@@ -18,6 +18,7 @@ export function FoodSafety() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const location = useLocation();
+  const navigate = useNavigate();
   const prefill = location.state?.prefillData;
   const donationId = location.state?.donationId;
   const existingAiData = location.state?.existingAiData;
@@ -45,7 +46,7 @@ export function FoodSafety() {
     temperature_c: prefill?.temperature || '5',
     humidity_percent: prefill?.humidity || '45',
     hours_since_prepared: prefill?.hoursPrepared || '4',
-    estimated_transport_time_hr: prefill?.estTransport ? (Number(prefill.estTransport) / 60).toString() : '1',
+    estimated_transport_time_min: prefill?.estTransport || '60',
     distance_km: prefill?.distance || '10',
     quantity_kg: prefill?.quantity || '15',
     season: prefill?.season || 'Summer',
@@ -75,7 +76,7 @@ export function FoodSafety() {
         temperature_c: Number(formData.temperature_c) || 0,
         humidity_percent: Number(formData.humidity_percent) || 0,
         hours_since_prepared: Number(formData.hours_since_prepared) || 0,
-        estimated_transport_time_hr: Number(formData.estimated_transport_time_hr) || 0,
+        estimated_transport_time_hr: Number(formData.estimated_transport_time_min) / 60 || 0,
         distance_km: Number(formData.distance_km) || 0,
         quantity_kg: Number(formData.quantity_kg) || 0,
         season: formData.season || "Unknown",
@@ -115,16 +116,11 @@ export function FoodSafety() {
           await apiFetch(`/api/donations/${donationId}`, {
             method: 'PUT',
             data: {
-              spoilage_risk_score: data.prediction === 'Yes' ? 0.2 : 0.9,
+              spoilage_risk_score: data.urgency_score ? data.urgency_score / 100 : (data.prediction === 'Yes' ? 0.2 : 0.9),
               safety_status: data.prediction === 'Yes' ? 'Safe' : 'Unsafe',
               confidence_score: 0.95,
               predicted_shelf_life: data.remaining_shelf_life_hr,
               urgency_level: data.urgency_level,
-              ml_safety_prediction: data.prediction,
-              ml_confidence: 0.95,
-              rule_risk_score: data.urgency_score,
-              final_safety_status: data.prediction === 'Yes' ? 'Safe' : 'Unsafe',
-              rule_breakdown: {},
               prediction_time: new Date().toISOString()
             }
           });
@@ -226,8 +222,8 @@ export function FoodSafety() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Est. transport (hr)</label>
-                <input name="estimated_transport_time_hr" value={formData.estimated_transport_time_hr} onChange={handleChange} type="number" step="0.1" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
+                <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Est. transport (min)</label>
+                <input name="estimated_transport_time_min" value={formData.estimated_transport_time_min} onChange={handleChange} type="number" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
                 <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Distance (km)</label>
                 <input name="distance_km" value={formData.distance_km} onChange={handleChange} type="number" step="0.1" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
               </div>
@@ -407,6 +403,47 @@ export function FoodSafety() {
                   </div>
                 );
               })()}
+
+              <div className="pt-4 flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigate('/donations', {
+                      state: {
+                        prefillData: {
+                          ...prefill,
+                          foodItem: formData.food_item,
+                          foodCategory: formData.food_category,
+                          prepMethod: formData.preparation_method,
+                          storageCondition: formData.storage_condition,
+                          packagingType: formData.packaging_type,
+                          temperature: formData.temperature_c,
+                          humidity: formData.humidity_percent,
+                          hoursPrepared: formData.hours_since_prepared,
+                          estTransport: formData.estimated_transport_time_min,
+                          distance: formData.distance_km,
+                          quantity: formData.quantity_kg,
+                          season: formData.season,
+                          eventType: formData.event_type,
+                          cityTier: formData.city_tier,
+                          perishabilityScore: formData.perishability_score,
+                          shelfLife: result ? String(result.remaining_shelf_life_hr) : formData.estimated_shelf_life_hr,
+                          existingAiData: result ? {
+                            spoilage_risk_score: result.urgency_score ? result.urgency_score / 100 : (result.prediction === 'Yes' ? 0.2 : 0.9),
+                            safety_status: result.prediction === 'Yes' ? 'Safe' : 'Unsafe',
+                            confidence_score: 0.95,
+                            predicted_shelf_life: result.remaining_shelf_life_hr,
+                            urgency_level: result.urgency_level
+                          } : existingAiData
+                        }
+                      }
+                    });
+                  }}
+                  className="bg-white border border-[#33251E]/10 hover:bg-[#33251E]/5 text-[#33251E] px-8 py-2.5 rounded-xl text-sm font-bold transition-all w-full flex items-center justify-center shadow-sm"
+                >
+                  Return to Donation
+                </button>
+              </div>
 
             </div>
 

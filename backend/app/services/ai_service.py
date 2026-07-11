@@ -28,18 +28,14 @@ class BiLSTMAttentionNER(nn.Module):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=0)
         self.lstm = nn.LSTM(embedding_dim, hidden_dim, batch_first=True, bidirectional=True)
-        self.attention = nn.Linear(hidden_dim * 2, 1)
         self.dropout = nn.Dropout(0.3)
         self.fc = nn.Linear(hidden_dim * 2, num_tags)
 
     def forward(self, x):
         x = self.embedding(x)
         lstm_out, _ = self.lstm(x)
-        attn_scores = self.attention(lstm_out)
-        attn_weights = torch.softmax(attn_scores, dim=1)
-        attended = attn_weights * lstm_out
-        attended = self.dropout(attended)
-        output = self.fc(attended)
+        lstm_out = self.dropout(lstm_out)
+        output = self.fc(lstm_out)
         return output
 
 

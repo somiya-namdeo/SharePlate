@@ -16,6 +16,9 @@ class DonationCreate(BaseModel):
     preparation_method: Optional[str] = None
     storage_condition: Optional[str] = None
     packaging_type: Optional[str] = None
+    season: Optional[str] = None
+    event_type: Optional[str] = None
+    city_tier: Optional[str] = None
 
     # Environmental Information
     temperature: Optional[float] = None
@@ -37,14 +40,11 @@ class DonationResponse(DonationCreate):
     completed_at: Optional[datetime] = None
 
     # AI Results
-    ml_safety_prediction: Optional[str] = None
-    ml_confidence: Optional[float] = None
-    rule_risk_score: Optional[float] = None
-    final_safety_status: Optional[str] = None
+    safety_status: Optional[str] = None
+    confidence_score: Optional[float] = None
+    predicted_shelf_life: Optional[float] = None
     urgency_level: Optional[str] = None
-    predicted_surplus: Optional[float] = None
-    predicted_demand: Optional[float] = None
-    rule_breakdown: Optional[dict] = None
+    prediction_time: Optional[datetime] = None
 
     class Config:
         from_attributes = True

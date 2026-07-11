@@ -75,15 +75,13 @@ class DonationsService:
             logger.error(f"Demand forecast error: {e}")
             demand = 0.0
             
+        import datetime
         # 6. Prepare update payload with all AI outputs
         update_data = {
-            "ml_safety_prediction": ai_prediction,
-            "final_safety_status": rule_results["final_safety_status"],
-            "rule_risk_score": rule_results["rule_risk_score"],
+            "safety_status": rule_results.get("final_safety_status", ai_prediction),
+            "spoilage_risk_score": rule_results.get("rule_risk_score", 0),
             "urgency_level": urgency_level,
-            "predicted_surplus": surplus,
-            "predicted_demand": demand,
-            "rule_breakdown": rule_results["rule_breakdown"]
+            "prediction_time": datetime.datetime.now(datetime.timezone.utc).isoformat()
         }
         
         # 7. Update database with AI results

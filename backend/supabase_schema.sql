@@ -52,6 +52,21 @@ CREATE TABLE donations (
     address TEXT,
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
+    
+    -- Extended Form Fields
+    food_category VARCHAR(100),
+    preparation_method VARCHAR(100),
+    storage_condition VARCHAR(100),
+    packaging_type VARCHAR(100),
+    temperature DOUBLE PRECISION,
+    humidity DOUBLE PRECISION,
+    hours_since_prepared DOUBLE PRECISION,
+    estimated_transport_time DOUBLE PRECISION,
+    distance DOUBLE PRECISION,
+    season VARCHAR(50),
+    event_type VARCHAR(100),
+    city_tier VARCHAR(50),
+    
     status VARCHAR(50) NOT NULL CHECK (status IN ('pending', 'matched', 'picked_up', 'delivered', 'expired')) DEFAULT 'pending',
     spoilage_risk_score DOUBLE PRECISION,
     

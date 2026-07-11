@@ -39,19 +39,21 @@ export function Donations() {
     prepMethod: prefill?.prepMethod || '',
     storageCondition: prefill?.storageCondition || '',
     packagingType: prefill?.packagingType || '',
-    temperature: prefill?.temperature || '',
-    humidity: prefill?.humidity || '',
-    hoursPrepared: prefill?.hoursPrepared || '',
-    estTransport: prefill?.estTransport || '',
-    distance: prefill?.distance || '',
-    quantity: prefill?.quantity || '',
+    temperature: prefill?.temperature !== undefined && prefill?.temperature !== null ? String(prefill.temperature) : '',
+    humidity: prefill?.humidity !== undefined && prefill?.humidity !== null ? String(prefill.humidity) : '',
+    hoursPrepared: prefill?.hoursPrepared !== undefined && prefill?.hoursPrepared !== null ? String(prefill.hoursPrepared) : '',
+    estTransport: prefill?.estTransport !== undefined && prefill?.estTransport !== null ? String(prefill.estTransport) : '',
+    distance: prefill?.distance !== undefined && prefill?.distance !== null ? String(prefill.distance) : '',
+    quantity: prefill?.quantity !== undefined && prefill?.quantity !== null ? String(prefill.quantity) : '',
     season: prefill?.season || '',
     eventType: prefill?.eventType || '',
     cityTier: prefill?.cityTier || '',
-    perishabilityScore: prefill?.perishabilityScore || '',
-    shelfLife: prefill?.shelfLife || '',
+    perishabilityScore: prefill?.perishabilityScore !== undefined && prefill?.perishabilityScore !== null ? String(prefill.perishabilityScore) : '',
+    shelfLife: prefill?.shelfLife !== undefined && prefill?.shelfLife !== null ? String(prefill.shelfLife) : '',
     pickupLocation: prefill?.pickupLocation || '',
     donorContact: prefill?.donorContact || '',
+    latitude: prefill?.latitude !== undefined ? prefill.latitude : 23.2599,
+    longitude: prefill?.longitude !== undefined ? prefill.longitude : 77.4126,
     existingAiData: prefill?.existingAiData || null as any
   });
 
@@ -99,27 +101,40 @@ export function Donations() {
         method = 'PUT';
       }
 
+      const payload: any = {
+        donor_id: user.id,
+        food_type: formData.foodItem,
+        quantity: formData.quantity !== '' ? parseFloat(formData.quantity) : null,
+        description: `Category: ${formData.foodCategory} | Contact: ${formData.donorContact}`,
+        address: formData.pickupLocation,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        
+        food_category: formData.foodCategory || null,
+        preparation_method: formData.prepMethod || null,
+        storage_condition: formData.storageCondition || null,
+        packaging_type: formData.packagingType || null,
+        temperature: formData.temperature !== '' ? parseFloat(formData.temperature) : null,
+        humidity: formData.humidity !== '' ? parseFloat(formData.humidity) : null,
+        hours_since_prepared: formData.hoursPrepared !== '' ? parseFloat(formData.hoursPrepared) : null,
+        estimated_transport_time: formData.estTransport !== '' ? parseFloat(formData.estTransport) : null,
+        distance: formData.distance !== '' ? parseFloat(formData.distance) : null,
+        season: formData.season || null,
+        event_type: formData.eventType || null,
+        city_tier: formData.cityTier || null,
+        predicted_shelf_life: formData.shelfLife !== '' ? parseFloat(formData.shelfLife) : null,
+      };
+
+      if (formData.existingAiData) {
+        payload.spoilage_risk_score = formData.existingAiData.spoilage_risk_score;
+        payload.safety_status = formData.existingAiData.safety_status;
+        payload.confidence_score = formData.existingAiData.confidence_score;
+        payload.urgency_level = formData.existingAiData.urgency_level;
+      }
+
       const res = await apiFetch(url, {
         method,
-        data: {
-          donor_id: user.id,
-          food_type: formData.foodItem,
-          quantity: parseFloat(formData.quantity) || 0,
-          description: `Category: ${formData.foodCategory} | Contact: ${formData.donorContact}`,
-          address: formData.pickupLocation,
-          latitude: 23.2599, // default mapped value
-          longitude: 77.4126,  // default mapped value
-          
-          food_category: formData.foodCategory || null,
-          preparation_method: formData.prepMethod || null,
-          storage_condition: formData.storageCondition || null,
-          packaging_type: formData.packagingType || null,
-          temperature: formData.temperature ? parseFloat(formData.temperature) : null,
-          humidity: formData.humidity ? parseFloat(formData.humidity) : null,
-          hours_since_prepared: formData.hoursPrepared ? parseFloat(formData.hoursPrepared) : null,
-          estimated_transport_time: formData.estTransport ? parseFloat(formData.estTransport) : null,
-          distance: formData.distance ? parseFloat(formData.distance) : null,
-        }
+        data: payload
       });
       toast.success('Donation saved successfully!');
       
@@ -270,23 +285,17 @@ export function Donations() {
                 <button 
                   type="button"
                   disabled={isLoading}
-                  onClick={async () => {
+                  onClick={() => {
                     if (!formData.foodItem || !formData.quantity || !formData.pickupLocation) {
                       import('react-hot-toast').then(({ default: toast }) => {
                         toast.error('Please fill required fields (Food item, Quantity, Pickup location)');
                       });
                       return;
                     }
-                    let currentId = formData.id;
-                    if (!currentId) {
-                      const newId = await handleSave();
-                      if (!newId) return; // Save failed
-                      currentId = newId;
-                    }
                     navigate('/food-safety', { 
                       state: { 
                         prefillData: formData, 
-                        donationId: currentId,
+                        donationId: formData.id || null,
                         existingAiData: formData.existingAiData 
                       } 
                     });
@@ -368,29 +377,27 @@ export function Donations() {
                       prepMethod: row.preparation_method || '',
                       storageCondition: row.storage_condition || '',
                       packagingType: row.packaging_type || '',
-                      temperature: row.temperature !== null ? String(row.temperature) : '',
-                      humidity: row.humidity !== null ? String(row.humidity) : '',
-                      hoursPrepared: row.hours_since_prepared !== null ? String(row.hours_since_prepared) : '',
-                      estTransport: row.estimated_transport_time !== null ? String(row.estimated_transport_time) : '',
-                      distance: row.distance !== null ? String(row.distance) : '',
-                      quantity: row.quantity !== null ? String(row.quantity) : '',
+                      temperature: row.temperature !== null && row.temperature !== undefined ? String(row.temperature) : '',
+                      humidity: row.humidity !== null && row.humidity !== undefined ? String(row.humidity) : '',
+                      hoursPrepared: row.hours_since_prepared !== null && row.hours_since_prepared !== undefined ? String(row.hours_since_prepared) : '',
+                      estTransport: row.estimated_transport_time !== null && row.estimated_transport_time !== undefined ? String(row.estimated_transport_time) : '',
+                      distance: row.distance !== null && row.distance !== undefined ? String(row.distance) : '',
+                      quantity: row.quantity !== null && row.quantity !== undefined ? String(row.quantity) : '',
                       season: row.season || '',
                       eventType: row.event_type || '',
                       cityTier: row.city_tier || '',
-                      perishabilityScore: row.perishability_score !== null ? String(row.perishability_score) : '',
-                      shelfLife: row.estimated_shelf_life_hr !== null ? String(row.estimated_shelf_life_hr) : '',
+                      perishabilityScore: row.spoilage_risk_score !== null && row.spoilage_risk_score !== undefined ? String(row.spoilage_risk_score) : '',
+                      shelfLife: row.predicted_shelf_life !== null && row.predicted_shelf_life !== undefined ? String(row.predicted_shelf_life) : '',
                       pickupLocation: row.address || '',
-                      donorContact: '',
+                      donorContact: row.description?.includes('Contact: ') ? row.description.split('Contact: ')[1] : '',
+                      latitude: row.latitude !== null && row.latitude !== undefined ? row.latitude : 23.2599,
+                      longitude: row.longitude !== null && row.longitude !== undefined ? row.longitude : 77.4126,
                       existingAiData: {
                         spoilage_risk_score: row.spoilage_risk_score,
-                        safety_status: row.status, // or maybe final_safety_status? The user DB uses final_safety_status? Let's check row
-                        confidence_score: row.ml_confidence,
-                        predicted_shelf_life: row.predicted_shelf_life, // Wait, AI response has remaining_shelf_life_hr
-                        urgency_level: row.urgency_level,
-                        prediction: row.ml_safety_prediction,
-                        rule_risk_score: row.rule_risk_score,
-                        final_safety_status: row.final_safety_status,
-                        rule_breakdown: row.rule_breakdown
+                        safety_status: row.safety_status,
+                        confidence_score: row.confidence_score,
+                        predicted_shelf_life: row.predicted_shelf_life,
+                        urgency_level: row.urgency_level
                       }
                     });
                   }} className="bg-white border border-[#33251E]/10 p-4 rounded-2xl hover:shadow-md transition-shadow group flex flex-col gap-3 cursor-pointer">
