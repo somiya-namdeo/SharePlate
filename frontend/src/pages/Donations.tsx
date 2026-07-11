@@ -1,22 +1,12 @@
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { Topbar } from '../components/dashboard/Topbar';
 import { Sparkles, Save, ChevronDown, ShieldCheck, Network, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { apiFetch } from '../lib/api';
 import { getUser } from '../lib/auth';
 import toast from 'react-hot-toast';
 
-const sampleDonations = [
-  { id: 'D-1042', item: 'Dal & Rice (cooked)', donor: 'Bhopal Grand Hotel', loc: 'MP Nagar, Bhopal', safety: 'Safe', urgency: 'Critical', pickup: 'Matched', ngo: 'Roti Bank' },
-  { id: 'D-1041', item: 'Paneer curry', donor: 'Wedding — Ashoka Gardens', loc: 'Arera Colony', safety: 'Review', urgency: 'Critical', pickup: 'Pending', ngo: '—' },
-  { id: 'D-1040', item: 'Fresh bakery bread', donor: 'Sunrise Bakery', loc: 'New Market', safety: 'Safe', urgency: 'Medium', pickup: 'Scheduled', ngo: 'Aasha Foundation' },
-  { id: 'D-1039', item: 'Cut fruit boxes', donor: 'IIT Bhopal Mess', loc: 'Bhauri', safety: 'Safe', urgency: 'High', pickup: 'Matched', ngo: 'Feeding Hands' },
-  { id: 'D-1038', item: 'Milk cartons', donor: 'MotherDairy Depot', loc: 'Habibganj', safety: 'Safe', urgency: 'Medium', pickup: 'Completed', ngo: 'Roti Bank' },
-  { id: 'D-1037', item: 'Sandwiches (veg)', donor: 'TechConf 2026', loc: 'Bittan Market', safety: 'Safe', urgency: 'High', pickup: 'Pending', ngo: '—' },
-  { id: 'D-1036', item: 'Cooked rajma', donor: 'Anand Vivah Bhawan', loc: 'Kolar Road', safety: 'Unsafe', urgency: 'Critical', pickup: 'Pending', ngo: '—' },
-  { id: 'D-1035', item: 'Salad bowls', donor: 'Café Verde', loc: '10 No. Market', safety: 'Review', urgency: 'High', pickup: 'Pending', ngo: '—' },
-];
 
 function Badge({ text }: { text: string }) {
   let color = "bg-gray-100 text-gray-700 border-gray-200";
@@ -34,32 +24,35 @@ function Badge({ text }: { text: string }) {
 }
 
 export function Donations() {
+  const location = useLocation();
+  const prefill = location.state?.prefillData;
+
   const navigate = useNavigate();
   const [donations, setDonations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
 
   const [formData, setFormData] = useState({
-    id: '',
-    foodItem: '',
-    foodCategory: '',
-    prepMethod: '',
-    storageCondition: '',
-    packagingType: '',
-    temperature: '',
-    humidity: '',
-    hoursPrepared: '',
-    estTransport: '',
-    distance: '',
-    quantity: '',
-    season: '',
-    eventType: '',
-    cityTier: '',
-    perishabilityScore: '',
-    shelfLife: '',
-    pickupLocation: '',
-    donorContact: '',
-    existingAiData: null as any
+    id: prefill?.id || '',
+    foodItem: prefill?.foodItem || '',
+    foodCategory: prefill?.foodCategory || '',
+    prepMethod: prefill?.prepMethod || '',
+    storageCondition: prefill?.storageCondition || '',
+    packagingType: prefill?.packagingType || '',
+    temperature: prefill?.temperature || '',
+    humidity: prefill?.humidity || '',
+    hoursPrepared: prefill?.hoursPrepared || '',
+    estTransport: prefill?.estTransport || '',
+    distance: prefill?.distance || '',
+    quantity: prefill?.quantity || '',
+    season: prefill?.season || '',
+    eventType: prefill?.eventType || '',
+    cityTier: prefill?.cityTier || '',
+    perishabilityScore: prefill?.perishabilityScore || '',
+    shelfLife: prefill?.shelfLife || '',
+    pickupLocation: prefill?.pickupLocation || '',
+    donorContact: prefill?.donorContact || '',
+    existingAiData: prefill?.existingAiData || null as any
   });
 
   const fetchDonations = async () => {
