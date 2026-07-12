@@ -11,6 +11,7 @@ export function getToken(): string | null {
 
 export function setUser(user: any) {
   localStorage.setItem(USER_KEY, JSON.stringify(user));
+  window.dispatchEvent(new Event('profileUpdated'));
 }
 
 export function getUser(): any | null {
@@ -20,6 +21,14 @@ export function getUser(): any | null {
     return JSON.parse(userStr);
   } catch {
     return null;
+  }
+}
+
+export function updateUserLocal(updates: any) {
+  const current = getUser();
+  if (current) {
+    const nextUser = { ...current, ...updates };
+    setUser(nextUser);
   }
 }
 
