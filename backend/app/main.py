@@ -5,7 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 # Import routers
-from app.routes import health, donations, requests, matches, ai, auth, users, settings as settings_routes
+from app.routes import health, donations, requests, matches, ai, auth, users, settings as settings_routes, analytics
 from app.config import settings
 
 app = FastAPI(
@@ -54,7 +54,7 @@ app.include_router(donations.router)
 app.include_router(requests.router)
 app.include_router(matches.router)
 app.include_router(ai.router)
-
+app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
 @app.get("/")
 def root():
     return {"success": True, "message": "Welcome to the SharePlate API!", "data": None}
