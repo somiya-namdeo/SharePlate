@@ -6,8 +6,11 @@
 
 ### AI-Powered Food Redistribution Platform
 
-**Connecting surplus food with real community demand through AI-assisted safety assessment, NLP-based information extraction, priority-aware matching, and operational insights.**
+**A second chance for food. A better chance for someone else.**
 
+Connecting surplus food with real community demand through AI-assisted safety assessment, NLP-based information extraction, priority-aware matching, and operational insights.
+
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)](https://github.com/somiya-namdeo/SharePlate)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
@@ -16,6 +19,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikitlearn&logoColor=white)](https://scikit-learn.org/)
+[![CatBoost](https://img.shields.io/badge/CatBoost-FFCC00?logo=catboost&logoColor=black)](https://catboost.ai/)
 
 **Status:** Core application implemented and under final verification. Deployment and final screenshots are in progress.
 
@@ -122,7 +126,7 @@ NGOs can track their requests, view matching activity, and access available dona
 
 SharePlate includes a food-safety workflow designed to help assess whether donated food should continue through the redistribution process.
 
-The system combines model inference with backend safety logic to evaluate information such as:
+The system combines model inference, backend calculations, and safety logic to evaluate information such as:
 
 - food characteristics
 - storage conditions
@@ -130,7 +134,7 @@ The system combines model inference with backend safety logic to evaluate inform
 - time since preparation
 - estimated shelf life
 
-The workflow produces operational information including:
+The workflow produces operational information related to:
 
 - safety status
 - spoilage risk
@@ -242,8 +246,7 @@ The logistics workflow can:
 - visualize matched rescue relationships
 - focus on a specific rescue through deep-linked navigation
 - provide operational context for active matches
-
-Completed rescues are removed from the live operational map so the view remains focused on active work.
+- remove completed rescues from the live operational map
 
 ---
 
@@ -383,16 +386,16 @@ The NLP workflow can identify useful entities such as food, quantity, location, 
 
 ### Food Safety & Urgency Assessment
 
-The food-safety workflow combines trained model inference with backend calculations and safety rules.
+The food-safety workflow combines trained model inference, backend calculations, and safety logic to evaluate information.
 
 **Purpose:** Assist the platform in evaluating whether donated food is suitable for redistribution and how urgently it should be handled.
 
 The workflow uses donation and environmental information to produce operational outputs related to:
 
-- safety
+- safety status
 - spoilage risk
 - urgency
-- remaining shelf life
+- remaining shelf-life information
 
 This capability is integrated into the real donation workflow.
 
@@ -408,7 +411,7 @@ These experiments are intentionally documented separately from the actively inte
 
 ## Surplus Food Prediction Experiments
 
-The repository includes a machine-learning workflow exploring the question:
+The repository includes an experimental machine-learning workflow exploring the question:
 
 > **Can historical event and food information help estimate how much food may remain surplus?**
 
@@ -583,14 +586,21 @@ SharePlate/
 │
 ├── notebooks/
 │   ├── 01_SharePlate_Surplus_Food_Prediction.ipynb
-│   └── 03_SharePlate_Demand_Forecasting.ipynb
+│   ├── 02.1_SharePlate_NER_BiLSTM_Attention-Initial.ipynb
+│   ├── 02.2_SharePlate_NER_BiLSTM_Attention.ipynb
+│   ├── 03_SharePlate_Demand_Forecasting.ipynb
+│   └── 04_SharePlate_Food_Safety_Urgency_Engine.ipynb
 │
-├── models/                   # Trained model artifacts, if retained here
+├── models/
+│   ├── shareplate_demand_forecasting_dnn.pth
+│   ├── shareplate_food_safety_model.pkl
+│   ├── shareplate_ner_bilstm_attention.pth
+│   ├── shareplate_ner_bilstm_attention_v2.pth
+│   ├── shareplate_surplus_food_predictor.pkl
+│   └── ...                   # Supporting label encoders and features
 │
 └── README.md
 ```
-
-> The exact structure may evolve as the project is finalized and deployed.
 
 ---
 
@@ -798,6 +808,6 @@ GitHub: [somiya-namdeo](https://github.com/somiya-namdeo)
 
 ### SharePlate
 
-**Turning surplus into an opportunity to serve.**
+**A second chance for food. A better chance for someone else.**
 
 </div>
