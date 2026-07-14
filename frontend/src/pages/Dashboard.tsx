@@ -1,72 +1,219 @@
-import { PackageOpen, AlertTriangle, Utensils, HeartHandshake, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { PackageOpen, Utensils, HeartHandshake, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { Topbar } from '../components/dashboard/Topbar';
 import { StatCard } from '../components/dashboard/StatCard';
-import { DonationQueue } from '../components/dashboard/DonationQueue';
-import { InsightsPanel } from '../components/dashboard/InsightsPanel';
-import { MapCard } from '../components/dashboard/MapCard';
-
-import { WorkflowTimeline } from '../components/dashboard/WorkflowTimeline';
-import { ActivityFeed } from '../components/dashboard/ActivityFeed';
+import { ActiveMatchesList, RecentRequestsList, DonationList } from '../components/dashboard/DashboardLists';
+import { apiFetch } from '../lib/api';
+import { getUser } from '../lib/auth';
+import toast from 'react-hot-toast';
 
 export function Dashboard() {
+  const user = getUser();
+  const role = user?.user_metadata?.role || 'donor';
+  const userId = user?.id;
+
+  // Data states
+  const [activeMatches, setActiveMatches] = useState<any[]>([]);
+  const [recentRequests, setRecentRequests] = useState<any[]>([]);
+  const [availableDonations, setAvailableDonations] = useState<any[]>([]);
+  const [activeDonations, setActiveDonations] = useState<any[]>([]);
+
+  // Computed KPIs
+  const [kpis, setKpis] = useState({
+    activeRequests: 0,
+    matchesInProgress: 0,
+    mealsRequested: 0,
+    mealsRescued: 0,
+    activeDonations: 0,
+    totalRescues: 0,
+    quantityRescued: 0,
+  });
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchData = async () => {
+      try {
+
+        
+        let fetchedMatches: any[] = [];
+        let fetchedRequests: any[] = [];
+        let fetchedDonations: any[] = [];
+
+        // Fetch Matches
+        const matchRes = await apiFetch(`/api/matches/${role}/${userId}`);
+        if (matchRes.data && Array.isArray(matchRes.data)) {
+          fetchedMatches = matchRes.data;
+        }
+
+        // Fetch Donations
+        const donRes = await apiFetch('/api/donations/');
+        if (donRes.data && Array.isArray(donRes.data)) {
+          fetchedDonations = donRes.data;
+        }
+
+        if (role === 'ngo') {
+          // Fetch Requests
+          const reqRes = await apiFetch('/api/requests/');
+          if (reqRes.data && Array.isArray(reqRes.data)) {
+            fetchedRequests = reqRes.data;
+          }
+        }
+
+        // --- Process Data for Lists --- //
+        
+        // Active Matches
+        const pendingMatches = fetchedMatches.filter((m: any) => ['pending', 'scheduled'].includes(m.status?.toLowerCase()));
+        setActiveMatches(pendingMatches.slice(0, 5));
+
+        // Available Donations (NGO)
+        if (role === 'ngo') {
+          const pendingDonations = fetchedDonations
+            .filter((d: any) => d.status?.toLowerCase() === 'pending')
+            .sort((a: any, b: any) => {
+              const weights: Record<string, number> = { 'critical': 3, 'high': 2, 'medium': 1, 'low': 0 };
+              const wA = weights[a.urgency_level?.toLowerCase()] || 0;
+              const wB = weights[b.urgency_level?.toLowerCase()] || 0;
+              return wB - wA;
+            });
+          setAvailableDonations(pendingDonations.slice(0, 5));
+        }
+
+        // Active Donations (Donor)
+        if (role === 'donor') {
+          const myPendingDonations = fetchedDonations
+            .filter((d: any) => d.donor_id === userId && d.status?.toLowerCase() === 'pending')
+            .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          setActiveDonations(myPendingDonations.slice(0, 5));
+        }
+
+        // Recent Requests (NGO)
+        if (role === 'ngo') {
+          const myRequests = fetchedRequests
+            .filter((r: any) => r.ngo_id === userId)
+            .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          setRecentRequests(myRequests.slice(0, 5));
+        }
+
+
+        // --- Process KPIs --- //
+        const completedMatches = fetchedMatches.filter((m: any) => m.status?.toLowerCase() === 'completed');
+
+        if (role === 'ngo') {
+          const myRequests = fetchedRequests.filter((r: any) => r.ngo_id === userId);
+          const activeReqs = myRequests.filter((r: any) => r.status?.toLowerCase() === 'open');
+          
+          let mealsReq = 0;
+          myRequests.forEach((r: any) => { mealsReq += (r.meals_needed || 0); });
+          
+          let mealsRes = 0;
+          completedMatches.forEach((m: any) => {
+            if (m.ngo_requests && m.ngo_requests.meals_needed) {
+              mealsRes += m.ngo_requests.meals_needed;
+            }
+          });
+
+          setKpis((prev) => ({
+            ...prev,
+            activeRequests: activeReqs.length,
+            matchesInProgress: pendingMatches.length,
+            mealsRequested: mealsReq,
+            mealsRescued: mealsRes,
+          }));
+
+        } else {
+          // Donor KPIs
+          const myDons = fetchedDonations.filter((d: any) => d.donor_id === userId);
+          const activeDons = myDons.filter((d: any) => d.status?.toLowerCase() === 'pending');
+          
+          let quantRes = 0;
+          completedMatches.forEach((m: any) => {
+            if (m.donations && m.donations.quantity) {
+              quantRes += m.donations.quantity;
+            }
+          });
+
+          setKpis((prev) => ({
+            ...prev,
+            activeDonations: activeDons.length,
+            matchesInProgress: pendingMatches.length,
+            totalRescues: completedMatches.length,
+            quantityRescued: quantRes,
+          }));
+        }
+
+      } catch (err: any) {
+        toast.error(err.message || 'Failed to load dashboard data');
+      } finally {
+
+      }
+    };
+
+    fetchData();
+  }, [userId, role]);
+
   return (
     <div className="min-h-screen bg-[#F8F5F0] font-sans selection:bg-[#F07154]/20 selection:text-[#33251E]">
       <Sidebar />
       <Topbar title="Overview" />
         
-      <main className="ml-[280px] pt-[112px] pb-12 px-8 max-w-[1600px] mx-auto flex flex-col gap-8">
+      <main className="ml-0 md:ml-[280px] pt-[112px] pb-12 px-4 md:px-8 max-w-[1200px] mx-auto flex flex-col gap-8">
           
-        {/* Row 1: KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-            <StatCard title="Active Donations" value="24" trend="+8 today" icon={PackageOpen} iconColorClass="text-[#F07154]" />
-            <StatCard title="Critical Pickups" value="6" trend="2 unresolved" icon={AlertTriangle} iconColorClass="text-red-600" />
-            <StatCard title="Meals Rescued Today" value="412" trend="+12% vs yday" icon={Utensils} iconColorClass="text-emerald-600" />
-            <StatCard title="NGO Requests" value="9" trend="3 open" icon={HeartHandshake} iconColorClass="text-[#F07154]" />
-
-            <StatCard title="Waste Prevented" value="82 kg" trend="Past 24h" icon={ShieldCheck} iconColorClass="text-emerald-600" />
-          </div>
-
-        {/* Row 2: Queue & Insights */}
-        <div className="grid grid-cols-1 xl:grid-cols-[65%_35%] gap-6 h-auto xl:h-[520px]">
-          <div className="h-full xl:max-h-[520px]">
-            <DonationQueue />
-          </div>
-          <div className="h-full xl:max-h-[520px]">
-            <InsightsPanel />
-          </div>
+        {/* KPI Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {role === 'ngo' ? (
+            <>
+              <StatCard title="Active Requests" value={kpis.activeRequests.toString()} trend="" icon={PackageOpen} iconColorClass="text-blue-600" />
+              <StatCard title="Matches in Progress" value={kpis.matchesInProgress.toString()} trend="" icon={HeartHandshake} iconColorClass="text-amber-600" />
+              <StatCard title="Meals Requested" value={kpis.mealsRequested.toString()} trend="" icon={Utensils} iconColorClass="text-[#33251E]/60" />
+              <StatCard title="Meals Rescued" value={kpis.mealsRescued.toString()} trend="" icon={CheckCircle2} iconColorClass="text-emerald-600" />
+            </>
+          ) : (
+            <>
+              <StatCard title="Active Donations" value={kpis.activeDonations.toString()} trend="" icon={PackageOpen} iconColorClass="text-blue-600" />
+              <StatCard title="Matches in Progress" value={kpis.matchesInProgress.toString()} trend="" icon={HeartHandshake} iconColorClass="text-amber-600" />
+              <StatCard title="Total Rescues" value={kpis.totalRescues.toString()} trend="" icon={CheckCircle2} iconColorClass="text-emerald-600" />
+              <StatCard title="Quantity Rescued" value={`${kpis.quantityRescued} kg`} trend="" icon={ShieldCheck} iconColorClass="text-emerald-600" />
+            </>
+          )}
         </div>
 
-        {/* Row 3: Map & Chart */}
-        <div className="grid grid-cols-1 xl:grid-cols-[35%_65%] gap-6 h-[380px]">
-          <div className="h-full max-h-[380px]">
-            <MapCard />
+        {/* Content Row */}
+        {role === 'ngo' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-6 xl:h-[480px]">
+            <div className="h-full">
+              <ActiveMatchesList matches={activeMatches} role={role} />
+            </div>
+            <div className="flex flex-col gap-6 h-full">
+              <div className="flex-1 min-h-0">
+                <RecentRequestsList requests={recentRequests} />
+              </div>
+              <div className="flex-1 min-h-0">
+                <DonationList 
+                  donations={availableDonations} 
+                  title="Available Donations" 
+                  label="Claim Food" 
+                  emptyDesc="No pending donations available right now." 
+                />
+              </div>
+            </div>
           </div>
-          <div className="h-full max-h-[380px]">
-
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-6 xl:h-[480px]">
+            <div className="h-full">
+              <ActiveMatchesList matches={activeMatches} role={role} />
+            </div>
+            <div className="h-full">
+              <DonationList 
+                donations={activeDonations} 
+                title="My Active Donations" 
+                label="Pending Match" 
+                emptyDesc="You have no unmatched donations waiting." 
+              />
+            </div>
           </div>
-        </div>
-
-        {/* Row 4: Workflow & Feed */}
-        <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-6 h-[280px]">
-          <div className="h-full max-h-[280px]">
-            <WorkflowTimeline />
-          </div>
-          <div className="h-full max-h-[280px]">
-            <ActivityFeed />
-          </div>
-        </div>
-
-        {/* Row 5: Bottom Alert */}
-        <div className="bg-emerald-50/80 border border-emerald-100 rounded-2xl p-6 flex items-center justify-center gap-5 text-left shadow-sm w-full h-[150px] mt-4 relative z-10">
-          <div className="w-14 h-14 bg-emerald-500 rounded-full text-white flex items-center justify-center shadow-md flex-shrink-0">
-            <CheckCircle2 size={28} />
-          </div>
-          <div>
-            <h3 className="font-serif text-2xl text-emerald-900 mb-1.5 leading-tight">No unresolved critical alerts. Great work!</h3>
-            <p className="text-emerald-700 font-medium">We'll notify the team immediately when a new critical pickup appears.</p>
-          </div>
-        </div>
+        )}
 
       </main>
     </div>
