@@ -181,35 +181,35 @@ export function Dashboard() {
 
         {/* Content Row */}
         {role === 'ngo' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-6 xl:h-[480px]">
-            <div className="h-full">
-              <ActiveMatchesList matches={activeMatches} role={role} />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+            <div className="min-w-0 w-full">
+              <ActiveMatchesList matches={activeMatches} role={role} className="h-[380px]" />
             </div>
-            <div className="flex flex-col gap-6 h-full">
-              <div className="flex-1 min-h-0">
-                <RecentRequestsList requests={recentRequests} />
-              </div>
-              <div className="flex-1 min-h-0">
-                <DonationList 
-                  donations={availableDonations} 
-                  title="Available Donations" 
-                  label="Claim Food" 
-                  emptyDesc="No pending donations available right now." 
-                />
-              </div>
+            <div className="min-w-0 w-full">
+              <RecentRequestsList requests={recentRequests} className="h-[380px]" />
+            </div>
+            <div className="min-w-0 w-full md:col-span-2 xl:col-span-1">
+              <DonationList 
+                donations={availableDonations} 
+                title="Available Donations" 
+                label="Claim Food" 
+                emptyDesc="No pending donations available right now." 
+                className="h-[380px]"
+              />
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-6 xl:h-[480px]">
-            <div className="h-full">
-              <ActiveMatchesList matches={activeMatches} role={role} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <div className="min-w-0 w-full">
+              <ActiveMatchesList matches={activeMatches} role={role} className="h-[380px]" />
             </div>
-            <div className="h-full">
+            <div className="min-w-0 w-full">
               <DonationList 
                 donations={activeDonations} 
                 title="My Active Donations" 
                 label="Pending Match" 
                 emptyDesc="You have no unmatched donations waiting." 
+                className="h-[380px]"
               />
             </div>
           </div>
