@@ -109,7 +109,7 @@ class AIService:
         except Exception as e:
             logger.error(f"Error loading NER BiLSTM model: {e}")
 
-    def predict_food_safety(self, request: FoodSafetyRequest) -> FoodSafetyResponse:
+    def predict_food_safety(self, request: FoodSafetyRequest, db=None) -> FoodSafetyResponse:
         # Auto-derive missing fields
         if not request.season:
             request.season = "Summer" if request.temperature_c > 25 else "Winter"
@@ -140,16 +140,57 @@ class AIService:
         # 2. Map to urgency level
         if urgency_score <= 25:
             urgency_level = "Low"
-            urgency_priority = 1
         elif urgency_score <= 50:
             urgency_level = "Medium"
-            urgency_priority = 2
         elif urgency_score <= 75:
             urgency_level = "High"
-            urgency_priority = 3
         else:
             urgency_level = "Critical"
-            urgency_priority = 4
+            
+        urgency_priority = 1
+        if db:
+            try:
+                # Fetch all active/eligible donations from DB
+                response = db.table('donations').select('id, urgency_level, spoilage_risk_score, hours_since_prepared, predicted_shelf_life').eq('status', 'pending').execute()
+                active_donations = response.data
+                
+                # Calculate scores for existing active eligible donations
+                scores = []
+                for d in active_donations:
+                    # Exclude unsafe donations
+                    risk = d.get('spoilage_risk_score')
+                    if risk is not None and risk > 0.8:
+                        continue
+                        
+                    hrs = d.get('hours_since_prepared')
+                    shelf = d.get('predicted_shelf_life')
+                    if shelf and shelf > 0 and hrs is not None:
+                        s = (hrs / shelf) * 100
+                        scores.append(s)
+                    else:
+                        scores.append(0.0)
+                        
+                # Add current request score
+                scores.append(urgency_score)
+                
+                # Sort descending to rank from highest urgency to lowest
+                scores.sort(reverse=True)
+                
+                # Rank is 1-indexed position
+                urgency_priority = scores.index(urgency_score) + 1
+            except Exception as e:
+                logger.error(f"Failed to calculate dynamic priority rank: {e}")
+                # Fallback to band if DB query fails
+                if urgency_score <= 25: urgency_priority = 4
+                elif urgency_score <= 50: urgency_priority = 3
+                elif urgency_score <= 75: urgency_priority = 2
+                else: urgency_priority = 1
+        else:
+            # Fallback
+            if urgency_score <= 25: urgency_priority = 4
+            elif urgency_score <= 50: urgency_priority = 3
+            elif urgency_score <= 75: urgency_priority = 2
+            else: urgency_priority = 1
             
         remaining_shelf_life = max(0.0, request.estimated_shelf_life_hr - request.hours_since_prepared)
         

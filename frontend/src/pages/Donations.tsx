@@ -62,9 +62,11 @@ export function Donations() {
   const fetchDonations = async () => {
     setIsFetching(true);
     try {
-      const data = await apiFetch('/api/donations/');
+      const data = await apiFetch('/api/donations/me');
       if (data.success) {
         setDonations(data.data);
+      } else {
+        toast.error(data.message || 'Failed to load donations');
       }
     } catch (error: any) {
       toast.error('Failed to load donations');

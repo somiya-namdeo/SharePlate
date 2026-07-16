@@ -8,7 +8,7 @@ import { cn } from '../lib/utils';
 
 export function SignUp() {
   const navigate = useNavigate();
-  const [role, setRole] = useState<'donor' | 'ngo' | 'volunteer'>('donor');
+  const [role, setRole] = useState<'donor' | 'ngo'>('donor');
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -82,7 +82,7 @@ export function SignUp() {
               
               <div className="space-y-3">
                 <label className="text-sm font-bold text-[#33251E]">I am joining as a...</label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setRole('donor')}
@@ -112,21 +112,6 @@ export function SignUp() {
                     <Heart size={20} className={role === 'ngo' ? "text-emerald-500 mb-3" : "text-[#33251E]/40 mb-3"} />
                     <div className="font-bold text-sm mb-1 text-[#33251E]">NGO</div>
                     <div className="text-[11px] text-[#33251E]/60 leading-tight">I distribute food.</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole('volunteer')}
-                    className={cn(
-                      "flex flex-col items-start p-4 rounded-2xl border-2 transition-all text-left relative overflow-hidden",
-                      role === 'volunteer' 
-                        ? "border-amber-500 bg-amber-50 shadow-sm" 
-                        : "border-[#33251E]/10 hover:border-[#33251E]/20 bg-[#FDFBF7]"
-                    )}
-                  >
-                    {role === 'volunteer' && <div className="absolute top-2 right-2 text-amber-500"><CheckCircle2 size={16} /></div>}
-                    <Truck size={20} className={role === 'volunteer' ? "text-amber-500 mb-3" : "text-[#33251E]/40 mb-3"} />
-                    <div className="font-bold text-sm mb-1 text-[#33251E]">Volunteer</div>
-                    <div className="text-[11px] text-[#33251E]/60 leading-tight">I help with pickups.</div>
                   </button>
                 </div>
               </div>

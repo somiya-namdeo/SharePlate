@@ -14,6 +14,7 @@ import { MapLogistics } from './pages/MapLogistics';
 import { Analytics } from './pages/Analytics';
 import { NGORequests } from './pages/NGORequests';
 import { Settings } from './pages/Settings';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -38,16 +39,16 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/donations" element={<Donations />} />
-        <Route path="/food-safety" element={<FoodSafety />} />
-        <Route path="/nlp" element={<NLPIntelligence />} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/donations" element={<ProtectedRoute allowedRoles={['donor']}><Donations /></ProtectedRoute>} />
+        <Route path="/food-safety" element={<ProtectedRoute allowedRoles={['donor']}><FoodSafety /></ProtectedRoute>} />
+        <Route path="/nlp" element={<ProtectedRoute><NLPIntelligence /></ProtectedRoute>} />
 
-        <Route path="/matching" element={<SmartMatching />} />
-        <Route path="/logistics" element={<MapLogistics />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/requests" element={<NGORequests />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/matching" element={<ProtectedRoute><SmartMatching /></ProtectedRoute>} />
+        <Route path="/logistics" element={<ProtectedRoute><MapLogistics /></ProtectedRoute>} />
+        <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+        <Route path="/requests" element={<ProtectedRoute allowedRoles={['ngo']}><NGORequests /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

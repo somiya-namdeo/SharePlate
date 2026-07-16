@@ -32,7 +32,7 @@ export function SmartMatching() {
     
     setLoadingQueue(true);
     try {
-      const response = await apiFetch(`/api/matches/donor/${user.id}`);
+      const response = await apiFetch('/api/matches/me');
       if (response.success && Array.isArray(response.data)) {
         setQueue(response.data);
       }
@@ -46,7 +46,10 @@ export function SmartMatching() {
   useEffect(() => {
     const fetchDonations = async () => {
       try {
-        const response = await apiFetch('/api/donations/');
+        const user = getUser();
+        const role = user?.user_metadata?.role;
+        const endpoint = role === 'donor' ? '/api/donations/me' : '/api/donations/';
+        const response = await apiFetch(endpoint);
         const list = Array.isArray(response) ? response : (response.data || []);
         const pending = list.filter((d: any) => d.status === 'pending');
         setDonationsList(pending.length > 0 ? pending : list);

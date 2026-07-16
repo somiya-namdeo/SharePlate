@@ -1,4 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { getUser } from '../../lib/auth';
 import { 
   LayoutDashboard, 
   PackageSearch, 
@@ -14,19 +16,28 @@ import { cn } from '../../lib/utils';
 
 export function Sidebar() {
   const location = useLocation();
+  const [role, setRole] = useState<'donor' | 'ngo'>('donor');
 
-  const navItems = [
-    { icon: LayoutDashboard, label: 'Overview', path: '/dashboard' },
-    { icon: PackageSearch, label: 'Donations', path: '/donations' },
-    { icon: ShieldCheck, label: 'Food Safety', path: '/food-safety' },
-    { icon: BrainCircuit, label: 'NLP Intelligence', path: '/nlp' },
+  useEffect(() => {
+    const user = getUser();
+    if (user?.user_metadata?.role) {
+      setRole(user.user_metadata.role);
+    }
+  }, []);
 
-    { icon: Network, label: 'Smart Matching', path: '/matching' },
-    { icon: MapIcon, label: 'Map & Logistics', path: '/logistics' },
-    { icon: BarChart3, label: 'Analytics', path: '/analytics' },
-    { icon: HeartHandshake, label: 'NGO Requests', path: '/requests' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+  const allNavItems = [
+    { icon: LayoutDashboard, label: 'Overview', path: '/dashboard', roles: ['donor', 'ngo'] },
+    { icon: PackageSearch, label: 'Donations', path: '/donations', roles: ['donor'] },
+    { icon: HeartHandshake, label: 'NGO Requests', path: '/requests', roles: ['ngo'] },
+    { icon: ShieldCheck, label: 'Food Safety', path: '/food-safety', roles: ['donor'] },
+    { icon: BrainCircuit, label: 'NLP Intelligence', path: '/nlp', roles: ['donor', 'ngo'] },
+    { icon: Network, label: 'Smart Matching', path: '/matching', roles: ['donor', 'ngo'] },
+    { icon: MapIcon, label: 'Map & Logistics', path: '/logistics', roles: ['donor', 'ngo'] },
+    { icon: BarChart3, label: 'Analytics', path: '/analytics', roles: ['donor', 'ngo'] },
+    { icon: Settings, label: 'Settings', path: '/settings', roles: ['donor', 'ngo'] },
   ];
+
+  const navItems = allNavItems.filter(item => item.roles.includes(role));
 
   return (
     <aside className="w-[280px] h-screen bg-[#FDFBF7] border-r border-[#33251E]/10 flex flex-col fixed top-0 left-0 z-30 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.05)]">

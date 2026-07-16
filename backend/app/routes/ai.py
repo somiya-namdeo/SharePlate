@@ -1,4 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
+from supabase import Client
+from app.database import get_db
 from app.schemas.ai import (
     FoodSafetyRequest, 
     FoodSafetyResponse, 
@@ -19,9 +21,13 @@ def get_ai_service():
     return ai_service
 
 @router.post("/food-safety", response_model=FoodSafetyResponse, summary="Predict Food Safety and Urgency")
-async def predict_food_safety(request: FoodSafetyRequest, service: AIService = Depends(get_ai_service)):
+async def predict_food_safety(
+    request: FoodSafetyRequest, 
+    service: AIService = Depends(get_ai_service),
+    db: Client = Depends(get_db)
+):
     try:
-        return service.predict_food_safety(request)
+        return service.predict_food_safety(request, db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

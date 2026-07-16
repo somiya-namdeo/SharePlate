@@ -81,7 +81,7 @@ export function MapLogistics() {
       const user = getUser();
       if (user && user.id) {
         const role = user.user_metadata?.role === 'ngo' ? 'ngo' : 'donor';
-        const matchRes = await apiFetch(`/api/matches/${role}/${user.id}`);
+        const matchRes = await apiFetch(`/api/matches/me`);
         if (matchRes.success && Array.isArray(matchRes.data)) {
            setMatches(matchRes.data.filter((m: any) => ['pending', 'accepted', 'picked_up'].includes((m.status || 'pending').toLowerCase())));
         }

@@ -18,6 +18,7 @@ export function Dashboard() {
   const [recentRequests, setRecentRequests] = useState<any[]>([]);
   const [availableDonations, setAvailableDonations] = useState<any[]>([]);
   const [activeDonations, setActiveDonations] = useState<any[]>([]);
+  const [completedDonations, setCompletedDonations] = useState<any[]>([]);
 
   // Computed KPIs
   const [kpis, setKpis] = useState({
@@ -42,22 +43,27 @@ export function Dashboard() {
         let fetchedDonations: any[] = [];
 
         // Fetch Matches
-        const matchRes = await apiFetch(`/api/matches/${role}/${userId}`);
+        const matchRes = await apiFetch(`/api/matches/me`);
         if (matchRes.data && Array.isArray(matchRes.data)) {
           fetchedMatches = matchRes.data;
         }
 
-        // Fetch Donations
-        const donRes = await apiFetch('/api/donations/');
-        if (donRes.data && Array.isArray(donRes.data)) {
-          fetchedDonations = donRes.data;
-        }
-
         if (role === 'ngo') {
-          // Fetch Requests
-          const reqRes = await apiFetch('/api/requests/');
+          // Fetch Available Donations
+          const donRes = await apiFetch('/api/donations/');
+          if (donRes.data && Array.isArray(donRes.data)) {
+            fetchedDonations = donRes.data;
+          }
+          // Fetch My Requests
+          const reqRes = await apiFetch('/api/requests/me');
           if (reqRes.data && Array.isArray(reqRes.data)) {
             fetchedRequests = reqRes.data;
+          }
+        } else {
+          // Fetch My Donations
+          const donRes = await apiFetch('/api/donations/me');
+          if (donRes.data && Array.isArray(donRes.data)) {
+            fetchedDonations = donRes.data;
           }
         }
 
@@ -80,18 +86,22 @@ export function Dashboard() {
           setAvailableDonations(pendingDonations.slice(0, 5));
         }
 
-        // Active Donations (Donor)
+        // Active & Completed Donations (Donor)
         if (role === 'donor') {
           const myPendingDonations = fetchedDonations
-            .filter((d: any) => d.donor_id === userId && d.status?.toLowerCase() === 'pending')
+            .filter((d: any) => d.status?.toLowerCase() === 'pending')
             .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           setActiveDonations(myPendingDonations.slice(0, 5));
+
+          const myCompleted = fetchedDonations
+            .filter((d: any) => d.status?.toLowerCase() === 'completed')
+            .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          setCompletedDonations(myCompleted.slice(0, 5));
         }
 
         // Recent Requests (NGO)
         if (role === 'ngo') {
           const myRequests = fetchedRequests
-            .filter((r: any) => r.ngo_id === userId)
             .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           setRecentRequests(myRequests.slice(0, 5));
         }
@@ -101,11 +111,10 @@ export function Dashboard() {
         const completedMatches = fetchedMatches.filter((m: any) => m.status?.toLowerCase() === 'completed');
 
         if (role === 'ngo') {
-          const myRequests = fetchedRequests.filter((r: any) => r.ngo_id === userId);
-          const activeReqs = myRequests.filter((r: any) => r.status?.toLowerCase() === 'open');
+          const activeReqs = fetchedRequests.filter((r: any) => r.status?.toLowerCase() === 'open');
           
           let mealsReq = 0;
-          myRequests.forEach((r: any) => { mealsReq += (r.meals_needed || 0); });
+          fetchedRequests.forEach((r: any) => { mealsReq += (r.meals_needed || 0); });
           
           let mealsRes = 0;
           completedMatches.forEach((m: any) => {
@@ -124,8 +133,7 @@ export function Dashboard() {
 
         } else {
           // Donor KPIs
-          const myDons = fetchedDonations.filter((d: any) => d.donor_id === userId);
-          const activeDons = myDons.filter((d: any) => d.status?.toLowerCase() === 'pending');
+          const activeDons = fetchedDonations.filter((d: any) => d.status?.toLowerCase() === 'pending');
           
           let quantRes = 0;
           completedMatches.forEach((m: any) => {
@@ -199,16 +207,25 @@ export function Dashboard() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-            <div className="min-w-0 w-full">
-              <ActiveMatchesList matches={activeMatches} role={role} className="h-[380px]" />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
             <div className="min-w-0 w-full">
               <DonationList 
                 donations={activeDonations} 
                 title="My Active Donations" 
                 label="Pending Match" 
                 emptyDesc="You have no unmatched donations waiting." 
+                className="h-[380px]"
+              />
+            </div>
+            <div className="min-w-0 w-full">
+              <ActiveMatchesList matches={activeMatches} role={role} className="h-[380px]" />
+            </div>
+            <div className="min-w-0 w-full md:col-span-2 xl:col-span-1">
+              <DonationList 
+                donations={completedDonations} 
+                title="Recent Completed Rescues" 
+                label="Completed" 
+                emptyDesc="No completed donations yet." 
                 className="h-[380px]"
               />
             </div>

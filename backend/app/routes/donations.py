@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi.responses import JSONResponse
 from typing import Dict, Any
 from app.schemas.donation_schema import DonationCreate
 from app.database import get_db
@@ -18,9 +19,16 @@ def create_donation(
     current_user = Depends(get_current_user)
 ):
     try:
+        role = current_user.user_metadata.get("role", "")
+        if role != "donor":
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "message": "Only donors can create donations."}
+            )
+
         # Assuming the JWT token gives us the user's UUID in `current_user.id`
         donor_id = current_user.id
-        result = service.create_donation(donation.model_dump(), donor_id)
+        result = service.create_donation(donation.model_dump(exclude={"donor_id"}), donor_id)
         return {
             "success": True,
             "message": "Donation created successfully",
@@ -29,14 +37,46 @@ def create_donation(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/")
-def get_donations(service: DonationsService = Depends(get_donations_service)):
+@router.get("/me")
+def get_my_donations(
+    service: DonationsService = Depends(get_donations_service),
+    current_user = Depends(get_current_user)
+):
     try:
-        # Optional: Can restrict to authenticated users if needed
-        result = service.get_donations()
+        role = current_user.user_metadata.get("role", "")
+        if role != "donor":
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "message": "Only donors can view their donations here."}
+            )
+        
+        result = service.get_donations_by_donor(current_user.id)
         return {
             "success": True,
-            "message": "Donations retrieved successfully",
+            "message": "My donations retrieved successfully",
+            "data": result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/")
+def get_donations(
+    service: DonationsService = Depends(get_donations_service),
+    current_user = Depends(get_current_user)
+):
+    try:
+        role = current_user.user_metadata.get("role", "")
+        if role != "ngo":
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "message": "Only NGOs can browse available donations."}
+            )
+            
+        # Optional: Can restrict to authenticated users if needed
+        result = service.get_available_donations()
+        return {
+            "success": True,
+            "message": "Available donations retrieved successfully",
             "data": result
         }
     except Exception as e:
@@ -50,6 +90,13 @@ def update_donation(
     current_user = Depends(get_current_user)
 ):
     try:
+        role = current_user.user_metadata.get("role", "")
+        if role != "donor":
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "message": "Only donors can update donations."}
+            )
+            
         donor_id = current_user.id
         result = service.update_donation(donation_id, update_data, donor_id)
         if not result:

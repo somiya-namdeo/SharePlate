@@ -82,36 +82,27 @@ def update_match_status(
         logger.error(f"Error updating match status: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/donor/{donor_id}", response_model=MatchListAPIResponse)
-def get_donor_matches(
-    donor_id: str,
+@router.get("/me", response_model=MatchListAPIResponse)
+def get_my_matches(
     service: MatchesService = Depends(get_matches_service),
     current_user = Depends(get_current_user)
 ):
     try:
-        result = service.get_matches_by_donor(donor_id)
-        return {
-            "success": True,
-            "message": "Donor matches retrieved successfully",
-            "data": jsonable_encoder(result)
-        }
-    except Exception as e:
-        logger.error(f"Error retrieving donor matches: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        role = current_user.user_metadata.get("role", "")
+        if role == "donor":
+            result = service.get_matches_by_donor(current_user.id)
+        elif role == "ngo":
+            result = service.get_matches_by_ngo(current_user.id)
+        else:
+            raise HTTPException(status_code=403, detail="Invalid role for accessing matches.")
 
-@router.get("/ngo/{ngo_id}", response_model=MatchListAPIResponse)
-def get_ngo_matches(
-    ngo_id: str,
-    service: MatchesService = Depends(get_matches_service),
-    current_user = Depends(get_current_user)
-):
-    try:
-        result = service.get_matches_by_ngo(ngo_id)
         return {
             "success": True,
-            "message": "NGO matches retrieved successfully",
+            "message": "Matches retrieved successfully",
             "data": jsonable_encoder(result)
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error retrieving NGO matches: {e}", exc_info=True)
+        logger.error(f"Error retrieving matches: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

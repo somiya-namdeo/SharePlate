@@ -25,6 +25,10 @@ class RequestsService:
     def get_requests(self, limit: int = 100) -> List[dict]:
         response = self.db.table("ngo_requests").select("*").order("created_at", desc=True).limit(limit).execute()
         return response.data
+
+    def get_requests_by_ngo(self, ngo_id: str, limit: int = 100) -> List[dict]:
+        response = self.db.table("ngo_requests").select("*").eq("ngo_id", ngo_id).order("created_at", desc=True).limit(limit).execute()
+        return response.data
     
     def get_request_by_id(self, request_id: str) -> dict:
         response = self.db.table("ngo_requests").select("*").eq("id", request_id).execute()

@@ -29,7 +29,7 @@ export function NGORequests() {
 
   const fetchRequests = async () => {
     try {
-      const res = await apiFetch('/api/requests/');
+      const res = await apiFetch('/api/requests/me');
       if (res.success && Array.isArray(res.data)) {
         setRequestsList(res.data);
         if (res.data.length > 0 && !selectedRequestId) {
@@ -114,6 +114,21 @@ export function NGORequests() {
      matchesList.find(m => m.request_id === selectedRequest.id && m.status?.toLowerCase() === 'completed')) 
     : null;
 
+  // Derive Statistics
+  const openRequestsCount = requestsList.filter(r => r.status?.toLowerCase() !== 'fulfilled').length;
+  const criticalRequestsCount = requestsList.filter(r => r.urgency_level?.toLowerCase() === 'critical' && r.status?.toLowerCase() !== 'fulfilled').length;
+  
+  const todayStr = new Date().toDateString();
+  const fulfilledTodayCount = requestsList.filter(r => {
+    const isFulfilled = r.status?.toLowerCase() === 'fulfilled';
+    const dateStr = new Date(r.updated_at || r.created_at).toDateString();
+    return isFulfilled && dateStr === todayStr;
+  }).length;
+
+  const totalRequestsCount = requestsList.length;
+  const fulfilledCount = requestsList.filter(r => r.status?.toLowerCase() === 'fulfilled').length;
+  const matchSuccessRate = totalRequestsCount > 0 ? Math.round((fulfilledCount / totalRequestsCount) * 100) : 0;
+
   return (
     <div className="min-h-screen bg-[#F8F5F0] font-sans selection:bg-[#F07154]/20 selection:text-[#33251E]">
       <Sidebar />
@@ -195,19 +210,19 @@ export function NGORequests() {
              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                  <div className="bg-white rounded-xl p-4 shadow-sm border border-[#33251E]/10">
                      <div className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest mb-1">Open Requests</div>
-                     <div className="font-serif text-xl font-bold text-[#33251E]">12</div>
+                     <div className="font-serif text-xl font-bold text-[#33251E]">{openRequestsCount}</div>
                  </div>
                  <div className="bg-white rounded-xl p-4 shadow-sm border border-[#33251E]/10">
                      <div className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest mb-1">Critical</div>
-                     <div className="font-serif text-xl font-bold text-red-500">4</div>
+                     <div className="font-serif text-xl font-bold text-red-500">{criticalRequestsCount}</div>
                  </div>
                  <div className="bg-white rounded-xl p-4 shadow-sm border border-[#33251E]/10">
                      <div className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest mb-1">Fulfilled Today</div>
-                     <div className="font-serif text-xl font-bold text-[#33251E]">7</div>
+                     <div className="font-serif text-xl font-bold text-[#33251E]">{fulfilledTodayCount}</div>
                  </div>
                  <div className="bg-white rounded-xl p-4 shadow-sm border border-[#33251E]/10">
                      <div className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest mb-1">Match Success</div>
-                     <div className="font-serif text-xl font-bold text-[#33251E]">91%</div>
+                     <div className="font-serif text-xl font-bold text-[#33251E]">{matchSuccessRate}%</div>
                  </div>
              </div>
 
