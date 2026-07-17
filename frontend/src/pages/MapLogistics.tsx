@@ -67,23 +67,77 @@ export function MapLogistics() {
   
   const fetchData = async () => {
     try {
-      const [donRes, reqRes] = await Promise.all([
-        apiFetch('/api/donations/'),
-        apiFetch('/api/requests/')
-      ]);
-      
-      const donList = Array.isArray(donRes) ? donRes : (donRes.data || []);
-      const reqList = Array.isArray(reqRes) ? reqRes : (reqRes.data || []);
-      
-      setDonations(donList.filter((d: any) => d.latitude !== null && d.longitude !== null && ['pending', 'matched', 'picked_up'].includes((d.status || 'pending').toLowerCase())));
-      setRequests(reqList.filter((r: any) => r.latitude !== null && r.longitude !== null && (r.status || 'open').toLowerCase() === 'open'));
-      
       const user = getUser();
-      if (user && user.id) {
-        const role = user.user_metadata?.role === 'ngo' ? 'ngo' : 'donor';
-        const matchRes = await apiFetch(`/api/matches/me`);
-        if (matchRes.success && Array.isArray(matchRes.data)) {
-           setMatches(matchRes.data.filter((m: any) => ['pending', 'accepted', 'picked_up'].includes((m.status || 'pending').toLowerCase())));
+      const role = user?.user_metadata?.role;
+      
+      const matchRes = await apiFetch(`/api/matches/me`);
+      const matchesData = (matchRes.success && Array.isArray(matchRes.data)) ? matchRes.data : [];
+      const filteredMatches = matchesData.filter((m: any) => ['pending', 'accepted', 'picked_up'].includes((m.status || 'pending').toLowerCase()));
+      setMatches(filteredMatches);
+
+      if (role === 'donor') {
+        const [donRes, reqRes] = await Promise.all([
+          apiFetch('/api/donations/me'),
+          apiFetch('/api/requests/')
+        ]);
+        
+        const donList = Array.isArray(donRes) ? donRes : (donRes.data || []);
+        const reqListRaw = Array.isArray(reqRes) ? reqRes : (reqRes.data || []);
+        
+        const filteredDonations = donList.filter((d: any) => d.latitude !== null && d.longitude !== null && ['pending', 'matched', 'picked_up'].includes((d.status || 'pending').toLowerCase()));
+        setDonations(filteredDonations);
+        
+        let filteredReqList = reqListRaw.filter((r: any) => r.latitude !== null && r.longitude !== null && (r.status || 'open').toLowerCase() === 'open');
+        const matchedReqIds = new Set(filteredMatches.map((m: any) => m.request_id));
+        filteredReqList = filteredReqList.filter(r => matchedReqIds.has(r.id));
+        setRequests(filteredReqList);
+      } else if (role === 'ngo') {
+        const ngoDonations: any[] = [];
+        const ngoRequests: any[] = [];
+        const seenDonations = new Set();
+        const seenRequests = new Set();
+        
+        filteredMatches.forEach((m: any) => {
+           if (m.donation_latitude && m.donation_longitude && !seenDonations.has(m.donation_id)) {
+              ngoDonations.push({
+                 id: m.donation_id,
+                 latitude: m.donation_latitude,
+                 longitude: m.donation_longitude,
+                 food_type: m.food_type,
+                 quantity: m.quantity,
+                 status: m.status,
+                 safety_status: m.donation_safety_status || 'Safe',
+                 address: m.donation_address || 'Donor Location',
+                 predicted_shelf_life: m.donation_predicted_shelf_life
+              });
+              seenDonations.add(m.donation_id);
+           }
+           if (m.request_latitude && m.request_longitude && !seenRequests.has(m.request_id)) {
+              ngoRequests.push({
+                 id: m.request_id,
+                 latitude: m.request_latitude,
+                 longitude: m.request_longitude,
+                 preferred_food_type: m.food_type,
+                 urgency_level: m.urgency,
+                 status: m.status,
+                 ngo_name: m.ngo_name
+              });
+              seenRequests.add(m.request_id);
+           }
+        });
+        
+        setDonations(ngoDonations);
+        setRequests(ngoRequests);
+        
+        // Auto-select first active match for NGOs if no deep link is provided
+        if (!requestIdParam) {
+           const firstActive = filteredMatches.find((m: any) => ['pending', 'accepted'].includes((m.status || '').toLowerCase()));
+           if (firstActive) {
+               const autoDon = ngoDonations.find((d: any) => d.id === firstActive.donation_id);
+               if (autoDon) {
+                   setSelectedPickup({ ...autoDon, type: 'donation' });
+               }
+           }
         }
       }
     } catch (err) {
@@ -94,6 +148,8 @@ export function MapLogistics() {
   useEffect(() => {
     fetchData();
   }, []);
+
+
 
   // Handle auto-selection for deep-linked requests
   useEffect(() => {
@@ -364,12 +420,22 @@ export function MapLogistics() {
                    
                    <div className="space-y-2">
                       <div className="flex justify-between items-center py-2.5 border-b border-[#33251E]/5">
-                         <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">Est Shelf Life</span>
-                         <span className="text-sm font-semibold text-[#33251E]">{selectedPickup.predicted_shelf_life ? `${selectedPickup.predicted_shelf_life} hrs` : '—'}</span>
+                         <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">Logistic Status</span>
+                         <span className="text-sm font-semibold text-[#33251E] capitalize">{selectedMatch ? selectedMatch.status : 'Awaiting Match'}</span>
                       </div>
                       <div className="flex justify-between items-center py-2.5 border-b border-[#33251E]/5">
                          <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">Assigned NGO</span>
                          <span className="text-sm font-semibold text-[#33251E] truncate max-w-[120px]" title={selectedMatch?.ngo_name || selectedNGO?.ngo_name || selectedNGO?.organization || 'Not assigned'}>{selectedMatch?.ngo_name || selectedNGO?.ngo_name || selectedNGO?.organization || 'Not assigned'}</span>
+                      </div>
+                      {selectedMatch?.estimated_pickup_time && (
+                      <div className="flex justify-between items-center py-2.5 border-b border-[#33251E]/5">
+                         <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">Est. Pickup</span>
+                         <span className="text-sm font-semibold text-[#33251E]">{new Date(selectedMatch.estimated_pickup_time).toLocaleString()}</span>
+                      </div>
+                      )}
+                      <div className="flex justify-between items-center py-2.5 border-b border-[#33251E]/5">
+                         <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">Est Shelf Life</span>
+                         <span className="text-sm font-semibold text-[#33251E]">{selectedPickup.predicted_shelf_life ? `${selectedPickup.predicted_shelf_life} hrs` : '—'}</span>
                       </div>
                       <div className="flex justify-between items-center py-2.5">
                          <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">Distance</span>
@@ -390,10 +456,24 @@ export function MapLogistics() {
                {selectedMatch && (
                  <div className="mb-3 space-y-2">
                    {(() => {
-                     const currentUserId = getUser()?.id;
-                     const isNgo = currentUserId === selectedMatch.ngo_id;
+                     const user = getUser();
+                     const role = user?.user_metadata?.role;
+                     const isNgo = role === 'ngo';
                      
-                     if (selectedMatch.status === 'pending' && isNgo) {
+                     if (!isNgo) {
+                         let statusText = "Pending Match";
+                         if (selectedMatch.status === 'accepted') statusText = "Rescue in Progress";
+                         if (selectedMatch.status === 'completed') statusText = "Completed";
+                         if (selectedMatch.status === 'picked_up') statusText = "In Transit";
+                         
+                         return (
+                           <div className="w-full bg-[#33251E]/5 text-[#33251E]/60 border border-[#33251E]/10 rounded-xl py-2.5 text-center text-sm font-bold flex items-center justify-center gap-2">
+                             Status: {statusText}
+                           </div>
+                         );
+                     }
+
+                     if (selectedMatch.status === 'pending') {
                        return (
                          <div className="flex gap-2">
                            <button onClick={() => updateMatchStatus(selectedMatch.id, 'accepted')} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-2.5 text-sm font-bold transition-colors shadow-sm border border-emerald-700">Accept Match</button>

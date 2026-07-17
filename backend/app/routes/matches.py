@@ -70,6 +70,10 @@ def update_match_status(
     current_user = Depends(get_current_user)
 ):
     try:
+        role = current_user.user_metadata.get("role", "")
+        if role != "ngo":
+            raise HTTPException(status_code=403, detail="Only NGOs can complete a rescue.")
+            
         result = service.update_match_status(match_id, update_data.status)
         return {
             "success": True,

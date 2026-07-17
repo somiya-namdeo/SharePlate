@@ -93,7 +93,11 @@ class DonationsService:
         return response.data
 
     def get_available_donations(self, limit: int = 100) -> List[dict]:
-        response = self.db.table("donations").select("*").in_("status", ["pending"]).order("created_at", desc=True).limit(limit).execute()
+        response = self.db.table("donations").select("*") \
+            .eq("status", "pending") \
+            .is_("matched_ngo", "null") \
+            .in_("safety_status", ["Safe", "Yes", "safe", "yes"]) \
+            .order("created_at", desc=True).limit(limit).execute()
         return response.data
     
     def get_donation_by_id(self, donation_id: str) -> dict:

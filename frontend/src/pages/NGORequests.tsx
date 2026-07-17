@@ -39,7 +39,7 @@ export function NGORequests() {
       
       const user = getUser();
       if (user?.id) {
-        const matchesRes = await apiFetch(`/api/matches/ngo/${user.id}`);
+        const matchesRes = await apiFetch(`/api/matches/me`);
         if (matchesRes.success && Array.isArray(matchesRes.data)) {
           setMatchesList(matchesRes.data);
         }

@@ -44,6 +44,14 @@ class MatchDetailResponse(BaseModel):
     donor_email: Optional[str] = None
     ngo_phone: Optional[str] = None
     ngo_email: Optional[str] = None
+    
+    donation_latitude: Optional[float] = None
+    donation_longitude: Optional[float] = None
+    donation_address: Optional[str] = None
+    donation_safety_status: Optional[str] = None
+    donation_predicted_shelf_life: Optional[float] = None
+    request_latitude: Optional[float] = None
+    request_longitude: Optional[float] = None
 
     class Config:
         from_attributes = True

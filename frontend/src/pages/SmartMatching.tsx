@@ -51,15 +51,16 @@ export function SmartMatching() {
         const endpoint = role === 'donor' ? '/api/donations/me' : '/api/donations/';
         const response = await apiFetch(endpoint);
         const list = Array.isArray(response) ? response : (response.data || []);
-        const pending = list.filter((d: any) => d.status === 'pending');
-        setDonationsList(pending.length > 0 ? pending : list);
+        
+        // Ensure donors only see their pending donations in the matching dropdown
+        const matchingEligible = role === 'donor' ? list.filter((d: any) => d.status === 'pending') : list;
+        
+        setDonationsList(matchingEligible);
         
         if (stateDonationId) {
           setDonationId(stateDonationId);
-        } else if (pending.length > 0) {
-          setDonationId(pending[0].id);
-        } else if (list.length > 0) {
-          setDonationId(list[0].id);
+        } else if (matchingEligible.length > 0) {
+          setDonationId(matchingEligible[0].id);
         }
       } catch (error) {
         console.error("Failed to fetch donations", error);

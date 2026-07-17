@@ -198,7 +198,14 @@ class MatchesService:
                 "donor_phone": donation.get("contact_phone") or donor_profile.get("phone"),
                 "donor_email": donor_profile.get("email"),
                 "ngo_phone": request.get("contact_phone") or ngo_profile.get("phone"),
-                "ngo_email": ngo_profile.get("email")
+                "ngo_email": ngo_profile.get("email"),
+                "donation_latitude": donation.get("latitude"),
+                "donation_longitude": donation.get("longitude"),
+                "donation_address": donation.get("address"),
+                "donation_safety_status": donation.get("safety_status"),
+                "donation_predicted_shelf_life": donation.get("predicted_shelf_life"),
+                "request_latitude": request.get("latitude"),
+                "request_longitude": request.get("longitude")
             }
             formatted.append(item)
         return formatted
