@@ -3,23 +3,23 @@ import { Utensils, Leaf, HeartHandshake, Users } from 'lucide-react';
 const stats = [
   {
     icon: <Utensils size={20} strokeWidth={2} />,
-    value: "128,430",
+    value: "125K+",
     label: "MEALS RESCUED"
   },
   {
-    icon: <Leaf size={20} strokeWidth={2} />,
-    value: "42.1 t",
-    label: "FOOD WASTE REDUCED"
-  },
-  {
     icon: <HeartHandshake size={20} strokeWidth={2} />,
-    value: "96",
-    label: "NGOS CONNECTED"
+    value: "40+",
+    label: "NGO PARTNERS"
   },
   {
     icon: <Users size={20} strokeWidth={2} />,
     value: "17",
-    label: "ACTIVE DONATION ZONES"
+    label: "DONATION ZONES"
+  },
+  {
+    icon: <Leaf size={20} strokeWidth={2} />,
+    value: "AI Powered",
+    label: "SAFETY ASSESSMENT"
   }
 ];
 

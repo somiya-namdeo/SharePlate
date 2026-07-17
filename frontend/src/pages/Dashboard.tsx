@@ -172,17 +172,17 @@ export function Dashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {role === 'ngo' ? (
             <>
-              <StatCard title="Active Requests" value={kpis.activeRequests.toString()} trend="" icon={PackageOpen} iconColorClass="text-blue-600" />
-              <StatCard title="Matches in Progress" value={kpis.matchesInProgress.toString()} trend="" icon={HeartHandshake} iconColorClass="text-amber-600" />
-              <StatCard title="Meals Requested" value={kpis.mealsRequested.toString()} trend="" icon={Utensils} iconColorClass="text-[#33251E]/60" />
-              <StatCard title="Meals Rescued" value={kpis.mealsRescued.toString()} trend="" icon={CheckCircle2} iconColorClass="text-emerald-600" />
+              <StatCard title="Active Requests" value={kpis.activeRequests.toString()} trend="" subtitle={kpis.activeRequests === 0 ? "No open requests" : "Open requests"} icon={PackageOpen} iconColorClass="text-blue-600" />
+              <StatCard title="Matches in Progress" value={kpis.matchesInProgress.toString()} trend="" subtitle={kpis.matchesInProgress === 0 ? "Waiting for new matches" : "Active matching"} icon={HeartHandshake} iconColorClass="text-amber-600" />
+              <StatCard title="Meals Requested" value={kpis.mealsRequested.toString()} trend="" subtitle={kpis.mealsRequested === 0 ? "No requested meals" : "Total meals requested"} icon={Utensils} iconColorClass="text-[#33251E]/60" />
+              <StatCard title="Meals Rescued" value={kpis.mealsRescued.toString()} trend="" subtitle={kpis.mealsRescued === 0 ? "No rescued meals yet" : "Completed rescues"} icon={CheckCircle2} iconColorClass="text-emerald-600" />
             </>
           ) : (
             <>
-              <StatCard title="Active Donations" value={kpis.activeDonations.toString()} trend="" icon={PackageOpen} iconColorClass="text-blue-600" />
-              <StatCard title="Matches in Progress" value={kpis.matchesInProgress.toString()} trend="" icon={HeartHandshake} iconColorClass="text-amber-600" />
-              <StatCard title="Total Rescues" value={kpis.totalRescues.toString()} trend="" icon={CheckCircle2} iconColorClass="text-emerald-600" />
-              <StatCard title="Quantity Rescued" value={`${kpis.quantityRescued} kg`} trend="" icon={ShieldCheck} iconColorClass="text-emerald-600" />
+              <StatCard title="Active Donations" value={kpis.activeDonations.toString()} trend="" subtitle={kpis.activeDonations === 0 ? "No pending donations" : "Pending donations"} icon={PackageOpen} iconColorClass="text-blue-600" />
+              <StatCard title="Matches in Progress" value={kpis.matchesInProgress.toString()} trend="" subtitle={kpis.matchesInProgress === 0 ? "Waiting for new matches" : "Active matching"} icon={HeartHandshake} iconColorClass="text-amber-600" />
+              <StatCard title="Total Rescues" value={kpis.totalRescues.toString()} trend="" subtitle={kpis.totalRescues === 0 ? "No completed rescues yet" : "Completed donations"} icon={CheckCircle2} iconColorClass="text-emerald-600" />
+              <StatCard title="Quantity Rescued" value={`${kpis.quantityRescued} kg`} trend="" subtitle={kpis.quantityRescued === 0 ? "No rescued quantity yet" : "Total food rescued"} icon={ShieldCheck} iconColorClass="text-emerald-600" />
             </>
           )}
         </div>
@@ -191,7 +191,7 @@ export function Dashboard() {
         {role === 'ngo' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
             <div className="min-w-0 w-full">
-              <ActiveMatchesList matches={activeMatches} role={role} className="h-[380px]" />
+              <ActiveMatchesList matches={activeMatches} role={role} title="Recent Matches" className="h-[380px]" />
             </div>
             <div className="min-w-0 w-full">
               <RecentRequestsList requests={recentRequests} className="h-[380px]" />
@@ -201,6 +201,7 @@ export function Dashboard() {
                 donations={availableDonations} 
                 title="Available Donations" 
                 label="Claim Food" 
+                emptyTitle="No Available Donations"
                 emptyDesc="No pending donations available right now." 
                 className="h-[380px]"
               />
@@ -211,20 +212,24 @@ export function Dashboard() {
             <div className="min-w-0 w-full">
               <DonationList 
                 donations={activeDonations} 
-                title="My Active Donations" 
+                title="Recent Donations" 
                 label="Pending Match" 
-                emptyDesc="You have no unmatched donations waiting." 
+                emptyTitle="No Active Donations"
+                emptyDesc="You haven't created any donations yet. Start by adding your first food donation." 
+                actionLabel="Add Donation"
+                actionLink="/donations"
                 className="h-[380px]"
               />
             </div>
             <div className="min-w-0 w-full">
-              <ActiveMatchesList matches={activeMatches} role={role} className="h-[380px]" />
+              <ActiveMatchesList matches={activeMatches} role={role} title="Recent Matches" className="h-[380px]" />
             </div>
             <div className="min-w-0 w-full md:col-span-2 xl:col-span-1">
               <DonationList 
                 donations={completedDonations} 
                 title="Recent Completed Rescues" 
                 label="Completed" 
+                emptyTitle="No Completed Rescues"
                 emptyDesc="No completed donations yet." 
                 className="h-[380px]"
               />

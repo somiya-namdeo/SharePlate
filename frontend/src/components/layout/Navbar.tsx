@@ -1,12 +1,39 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 export function Navbar() {
   const location = useLocation();
   const isHome = location.pathname === '/';
+  const [activeSection, setActiveSection] = useState<string>('');
+
+  useEffect(() => {
+    if (!isHome) return;
+
+    const handleScroll = () => {
+      const sections = ['features', 'how-it-works', 'for-ngos'];
+      let current = '';
+
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          if (rect.top <= 150 && rect.bottom >= 150) {
+            current = section;
+            break;
+          }
+        }
+      }
+      setActiveSection(current);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isHome]);
   
   const scrollToSection = (id: string) => {
     if (isHome) {
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      setActiveSection(id);
     } else {
       window.location.href = `/#${id}`;
     }
@@ -25,13 +52,22 @@ export function Navbar() {
         </div>
         
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-[#33251E]/70">
-          <button onClick={() => scrollToSection('features')} className="hover:text-[#F07154] transition-colors">
+          <button 
+            onClick={() => scrollToSection('features')} 
+            className={`transition-colors ${activeSection === 'features' ? 'text-[#F07154]' : 'hover:text-[#F07154]'}`}
+          >
             Features
           </button>
-          <button onClick={() => scrollToSection('how-it-works')} className="hover:text-[#F07154] transition-colors">
+          <button 
+            onClick={() => scrollToSection('how-it-works')} 
+            className={`transition-colors ${activeSection === 'how-it-works' ? 'text-[#F07154]' : 'hover:text-[#F07154]'}`}
+          >
             How it works
           </button>
-          <button onClick={() => scrollToSection('for-ngos')} className="hover:text-[#F07154] transition-colors">
+          <button 
+            onClick={() => scrollToSection('for-ngos')} 
+            className={`transition-colors ${activeSection === 'for-ngos' ? 'text-[#F07154]' : 'hover:text-[#F07154]'}`}
+          >
             For NGOs
           </button>
         </div>

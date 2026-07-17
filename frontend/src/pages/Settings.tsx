@@ -94,7 +94,7 @@ export function Settings() {
       
       if (res.success) {
         setBaselineProfile(profile);
-        updateUserLocal({ full_name: profile.fullName });
+        updateUserLocal({ full_name: profile.fullName, city: profile.city });
         toast.success('Profile saved successfully');
       }
     } catch (err: any) {

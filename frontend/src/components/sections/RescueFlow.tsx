@@ -2,28 +2,28 @@ export function RescueFlow() {
   const steps = [
     {
       num: "01",
-      title: "Donor submits food details",
-      desc: "Form or a natural-language message — both work."
+      title: "Donor submits donation",
+      desc: "Food details are entered manually or extracted using NLP."
     },
     {
       num: "02",
-      title: "AI checks safety & urgency",
-      desc: "Shelf life, priority score, recommended action."
+      title: "AI predicts safety & urgency",
+      desc: "Food safety, remaining shelf life, urgency level, and pickup priority are assessed."
     },
     {
       num: "03",
-      title: "System matches an NGO",
-      desc: "Ranked by distance, demand and compatibility."
+      title: "AI matches the best NGO",
+      desc: "Matching is based on distance, demand, food type, and availability."
     },
     {
       num: "04",
       title: "Pickup is prioritized",
-      desc: "Critical items surface first in the queue."
+      desc: "Urgent donations are surfaced first for volunteers."
     },
     {
       num: "05",
-      title: "Impact is tracked",
-      desc: "Meals rescued, waste prevented, CO₂ avoided."
+      title: "Impact is recorded",
+      desc: "Meals rescued, waste reduced, and distribution analytics are tracked."
     }
   ];
 
@@ -35,7 +35,7 @@ export function RescueFlow() {
           <h3 className="text-[#F07154] text-xs font-bold uppercase tracking-widest mb-4 flex justify-center">Rescue Flow</h3>
           <h2 className="font-serif text-5xl leading-tight mb-6">From surplus to served — in five steps.</h2>
           <p className="text-lg text-white/70">
-            Every donation is safety-checked, urgency-scored and matched by AI before a volunteer even opens the app.
+            Every donation passes through AI-powered safety analysis, urgency prediction, intelligent NGO matching, and logistics coordination before pickup.
           </p>
         </div>
 

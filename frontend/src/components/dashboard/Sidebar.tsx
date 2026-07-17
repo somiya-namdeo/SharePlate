@@ -83,9 +83,14 @@ export function Sidebar() {
           {/* subtle decoration */}
           <div className="absolute top-0 right-0 w-24 h-24 bg-white/40 rounded-full blur-xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
           
-          <h4 className="font-bold text-[#33251E] text-[13px] mb-1.5 relative z-10">Rescue Flow</h4>
-          <p className="text-[11px] text-[#33251E]/70 leading-relaxed relative z-10 font-medium">
-            Every donation is safety-checked and matched by AI in under 3 minutes.
+          <h4 className="font-bold text-[#33251E] text-[13px] mb-2 relative z-10">AI-Powered</h4>
+          <ul className="text-[11px] text-[#33251E]/70 leading-relaxed relative z-10 font-medium mb-2 space-y-1">
+            <li>• Food Safety Assessment</li>
+            <li>• Urgency Prediction</li>
+            <li>• Smart NGO Matching</li>
+          </ul>
+          <p className="text-[9px] text-[#33251E]/50 leading-relaxed relative z-10 font-medium border-t border-[#33251E]/10 pt-2">
+            Every donation is analyzed automatically before matching.
           </p>
         </div>
       </div>

@@ -27,11 +27,19 @@ class DonationCreate(BaseModel):
     hours_since_prepared: Optional[float] = None
     estimated_transport_time: Optional[float] = None
     distance: Optional[float] = None
+    perishability_score: Optional[float] = None
+    estimated_shelf_life: Optional[float] = None
+
+    # AI Results (to allow saving pre-calculated AI data)
+    safety_status: Optional[str] = None
+    confidence_score: Optional[float] = None
+    predicted_shelf_life: Optional[float] = None
+    urgency_level: Optional[str] = None
+    spoilage_risk_score: Optional[float] = None
     
 class DonationResponse(DonationCreate):
     id: str
     status: str = "pending"
-    spoilage_risk_score: Optional[float] = None
     created_at: datetime
 
     # Workflow
@@ -41,10 +49,6 @@ class DonationResponse(DonationCreate):
     completed_at: Optional[datetime] = None
 
     # AI Results
-    safety_status: Optional[str] = None
-    confidence_score: Optional[float] = None
-    predicted_shelf_life: Optional[float] = None
-    urgency_level: Optional[str] = None
     prediction_time: Optional[datetime] = None
 
     class Config:

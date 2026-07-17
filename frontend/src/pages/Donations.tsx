@@ -128,7 +128,8 @@ export function Donations() {
         season: formData.season || null,
         event_type: formData.eventType || null,
         city_tier: formData.cityTier || null,
-        predicted_shelf_life: formData.shelfLife !== '' ? parseFloat(formData.shelfLife) : null,
+        perishability_score: formData.perishabilityScore !== '' ? parseFloat(formData.perishabilityScore) : null,
+        estimated_shelf_life: formData.shelfLife !== '' ? parseFloat(formData.shelfLife) : null,
       };
 
       if (formData.existingAiData) {
@@ -392,8 +393,8 @@ export function Donations() {
                 </div>
               ) : (() => {
                 const filteredDonations = donations.filter(row => {
-                  const isSafe = row.spoilage_risk_score && row.spoilage_risk_score > 0.8 ? 'Unsafe' : 'Safe';
-                  const urgency = row.urgency_level || 'Medium';
+                  const isSafe = row.safety_status || 'Unknown';
+                  const urgency = row.urgency_level || 'Unknown';
                   const activeStatus = ['pending', 'matched', 'picked_up'].includes((row.status || 'pending').toLowerCase());
 
                   if (!activeStatus) return false;
@@ -428,8 +429,8 @@ export function Donations() {
                       season: row.season || '',
                       eventType: row.event_type || '',
                       cityTier: row.city_tier || '',
-                      perishabilityScore: row.spoilage_risk_score !== null && row.spoilage_risk_score !== undefined ? String(row.spoilage_risk_score) : '',
-                      shelfLife: row.predicted_shelf_life !== null && row.predicted_shelf_life !== undefined ? String(row.predicted_shelf_life) : '',
+                      perishabilityScore: row.perishability_score !== null && row.perishability_score !== undefined ? String(row.perishability_score) : '',
+                      shelfLife: row.estimated_shelf_life !== null && row.estimated_shelf_life !== undefined ? String(row.estimated_shelf_life) : '',
                       pickupLocation: row.address || '',
                       donorContact: row.contact_phone || '',
                       latitude: row.latitude !== null && row.latitude !== undefined ? row.latitude : 23.2599,
@@ -450,8 +451,12 @@ export function Donations() {
                         <h4 className="font-bold text-[#33251E] text-[15px]">{row.food_type}</h4>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge text={row.spoilage_risk_score && row.spoilage_risk_score > 0.8 ? 'Unsafe' : 'Safe'} />
-                        <Badge text={row.urgency_level || 'Medium'} />
+                        {row.safety_status && (
+                          <Badge text={row.safety_status === 'Safe' ? 'Safe' : 'Unsafe'} />
+                        )}
+                        {row.urgency_level && (
+                          <Badge text={row.urgency_level} />
+                        )}
                       </div>
                     </div>
                     

@@ -23,18 +23,7 @@ export function FoodSafety() {
   const donationId = location.state?.donationId;
   const existingAiData = location.state?.existingAiData;
 
-  const [result, setResult] = useState<PredictionResponse | null>(() => {
-    if (existingAiData && existingAiData.prediction) {
-      return {
-        prediction: existingAiData.prediction,
-        remaining_shelf_life_hr: existingAiData.predicted_shelf_life || 24,
-        urgency_score: existingAiData.rule_risk_score || 50,
-        urgency_level: existingAiData.urgency_level || 'Medium',
-        urgency_priority: 1 // fake priority since we don't store it
-      };
-    }
-    return null;
-  });
+  const [result, setResult] = useState<PredictionResponse | null>(null);
 
   // Form State Pre-filled with router state or empty strings
   const [formData, setFormData] = useState({
@@ -82,7 +71,7 @@ export function FoodSafety() {
         season: formData.season || "Unknown",
         event_type: formData.event_type || "Unknown",
         city_tier: formData.city_tier || "Unknown",
-        perishability_score: Math.round(Number(formData.perishability_score)) || 0, // Ensure integer
+        perishability_score: Number(formData.perishability_score) || 0,
         estimated_shelf_life_hr: Number(formData.estimated_shelf_life_hr) || 0
       };
 
@@ -118,9 +107,25 @@ export function FoodSafety() {
               safety_status: data.prediction === 'Yes' ? 'Safe' : 'Unsafe',
               confidence_score: 0.95,
               urgency_level: data.urgency_level,
+              predicted_shelf_life: data.remaining_shelf_life_hr,
               prediction_time: new Date().toISOString()
             }
           });
+          
+          navigate('.', {
+            replace: true,
+            state: {
+              ...location.state,
+              existingAiData: {
+                spoilage_risk_score: data.urgency_score ? data.urgency_score / 100 : (data.prediction === 'Yes' ? 0.2 : 0.9),
+                safety_status: data.prediction === 'Yes' ? 'Safe' : 'Unsafe',
+                confidence_score: 0.95,
+                urgency_level: data.urgency_level,
+                predicted_shelf_life: data.remaining_shelf_life_hr
+              }
+            }
+          });
+          
           toast.success("Food safety prediction saved successfully.");
         } catch (updateErr) {
           console.error("Failed to update donation with AI results:", updateErr);
@@ -427,7 +432,7 @@ export function FoodSafety() {
                           eventType: formData.event_type,
                           cityTier: formData.city_tier,
                           perishabilityScore: formData.perishability_score,
-                          shelfLife: result ? String(result.remaining_shelf_life_hr) : formData.estimated_shelf_life_hr,
+                          shelfLife: formData.estimated_shelf_life_hr,
                           existingAiData: result ? {
                             spoilage_risk_score: result.urgency_score ? result.urgency_score / 100 : (result.prediction === 'Yes' ? 0.2 : 0.9),
                             safety_status: result.prediction === 'Yes' ? 'Safe' : 'Unsafe',

@@ -18,7 +18,7 @@ export function ForNGOs() {
               Built for the people already doing this work.
             </h2>
             <p className="text-lg text-[#33251E]/70 mb-10 leading-relaxed">
-              SharePlate is designed for NGOs, restaurants, campuses, event organizers and food-rescue volunteers. Warm, quick and safety-first — the way food donation should be.
+              Designed for restaurants, hotels, event organizers, campuses, NGOs, volunteers, and community kitchens working together to reduce food waste through AI-assisted redistribution.
             </p>
 
             <div className="flex flex-wrap gap-3 mb-10">
@@ -33,9 +33,12 @@ export function ForNGOs() {
               <Link to="/signup" className="inline-block bg-[#F07154] hover:bg-[#E05F42] text-white px-6 py-3 rounded-full text-sm font-medium transition-colors">
                 Start Donating
               </Link>
-              <Link to="/nlp-demo" className="inline-block bg-white hover:bg-neutral-50 text-[#33251E] border border-[#33251E]/10 px-6 py-3 rounded-full text-sm font-medium transition-colors shadow-sm">
-                Try NLP Parser
-              </Link>
+              <button 
+                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                className="inline-block bg-white hover:bg-neutral-50 text-[#33251E] border border-[#33251E]/10 px-6 py-3 rounded-full text-sm font-medium transition-colors shadow-sm"
+              >
+                Explore Features
+              </button>
             </div>
           </div>
 

@@ -106,7 +106,7 @@ export function MapLogistics() {
                  food_type: m.food_type,
                  quantity: m.quantity,
                  status: m.status,
-                 safety_status: m.donation_safety_status || 'Safe',
+                 safety_status: m.donation_safety_status,
                  address: m.donation_address || 'Donor Location',
                  predicted_shelf_life: m.donation_predicted_shelf_life
               });

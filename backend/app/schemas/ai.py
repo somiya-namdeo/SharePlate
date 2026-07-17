@@ -16,7 +16,7 @@ class FoodSafetyRequest(BaseModel):
     season: Optional[str] = None
     event_type: Optional[str] = None
     city_tier: Optional[str] = None
-    perishability_score: Optional[int] = None
+    perishability_score: Optional[float] = None
     estimated_shelf_life_hr: Optional[float] = None
 
 class FoodSafetyResponse(BaseModel):

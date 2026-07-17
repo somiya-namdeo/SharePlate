@@ -75,8 +75,8 @@ export function SignUp() {
               <span className="font-serif text-xl font-bold tracking-tight">SharePlate</span>
             </Link>
 
-            <h1 className="font-serif text-4xl text-[#33251E] mb-2">Join the rescue network.</h1>
-            <p className="text-[#33251E]/70 mb-8 text-sm leading-relaxed">Help surplus food reach the communities that need it most.</p>
+            <h1 className="font-serif text-3xl text-[#33251E] mb-2">Join the rescue network.</h1>
+            <p className="text-[#33251E]/70 mb-8 text-sm leading-relaxed">Join SharePlate to donate surplus food or manage food redistribution through AI-assisted matching and logistics.</p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               
@@ -96,7 +96,7 @@ export function SignUp() {
                     {role === 'donor' && <div className="absolute top-2 right-2 text-[#F07154]"><CheckCircle2 size={16} /></div>}
                     <Store size={20} className={role === 'donor' ? "text-[#F07154] mb-3" : "text-[#33251E]/40 mb-3"} />
                     <div className="font-bold text-sm mb-1 text-[#33251E]">Donor</div>
-                    <div className="text-[11px] text-[#33251E]/60 leading-tight">I have food to donate.</div>
+                    <div className="text-[11px] text-[#33251E]/60 leading-tight">Donate safe surplus food.</div>
                   </button>
                   <button
                     type="button"
@@ -111,7 +111,7 @@ export function SignUp() {
                     {role === 'ngo' && <div className="absolute top-2 right-2 text-emerald-500"><CheckCircle2 size={16} /></div>}
                     <Heart size={20} className={role === 'ngo' ? "text-emerald-500 mb-3" : "text-[#33251E]/40 mb-3"} />
                     <div className="font-bold text-sm mb-1 text-[#33251E]">NGO</div>
-                    <div className="text-[11px] text-[#33251E]/60 leading-tight">I distribute food.</div>
+                    <div className="text-[11px] text-[#33251E]/60 leading-tight">Receive and distribute donations.</div>
                   </button>
                 </div>
               </div>
@@ -122,7 +122,7 @@ export function SignUp() {
                   <input 
                     type="text" 
                     required
-                    placeholder="John Doe"
+                    placeholder="Enter your full name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     className="w-full px-4 py-3.5 rounded-xl border border-[#33251E]/10 bg-[#FDFBF7] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F07154]/20 focus:border-[#F07154] transition-all shadow-sm placeholder:text-[#33251E]/30 text-[#33251E]"
@@ -133,7 +133,7 @@ export function SignUp() {
                   <input 
                     type="email" 
                     required
-                    placeholder="hello@shareplate.org"
+                    placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-4 py-3.5 rounded-xl border border-[#33251E]/10 bg-[#FDFBF7] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F07154]/20 focus:border-[#F07154] transition-all shadow-sm placeholder:text-[#33251E]/30 text-[#33251E]"
@@ -145,7 +145,7 @@ export function SignUp() {
                     <input 
                       type={showPassword ? "text" : "password"}
                       required
-                      placeholder="••••••••"
+                      placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full px-4 py-3.5 pr-12 rounded-xl border border-[#33251E]/10 bg-[#FDFBF7] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F07154]/20 focus:border-[#F07154] transition-all shadow-sm placeholder:text-[#33251E]/30 text-[#33251E]"
@@ -164,7 +164,7 @@ export function SignUp() {
                   <input 
                     type="password" 
                     required
-                    placeholder="••••••••"
+                    placeholder="Confirm your password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="w-full px-4 py-3.5 rounded-xl border border-[#33251E]/10 bg-[#FDFBF7] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F07154]/20 focus:border-[#F07154] transition-all shadow-sm placeholder:text-[#33251E]/30 text-[#33251E]"
@@ -173,8 +173,8 @@ export function SignUp() {
               </div>
 
               <div className="pt-2 pb-2">
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <div className="relative flex items-center justify-center w-5 h-5 mt-0.5 border-2 border-[#33251E]/20 rounded group-hover:border-[#F07154] transition-colors bg-[#FDFBF7] flex-shrink-0">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center w-5 h-5 border-2 border-[#33251E]/20 rounded group-hover:border-[#F07154] transition-colors bg-[#FDFBF7] flex-shrink-0">
                     <input type="checkbox" required className="peer opacity-0 absolute w-full h-full cursor-pointer" />
                     <div className="hidden peer-checked:block w-2.5 h-2.5 bg-[#F07154] rounded-[2px]"></div>
                   </div>
@@ -222,11 +222,15 @@ export function SignUp() {
               
               <div className="relative z-10 w-full max-w-md mx-auto">
                 
-                <h2 className="font-serif text-3xl leading-[1.2] text-[#33251E] mb-8">
+                <h2 className="font-serif text-3xl leading-[1.2] text-[#33251E] mb-4">
                   A second chance for food. <br /> A better chance for <span className="text-[#F07154]">someone else.</span>
                 </h2>
 
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 backdrop-blur-sm text-emerald-600 text-xs font-bold uppercase tracking-wider mb-6 shadow-sm border border-[#33251E]/5">
+                <p className="text-[#33251E]/70 text-sm leading-relaxed mb-8">
+                  AI-powered food safety assessment, urgency prediction, intelligent NGO matching, and live logistics help surplus food reach communities safely and efficiently.
+                </p>
+
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 backdrop-blur-sm text-emerald-600 text-xs font-bold tracking-wider mb-6 shadow-sm border border-[#33251E]/5">
                   <Sparkles size={14} />
                   Match Found
                 </div>

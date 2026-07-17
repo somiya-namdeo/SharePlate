@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { Topbar } from '../components/dashboard/Topbar';
-import { ChevronDown, Phone, Route, Loader2, CheckCircle2 } from 'lucide-react';
+import { ChevronDown, Phone, Route, Loader2, CheckCircle2, Bot, ListX, ArrowDownUp, Users, BarChart2, AlertCircle } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { apiFetch } from '../lib/api';
 import { getUser } from '../lib/auth';
@@ -27,6 +27,21 @@ export function SmartMatching() {
   // Assignment queue state
   const [queue, setQueue] = useState<any[]>([]);
   const [loadingQueue, setLoadingQueue] = useState(false);
+  const [sortBy, setSortBy] = useState<'score' | 'distance' | 'priority' | 'newest'>('newest');
+
+  const sortedQueue = [...queue].sort((a, b) => {
+    if (sortBy === 'score') return (b.match_score || 0) - (a.match_score || 0);
+    if (sortBy === 'distance') return (a.distance_km || 9999) - (b.distance_km || 9999);
+    if (sortBy === 'priority') {
+      const pWeights: Record<string, number> = { critical: 3, high: 2, medium: 1, low: 0 };
+      return (pWeights[(b.urgency || '').toLowerCase()] || 0) - (pWeights[(a.urgency || '').toLowerCase()] || 0);
+    }
+    return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+  });
+
+  const totalMatches = queue.length;
+  const avgScore = totalMatches > 0 ? Math.round(queue.reduce((acc, curr) => acc + (curr.match_score || 0), 0) / totalMatches) : 0;
+  const highPriorityCount = queue.filter(q => ['high', 'critical'].includes((q.urgency || '').toLowerCase())).length;
 
   const fetchQueue = async () => {
     const user = getUser();
@@ -164,52 +179,66 @@ export function SmartMatching() {
                </span>
             )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex-1 min-w-[200px] relative">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="w-full relative">
               <div className="relative">
                 <select 
                   value={donationId}
                   onChange={(e) => setDonationId(e.target.value)}
-                  className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors appearance-none pr-10 truncate cursor-pointer"
+                  className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] focus-visible:ring-2 focus-visible:ring-[#F07154]/20 transition-all appearance-none pr-10 truncate cursor-pointer hover:border-[#33251E]/30"
                 >
                   {donationsList.length === 0 ? (
                     <option value="" disabled>No donations available...</option>
                   ) : (
-                    donationsList.map(d => (
-                      <option key={d.id} value={d.id}>
-                        {d.food_type} ({d.quantity} {d.quantity <= 1000 ? 'kg' : ''}) {d.address ? `- ${d.address}` : ''}
-                      </option>
-                    ))
+                    donationsList.map(d => {
+                      const locality = d.address ? d.address.split(',')[0].trim() : '';
+                      return (
+                        <option key={d.id} value={d.id} title={`${d.food_type} (${d.quantity} ${d.quantity <= 1000 ? 'kg' : ''}) - ${d.address}`}>
+                          {d.food_type} • {d.quantity} {d.quantity <= 1000 ? 'kg' : ''} {locality ? `• ${locality}` : ''}
+                        </option>
+                      );
+                    })
                   )}
                 </select>
                 <ChevronDown size={16} className="text-[#33251E]/40 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
-            <div className="flex-1 min-w-[200px] relative">
+            <div className="w-full relative">
               <div className="relative">
                 <select 
                   value={selectedNgoRequestId}
                   onChange={(e) => setSelectedNgoRequestId(e.target.value)}
-                  className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors appearance-none pr-10 truncate cursor-pointer"
+                  className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] focus-visible:ring-2 focus-visible:ring-[#F07154]/20 transition-all appearance-none pr-10 truncate cursor-pointer hover:border-[#33251E]/30"
                 >
-                  <option value="">Select NGO request (Optional)</option>
-                  {ngoRequestsList.map(req => (
-                    <option key={req.id} value={req.id}>
-                      {req.preferred_food_type || 'Food'} - {req.meals_needed} meals ({req.urgency_level} Priority)
-                    </option>
-                  ))}
+                  {ngoRequestsList.length === 0 ? (
+                    <option value="">No NGO requests available</option>
+                  ) : (
+                    <>
+                      <option value="">Select NGO request (Optional)</option>
+                      {ngoRequestsList.map(req => (
+                        <option key={req.id} value={req.id}>
+                          {req.preferred_food_type || 'Food'} • {req.meals_needed} meals • {req.urgency_level} Priority
+                        </option>
+                      ))}
+                    </>
+                  )}
                 </select>
                 <ChevronDown size={16} className="text-[#33251E]/40 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
+              {ngoRequestsList.length === 0 && (
+                <p className="text-[10px] text-[#33251E]/50 mt-1.5 font-medium px-1">
+                  NGO requests will appear here once NGOs submit requests.
+                </p>
+              )}
             </div>
-            <div className="flex-1 min-w-[200px] flex items-center gap-3">
+            <div className="w-full flex items-center gap-3">
               <button 
                 onClick={handleFindMatches}
                 disabled={loading}
-                className="w-full bg-[#33251E] hover:bg-[#33251E]/90 text-white rounded-xl px-4 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
+                className="w-full bg-[#33251E] hover:bg-[#33251E]/90 focus-visible:ring-2 focus-visible:ring-[#33251E]/30 text-white rounded-xl px-4 py-3 text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-wait"
               >
                 {loading && <Loader2 size={16} className="animate-spin" />}
-                {loading ? 'Finding...' : 'Find Matches'}
+                {loading ? 'Finding Matches...' : 'Find Matches'}
               </button>
               {isAlreadyMatched && (
                 <div className="hidden md:flex items-center gap-1.5 text-emerald-600 font-bold text-sm whitespace-nowrap bg-emerald-100/80 px-3 py-2 rounded-xl">
@@ -226,7 +255,7 @@ export function SmartMatching() {
             const isHighlight = i === 0 && match.match_score >= 80;
             const scoreColor = match.match_score >= 90 ? "text-emerald-500" : match.match_score >= 70 ? "text-[#F07154]" : "text-amber-500";
             const scoreTextColor = match.match_score >= 90 ? "text-emerald-600" : match.match_score >= 70 ? "text-[#F07154]" : "text-amber-600";
-            const confidence = match.match_score >= 90 ? "Very High" : match.match_score >= 70 ? "High" : "Moderate";
+            const confidence = match.match_score >= 90 ? "Excellent Match" : match.match_score >= 70 ? "Strong Match" : "Good Match";
             const isAssigningThis = assigningMatch === match.request_id;
             
             return (
@@ -246,8 +275,8 @@ export function SmartMatching() {
                     <h3 className="font-serif text-2xl font-bold text-[#33251E] truncate" title={match.ngo_name}>
                       {match.ngo_name}
                     </h3>
-                    <div className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest mt-1">
-                      AI Confidence • {confidence}
+                    <div className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest mt-1">
+                      {confidence}
                     </div>
                     <p className="text-xs text-[#33251E]/60 mt-1 font-medium">
                       {match.distance_km ?? 'Unknown'} km • {match.quantity_needed} needed • {match.food_needed}
@@ -334,27 +363,61 @@ export function SmartMatching() {
           })}
 
           {matches.length === 0 && !loading && (
-            <div className="col-span-1 lg:col-span-3 flex flex-col items-center justify-center py-16 bg-white/50 border border-[#33251E]/5 rounded-3xl border-dashed">
-              <div className="w-12 h-12 rounded-full bg-[#33251E]/5 flex items-center justify-center mb-3">
-                <Route className="text-[#33251E]/40" size={20} />
+            <div className="col-span-1 lg:col-span-3 flex flex-col items-center justify-center py-16 bg-white border border-[#33251E]/10 rounded-3xl shadow-sm hover:border-[#33251E]/20 transition-colors duration-300">
+              <div className="w-16 h-16 rounded-2xl bg-[#FDFBF7] border border-[#33251E]/5 flex items-center justify-center mb-4 shadow-sm">
+                <Bot className="text-[#F07154]" size={32} />
               </div>
-              <p className="text-[#33251E]/60 font-medium">
-                {hasSearched ? "No suitable NGOs found for this donation." : "Select a donation and click Find Matches to see suggestions."}
+              <h3 className="text-xl font-serif font-bold text-[#33251E] mb-2">No AI Match Results</h3>
+              <p className="text-[#33251E]/60 font-medium text-center max-w-md px-4 leading-relaxed">
+                Select a donation and click "Find Matches" to generate AI-powered NGO recommendations based on food safety, urgency, distance, and NGO suitability.
               </p>
             </div>
           )}
         </div>
 
+        {/* Match Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+           <div className="bg-white rounded-2xl p-4 border border-[#33251E]/10 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+             <div className="w-12 h-12 rounded-full bg-[#33251E]/5 flex items-center justify-center text-[#33251E]"><Users size={20}/></div>
+             <div><div className="text-2xl font-bold text-[#33251E]">{totalMatches}</div><div className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">Matches Found</div></div>
+           </div>
+           <div className="bg-white rounded-2xl p-4 border border-[#33251E]/10 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+             <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600"><BarChart2 size={20}/></div>
+             <div><div className="text-2xl font-bold text-[#33251E]">{avgScore}%</div><div className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">Avg Match Score</div></div>
+           </div>
+           <div className="bg-white rounded-2xl p-4 border border-[#33251E]/10 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+             <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600"><AlertCircle size={20}/></div>
+             <div><div className="text-2xl font-bold text-[#33251E]">{highPriorityCount}</div><div className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">High Priority</div></div>
+           </div>
+        </div>
+
         {/* Assignment Queue */}
         <div className="bg-white rounded-3xl shadow-sm border border-[#33251E]/10 flex flex-col overflow-hidden">
-          <div className="flex justify-between items-end p-6 pb-4 bg-white border-b border-[#33251E]/5 shrink-0">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end p-6 pb-4 bg-white border-b border-[#33251E]/5 shrink-0 gap-4">
             <div>
               <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-[0.1em] mb-1 block">ALL MATCHES</span>
               <h2 className="font-serif text-2xl font-semibold text-[#33251E]">Assignment queue</h2>
             </div>
-            <span className="bg-[#FDFBF7] text-[#33251E]/60 text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1.5 border border-[#33251E]/10">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]"></span> AI ASSISTED • LIVE
-            </span>
+            
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="relative w-full md:w-auto">
+                <select
+                  value={sortBy}
+                  onChange={(e: any) => setSortBy(e.target.value)}
+                  className="w-full md:w-auto bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-2 text-sm font-semibold text-[#33251E] focus:outline-none focus:border-[#F07154] appearance-none pr-9 cursor-pointer hover:border-[#33251E]/30 transition-colors"
+                >
+                  <option value="newest">Newest</option>
+                  <option value="score">Highest Score</option>
+                  <option value="priority">Highest Priority</option>
+                  <option value="distance">Closest NGO</option>
+                </select>
+                <ArrowDownUp size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#33251E]/40 pointer-events-none" />
+              </div>
+
+              <span className="bg-[#FDFBF7] hidden md:flex text-[#33251E]/60 text-[10px] px-3 py-2.5 rounded-xl font-bold uppercase tracking-wider items-center gap-1.5 border border-[#33251E]/10">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]"></span> AI LIVE
+              </span>
+            </div>
           </div>
           
           <div className="w-full overflow-x-auto p-6 pt-0">
@@ -362,9 +425,13 @@ export function SmartMatching() {
               <div className="flex justify-center py-12">
                 <Loader2 className="w-6 h-6 animate-spin text-[#F07154]" />
               </div>
-            ) : queue.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-[#33251E]/60 font-medium">No assigned matches yet.</p>
+            ) : sortedQueue.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="w-16 h-16 rounded-full bg-[#33251E]/5 flex items-center justify-center mb-4">
+                  <ListX className="text-[#33251E]/40" size={32} />
+                </div>
+                <h3 className="text-lg font-bold text-[#33251E] mb-1">No Matches Found</h3>
+                <p className="text-[#33251E]/60 font-medium text-sm">AI recommendations will appear here after running Smart Matching.</p>
               </div>
             ) : (
               <table className="w-full text-left border-collapse">
@@ -380,53 +447,55 @@ export function SmartMatching() {
                   </tr>
                 </thead>
                 <tbody>
-                  {queue.map((row, i) => {
+                  {sortedQueue.map((row, i) => {
                     const score = Math.round(row.match_score || 0);
                     const urgency = (row.urgency || "Low").toLowerCase();
-                    const pColor = urgency === "critical" ? "red" : urgency === "high" ? "amber" : "emerald";
+                    const pColor = urgency === "critical" || urgency === "high" ? "amber" : urgency === "medium" ? "blue" : "slate";
                     const status = row.status ? row.status.charAt(0).toUpperCase() + row.status.slice(1) : "Pending";
                     const displayFood = row.food_type || row.donation_id?.slice(0, 8);
                     
                     return (
-                      <tr key={row.id || i} className="border-b border-[#33251E]/5 hover:bg-[#FDFBF7] transition-colors">
-                        <td className="py-4.5 text-sm font-semibold text-[#33251E]/80">
+                      <tr key={row.id || i} className="border-b border-[#33251E]/5 hover:bg-[#FDFBF7] transition-colors duration-200 cursor-pointer group">
+                        <td className="py-5 align-middle text-sm font-semibold text-[#33251E]/80">
                           {displayFood}
                         </td>
-                        <td className="py-4.5 text-sm font-semibold text-[#33251E]">
+                        <td className="py-5 align-middle text-sm font-semibold text-[#33251E]">
                           {row.ngo_name || 'Unknown NGO'}
                         </td>
-                        <td className="py-4.5 text-sm text-[#33251E]/80">
+                        <td className="py-5 align-middle text-sm text-[#33251E]/80">
                           {row.distance_km ?? '?'} km
                         </td>
-                        <td className="py-4.5 text-sm">
+                        <td className="py-5 align-middle text-sm">
                           <div className="flex items-center gap-3">
-                            <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
                               <div className={cn(
                                 "h-full rounded-full",
                                 score >= 90 ? "bg-emerald-500" :
-                                score >= 80 ? "bg-[#F07154]" : "bg-amber-500"
+                                score >= 70 ? "bg-[#F07154]" : "bg-amber-500"
                               )} style={{ width: `${score}%` }}></div>
                             </div>
                             <span className="font-semibold text-[#33251E]">{score}%</span>
                           </div>
                         </td>
-                        <td className="py-4.5 text-sm">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-                            pColor === 'red' ? 'bg-red-50 text-red-700' :
-                            pColor === 'amber' ? 'bg-amber-50 text-amber-700' :
-                            'bg-emerald-50 text-emerald-700'
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${
-                              pColor === 'red' ? 'bg-red-500' :
-                              pColor === 'amber' ? 'bg-amber-500' :
-                              'bg-emerald-500'
-                            }`}></span>
+                        <td className="py-5 align-middle text-sm">
+                          <span className={cn(
+                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border",
+                            pColor === "amber" ? "bg-amber-50 text-amber-700 border-amber-200" :
+                            pColor === "blue" ? "bg-blue-50 text-blue-700 border-blue-200" :
+                            "bg-slate-50 text-slate-700 border-slate-200"
+                          )}>
+                            <span className={cn(
+                              "w-1.5 h-1.5 rounded-full",
+                              pColor === "amber" ? "bg-amber-500" :
+                              pColor === "blue" ? "bg-blue-500" :
+                              "bg-slate-400"
+                            )}></span>
                             {row.urgency || 'Low'}
                           </span>
                         </td>
-                        <td className="py-4.5 text-sm">
+                        <td className="py-5 align-middle text-sm">
                           <span className={cn(
-                            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border",
+                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border",
                             status === "Accepted" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
                             status === "Pending" ? "bg-amber-50 text-amber-700 border-amber-200" :
                             status === "Picked_up" ? "bg-blue-50 text-blue-700 border-blue-200" :
@@ -442,8 +511,8 @@ export function SmartMatching() {
                             {status}
                           </span>
                         </td>
-                        <td className="py-4.5 text-sm text-right">
-                          <button className="text-[#33251E]/60 hover:text-[#33251E] font-semibold text-sm transition-colors">
+                        <td className="py-5 align-middle text-sm text-right">
+                          <button className="bg-white border border-[#33251E]/10 hover:bg-gray-50 text-[#33251E] font-bold text-xs px-3 py-1.5 rounded-lg transition-colors duration-200 group-hover:border-[#33251E]/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F07154]/50">
                             Details
                           </button>
                         </td>

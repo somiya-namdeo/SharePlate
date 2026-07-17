@@ -77,7 +77,7 @@ export function SignIn() {
                 <input 
                   type="email" 
                   required
-                  placeholder="hello@shareplate.org"
+                  placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3.5 rounded-xl border border-[#33251E]/10 bg-[#FDFBF7] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F07154]/20 focus:border-[#F07154] transition-all shadow-sm placeholder:text-[#33251E]/30 text-[#33251E]"
@@ -90,7 +90,7 @@ export function SignIn() {
                   <input 
                     type={showPassword ? "text" : "password"}
                     required
-                    placeholder="••••••••"
+                    placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-3.5 pr-12 rounded-xl border border-[#33251E]/10 bg-[#FDFBF7] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F07154]/20 focus:border-[#F07154] transition-all shadow-sm placeholder:text-[#33251E]/30 text-[#33251E]"
@@ -105,17 +105,14 @@ export function SignIn() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-1 pb-2">
-                <label className="flex items-center gap-2.5 cursor-pointer group">
-                  <div className="relative flex items-center justify-center w-5 h-5 border-2 border-[#33251E]/20 rounded group-hover:border-[#F07154] transition-colors bg-[#FDFBF7]">
+              <div className="flex items-center pt-1 pb-2">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center w-5 h-5 border-2 border-[#33251E]/20 rounded group-hover:border-[#F07154] transition-colors bg-[#FDFBF7] flex-shrink-0">
                     <input type="checkbox" className="peer opacity-0 absolute w-full h-full cursor-pointer" />
                     <div className="hidden peer-checked:block w-2.5 h-2.5 bg-[#F07154] rounded-[2px]"></div>
                   </div>
                   <span className="text-sm text-[#33251E]/80 font-medium select-none">Remember me</span>
                 </label>
-                <a href="#" className="text-sm font-bold text-[#F07154] hover:text-[#E05F42] transition-colors">
-                  Forgot Password?
-                </a>
               </div>
 
               <button 
@@ -155,7 +152,7 @@ export function SignIn() {
             <div className="bg-gradient-to-bl from-[#F5E6DA] via-[#FDFBF7] to-[#E8F0EA] p-10 rounded-3xl border border-[#33251E]/5 shadow-[0_8px_30px_-10px_rgba(0,0,0,0.05)] relative overflow-hidden">
               
               <div className="relative z-10 w-full max-w-md mx-auto">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 backdrop-blur-sm text-[#F07154] text-xs font-bold uppercase tracking-wider mb-6 shadow-sm border border-[#33251E]/5">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 backdrop-blur-sm text-[#F07154] text-xs font-bold tracking-wider mb-6 shadow-sm border border-[#33251E]/5">
                   <Sparkles size={14} />
                   AI Assisted
                 </div>
@@ -165,21 +162,21 @@ export function SignIn() {
                 </h2>
 
                 <p className="text-[#33251E]/70 text-sm leading-relaxed mb-8">
-                  SharePlate helps safe surplus food reach communities before it goes to waste.
+                  AI-powered food safety assessment, urgency prediction, intelligent NGO matching, and live logistics help surplus food reach communities safely and efficiently.
                 </p>
                 
                 <div className="grid grid-cols-3 gap-3 mb-8">
                   <div className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-[#33251E]/5 shadow-sm flex flex-col justify-center">
-                    <div className="font-serif text-2xl text-[#33251E] mb-1">128k+</div>
+                    <div className="font-serif text-2xl text-[#33251E] mb-1">125K+</div>
                     <div className="text-[10px] uppercase tracking-wider font-bold text-[#33251E]/50 leading-tight">Meals<br/>Rescued</div>
                   </div>
                   <div className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-[#33251E]/5 shadow-sm flex flex-col justify-center">
-                    <div className="font-serif text-2xl text-[#33251E] mb-1">96</div>
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-[#33251E]/50 leading-tight">NGOs<br/>Connected</div>
+                    <div className="font-serif text-2xl text-[#33251E] mb-1">40+</div>
+                    <div className="text-[10px] uppercase tracking-wider font-bold text-[#33251E]/50 leading-tight">NGO<br/>Partners</div>
                   </div>
                   <div className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-[#33251E]/5 shadow-sm flex flex-col justify-center">
-                    <div className="font-serif text-2xl text-emerald-600 mb-1">42 t</div>
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-[#33251E]/50 leading-tight">Waste<br/>Reduced</div>
+                    <div className="font-serif text-2xl text-[#33251E] mb-1">17</div>
+                    <div className="text-[10px] uppercase tracking-wider font-bold text-[#33251E]/50 leading-tight">Donation<br/>Zones</div>
                   </div>
                 </div>
 

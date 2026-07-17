@@ -19,7 +19,7 @@ export function Hero() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F07154] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F07154]"></span>
             </span>
-            AI-powered food redistribution platform
+            AI-Powered Food Redistribution Platform
           </motion.div>
 
           <motion.h1 
@@ -37,7 +37,7 @@ export function Hero() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-lg text-[#33251E]/70 mb-10 leading-relaxed"
           >
-            SharePlate uses AI to rescue safe surplus food, prioritize urgent pickups, and connect meals with communities that need them most.
+            SharePlate combines AI-powered food safety assessment, urgency scoring, NLP-assisted donation processing, intelligent NGO matching, and live logistics to redistribute surplus food safely, efficiently, and transparently.
           </motion.p>
 
           <motion.div 
