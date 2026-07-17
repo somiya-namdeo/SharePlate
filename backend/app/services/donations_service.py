@@ -88,8 +88,11 @@ class DonationsService:
             
         return {**saved_donation, **update_data}
 
-    def get_donations_by_donor(self, donor_id: str, limit: int = 100) -> List[dict]:
-        response = self.db.table("donations").select("*").eq("donor_id", donor_id).order("created_at", desc=True).limit(limit).execute()
+    def get_donations_by_donor(self, donor_id: str, status: str = None, limit: int = 100) -> List[dict]:
+        query = self.db.table("donations").select("*").eq("donor_id", donor_id)
+        if status:
+            query = query.eq("status", status)
+        response = query.order("created_at", desc=True).limit(limit).execute()
         return response.data
 
     def get_available_donations(self, limit: int = 100) -> List[dict]:

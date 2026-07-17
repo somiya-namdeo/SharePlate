@@ -41,6 +41,7 @@ def create_request(
 
 @router.get("/me")
 def get_my_requests(
+    status: str = None,
     service: RequestsService = Depends(get_requests_service),
     current_user = Depends(get_current_user)
 ):
@@ -52,7 +53,7 @@ def get_my_requests(
                 content={"success": False, "message": "Only NGOs can view their personal requests here."}
             )
         
-        result = service.get_requests_by_ngo(current_user.id)
+        result = service.get_requests_by_ngo(current_user.id, status=status)
         return {
             "success": True,
             "message": "My requests retrieved successfully",

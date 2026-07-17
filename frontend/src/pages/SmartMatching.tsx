@@ -11,6 +11,8 @@ import toast from 'react-hot-toast';
 export function SmartMatching() {
   const location = useLocation();
   const stateDonationId = location.state?.donationId;
+  const user = getUser();
+  const userRole = user?.user_metadata?.role;
 
   const [donationId, setDonationId] = useState(stateDonationId || '');
   const [donationsList, setDonationsList] = useState<any[]>([]);
@@ -48,12 +50,11 @@ export function SmartMatching() {
       try {
         const user = getUser();
         const role = user?.user_metadata?.role;
-        const endpoint = role === 'donor' ? '/api/donations/me' : '/api/donations/';
+        const endpoint = role === 'donor' ? '/api/donations/me?status=pending' : '/api/donations/';
         const response = await apiFetch(endpoint);
         const list = Array.isArray(response) ? response : (response.data || []);
         
-        // Ensure donors only see their pending donations in the matching dropdown
-        const matchingEligible = role === 'donor' ? list.filter((d: any) => d.status === 'pending') : list;
+        const matchingEligible = list;
         
         setDonationsList(matchingEligible);
         
@@ -68,10 +69,9 @@ export function SmartMatching() {
     };
     const fetchNgoRequests = async () => {
       try {
-        const response = await apiFetch('/api/requests/');
+        const response = await apiFetch('/api/requests/me?status=open');
         const list = Array.isArray(response) ? response : (response.data || []);
-        const openReqs = list.filter((r: any) => (r.status || '').toLowerCase() === 'open');
-        setNgoRequestsList(openReqs);
+        setNgoRequestsList(list);
       } catch (error) {
         console.error("Failed to fetch NGO requests", error);
       }
@@ -140,9 +140,11 @@ export function SmartMatching() {
     }
   };
 
-  const isAlreadyMatched = isMatched || queue.some(m => 
-    m.donation_id === donationId && ['pending', 'accepted'].includes((m.status || '').toLowerCase())
-  );
+  const donationMatch = queue.find(m => m.donation_id === donationId && ['pending', 'accepted', 'completed'].includes((m.status || '').toLowerCase()));
+  const matchStatus = donationMatch ? (donationMatch.status || '').toLowerCase() : '';
+  const donorStatusText = matchStatus === 'completed' ? 'Rescue Completed' : (matchStatus === 'accepted' ? 'Accepted by NGO' : 'Waiting for NGO acceptance');
+
+  const isAlreadyMatched = isMatched || ['pending', 'accepted'].includes(matchStatus);
 
   return (
     <div className="min-h-screen bg-[#F8F5F0] font-sans selection:bg-[#F07154]/20 selection:text-[#33251E]">
@@ -296,28 +298,37 @@ export function SmartMatching() {
                   </ul>
                 </div>
 
-                {/* Buttons */}
-                <div className="flex items-center gap-2 mt-auto">
-                  <button 
-                    onClick={() => handleAssignNGO(match.request_id)}
-                    disabled={isAlreadyMatched || assigningMatch !== null}
-                    className="bg-[#33251E] hover:bg-[#33251E]/90 text-white rounded-full px-5 py-2.5 text-sm font-bold flex items-center justify-center gap-2 flex-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isAssigningThis ? (
-                       <Loader2 size={16} className="animate-spin" />
-                    ) : isAlreadyMatched ? (
-                       <>Assigned</>
-                    ) : (
-                       <>Assign NGO</>
-                    )}
-                  </button>
-                  <button className="bg-white border border-[#33251E]/10 hover:border-[#33251E]/30 text-[#33251E] rounded-full px-4 py-2.5 text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50">
-                    <Route size={16} />
-                  </button>
-                  <button className="bg-white border border-[#33251E]/10 hover:border-[#33251E]/30 text-[#33251E] rounded-full p-2.5 flex items-center justify-center transition-colors disabled:opacity-50">
-                    <Phone size={16} />
-                  </button>
-                </div>
+                {/* Buttons / Status */}
+                {userRole === 'donor' ? (
+                  <div className="mt-auto flex flex-col items-center bg-[#FDFBF7] rounded-xl p-3 border border-[#33251E]/10">
+                    <span className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest mb-1">Status</span>
+                    <span className="text-sm font-bold text-[#33251E]">
+                      {donorStatusText}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 mt-auto">
+                    <button 
+                      onClick={() => handleAssignNGO(match.request_id)}
+                      disabled={isAlreadyMatched || assigningMatch !== null}
+                      className="bg-[#33251E] hover:bg-[#33251E]/90 text-white rounded-full px-5 py-2.5 text-sm font-bold flex items-center justify-center gap-2 flex-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isAssigningThis ? (
+                         <Loader2 size={16} className="animate-spin" />
+                      ) : isAlreadyMatched ? (
+                         <>Assigned</>
+                      ) : (
+                         <>Assign NGO</>
+                      )}
+                    </button>
+                    <button className="bg-white border border-[#33251E]/10 hover:border-[#33251E]/30 text-[#33251E] rounded-full px-4 py-2.5 text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50">
+                      <Route size={16} />
+                    </button>
+                    <button className="bg-white border border-[#33251E]/10 hover:border-[#33251E]/30 text-[#33251E] rounded-full p-2.5 flex items-center justify-center transition-colors disabled:opacity-50">
+                      <Phone size={16} />
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}

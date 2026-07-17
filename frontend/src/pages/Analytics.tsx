@@ -117,7 +117,10 @@ export function Analytics() {
 
         // Compute KPIs
         let quantityRescued = 0;
-        let activeReqs = role === 'ngo' ? requests.filter(r => (r.status || '').toLowerCase() === 'open').length : 0;
+        const terminalStatuses = ['completed', 'fulfilled', 'cancelled', 'expired'];
+        let activeReqs = role === 'ngo' 
+            ? requests.filter(r => (r.status || '').toLowerCase() === 'open').length 
+            : donations.filter(d => !terminalStatuses.includes((d.status || '').toLowerCase())).length;
         
         if (role === 'donor') {
            completedMatches.forEach(m => {
@@ -247,7 +250,7 @@ export function Analytics() {
     if (trendPercent === null) {
       return (
         <div className="text-[10px] font-bold px-2 py-1 rounded-md border w-fit text-gray-500 bg-gray-50 border-gray-100">
-          Not enough historical data
+          Historical trends will become available as more rescue data is collected.
         </div>
       );
     }
@@ -283,7 +286,7 @@ export function Analytics() {
     return [
       { label: "Successful rescues", value: k.successful_rescues.value, icon: ShieldCheck, color: "text-[#F07154]", trend: k.successful_rescues.trend_percent, inverse: false },
       { label: `Quantity rescued ${k.quantity_rescued.unit ? `(${k.quantity_rescued.unit})` : ''}`, value: k.quantity_rescued.value, icon: Leaf, color: "text-[#F07154]", trend: k.quantity_rescued.trend_percent, inverse: false },
-      { label: "Active requests", value: k.active_requests.value, icon: AlertCircle, color: "text-[#F07154]", trend: k.active_requests.trend_percent, inverse: true }, // Less active = better usually, or neutral
+      { label: role === 'donor' ? "Active donations" : "Active requests", value: k.active_requests.value, icon: AlertCircle, color: "text-[#F07154]", trend: k.active_requests.trend_percent, inverse: true }, // Less active = better usually, or neutral
       { label: fourthKPILabel, value: fourthKPIValue, icon: Flame, color: "text-[#F07154]", trend: role === 'donor' ? k.critical_resolved_percent.trend_percent : null, inverse: false }
     ];
   };
@@ -383,7 +386,7 @@ export function Analytics() {
                         {data.kpis.successful_rescues.trend_percent >= 0 ? '↑' : '↓'} {Math.abs(data.kpis.successful_rescues.trend_percent)}%
                     </div>
                 ) : (
-                    <div className="font-serif text-xl font-bold mb-1 text-white/80">Not enough historical data</div>
+                    <div className="font-serif text-sm font-bold mb-1 text-white/80 leading-snug">Historical trends will become available as more rescue data is collected.</div>
                 )}
                 <div className="text-sm font-bold text-white/90 mb-1">Growth in rescues</div>
                 <div className="text-[11px] text-white/60 font-semibold">vs previous period</div>
@@ -411,7 +414,10 @@ export function Analytics() {
                             </LineChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="flex-1 flex items-center justify-center text-[#33251E]/40 font-bold">{role === 'donor' ? 'No donation data for this period' : 'No fulfilled requests for this period'}</div>
+                        <div className="flex-1 flex flex-col items-center justify-center text-[#33251E]/40 font-bold gap-3 text-center px-4">
+                            <TrendingUp size={32} className="opacity-40" />
+                            <p className="text-sm font-medium leading-relaxed">Need additional completed rescues to calculate trends.</p>
+                        </div>
                     )}
                 </div>
             </div>
@@ -548,11 +554,11 @@ export function Analytics() {
             <h3 className="font-serif text-xl font-bold text-[#33251E] mb-6">Operational insights</h3>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                    {label: role === 'donor' ? 'Most donated' : 'Most requested', val: data.operational_insights.most_donated_category || (role === 'donor' ? 'No donation data' : 'No fulfilled requests'), showForRole: 'both'},
+                    {label: role === 'donor' ? 'Most Donated' : 'Most Requested', val: data.operational_insights.most_donated_category || (role === 'donor' ? 'No donation data' : 'No fulfilled requests'), showForRole: 'both'},
                     {label: role === 'donor' ? 'Top Rescue City' : 'Top Service City', val: data.operational_insights.highest_demand_city || (role === 'donor' ? 'No donation data' : 'No request data'), showForRole: 'both'},
-                    {label: role === 'donor' ? 'Rescue completion rate' : 'Request fulfillment rate', val: data.operational_insights.rescue_completion_rate_percent !== null ? `${data.operational_insights.rescue_completion_rate_percent}%` : '—', color: 'text-emerald-600', showForRole: 'both'},
-                    {label: 'Unsafe rate', val: data.operational_insights.unsafe_rate_percent !== null ? `${data.operational_insights.unsafe_rate_percent}%` : '—', color: 'text-[#F07154]', showForRole: 'donor'},
-                    {label: 'Critical requests today', val: data.operational_insights.critical_requests_today.toString(), color: 'text-amber-600', showForRole: 'ngo'}
+                    {label: role === 'donor' ? 'Rescue Completion Rate' : 'Request Fulfillment Rate', val: data.operational_insights.rescue_completion_rate_percent !== null ? `${data.operational_insights.rescue_completion_rate_percent}%` : '—', color: 'text-emerald-600', showForRole: 'both'},
+                    {label: 'Unsafe Rate', val: data.operational_insights.unsafe_rate_percent !== null ? `${data.operational_insights.unsafe_rate_percent}%` : '—', color: 'text-[#F07154]', showForRole: 'donor'},
+                    {label: 'Critical Requests Today', val: data.operational_insights.critical_requests_today.toString(), color: 'text-amber-600', showForRole: 'ngo'}
                 ].filter(i => i.showForRole === 'both' || i.showForRole === role).map((insight, i) => (
                 <div key={i} className="border border-[#33251E]/5 rounded-xl p-4 flex flex-col justify-center bg-[#FDFBF7]/50 hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group">
                     <div className="text-[10px] text-[#33251E]/50 mb-1 font-bold uppercase tracking-wider group-hover:text-[#33251E]/70 transition-colors truncate">{insight.label}</div>

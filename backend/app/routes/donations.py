@@ -39,6 +39,7 @@ def create_donation(
 
 @router.get("/me")
 def get_my_donations(
+    status: str = None,
     service: DonationsService = Depends(get_donations_service),
     current_user = Depends(get_current_user)
 ):
@@ -50,7 +51,7 @@ def get_my_donations(
                 content={"success": False, "message": "Only donors can view their donations here."}
             )
         
-        result = service.get_donations_by_donor(current_user.id)
+        result = service.get_donations_by_donor(current_user.id, status=status)
         return {
             "success": True,
             "message": "My donations retrieved successfully",

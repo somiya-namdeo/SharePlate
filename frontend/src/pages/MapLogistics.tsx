@@ -311,10 +311,10 @@ export function MapLogistics() {
       <Sidebar />
       <Topbar title="Map & Logistics" />
 
-      <main className="ml-0 lg:ml-[280px] pt-[112px] pb-12 px-4 lg:px-8 max-w-[1600px] mx-auto flex flex-col">
+      <main className="ml-0 lg:ml-[280px] pt-[112px] pb-12 px-4 lg:px-8 max-w-[1600px] mx-auto flex flex-col gap-6">
         
         {/* Top Filter Bar */}
-        <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 p-4 mb-6 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 p-4 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest mr-2">Filters</span>
             {filters.map((f, i) => (
@@ -335,7 +335,7 @@ export function MapLogistics() {
         </div>
 
         {/* Main Map Row */}
-        <div className="grid grid-cols-1 xl:grid-cols-[7fr_3fr] gap-6 mb-6 items-stretch xl:h-[560px]">
+        <div className="grid grid-cols-1 xl:grid-cols-[7fr_3fr] gap-6 items-stretch xl:h-[560px] min-h-[500px] xl:min-h-0">
           
           {/* Map Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 flex flex-col h-full overflow-hidden relative">

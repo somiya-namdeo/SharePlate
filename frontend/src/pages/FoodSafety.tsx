@@ -36,24 +36,24 @@ export function FoodSafety() {
     return null;
   });
 
-  // Form State Pre-filled with realistic data or router state
+  // Form State Pre-filled with router state or empty strings
   const [formData, setFormData] = useState({
-    food_item: prefill?.foodItem || 'Dal',
-    food_category: prefill?.foodCategory || 'Cooked Meal',
-    preparation_method: prefill?.prepMethod || 'Boiled',
-    storage_condition: prefill?.storageCondition || 'Refrigerated',
-    packaging_type: prefill?.packagingType || 'Sealed Container',
-    temperature_c: prefill?.temperature || '5',
-    humidity_percent: prefill?.humidity || '45',
-    hours_since_prepared: prefill?.hoursPrepared || '4',
-    estimated_transport_time_min: prefill?.estTransport || '60',
-    distance_km: prefill?.distance || '10',
-    quantity_kg: prefill?.quantity || '15',
-    season: prefill?.season || 'Summer',
-    event_type: prefill?.eventType || 'Restaurant',
-    city_tier: prefill?.cityTier || 'Tier 1',
-    perishability_score: prefill?.perishabilityScore || '3',
-    estimated_shelf_life_hr: prefill?.shelfLife || '24'
+    food_item: prefill?.foodItem || '',
+    food_category: prefill?.foodCategory || '',
+    preparation_method: prefill?.prepMethod || '',
+    storage_condition: prefill?.storageCondition || '',
+    packaging_type: prefill?.packagingType || '',
+    temperature_c: prefill?.temperature || '',
+    humidity_percent: prefill?.humidity || '',
+    hours_since_prepared: prefill?.hoursPrepared || '',
+    estimated_transport_time_min: prefill?.estTransport || '',
+    distance_km: prefill?.distance || '',
+    quantity_kg: prefill?.quantity || '',
+    season: prefill?.season || '',
+    event_type: prefill?.eventType || '',
+    city_tier: prefill?.cityTier || '',
+    perishability_score: prefill?.perishabilityScore || '',
+    estimated_shelf_life_hr: prefill?.shelfLife || ''
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,8 +85,6 @@ export function FoodSafety() {
         perishability_score: Math.round(Number(formData.perishability_score)) || 0, // Ensure integer
         estimated_shelf_life_hr: Number(formData.estimated_shelf_life_hr) || 0
       };
-
-      console.log("Food Safety Payload:", payload);
 
       const response = await fetch('http://127.0.0.1:8000/api/ai/food-safety', {
         method: 'POST',
