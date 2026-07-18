@@ -18,9 +18,11 @@ app = FastAPI(
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    # Production frontend URL (replace with actual Vercel URL after deployment)
-    "https://your-frontend.vercel.app",
+    "https://share-plate-ivory.vercel.app",
 ]
+
+if settings.frontend_url and settings.frontend_url not in origins:
+    origins.append(settings.frontend_url)
 
 app.add_middleware(
     CORSMiddleware,
