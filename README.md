@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🍽️ SharePlate
+# SharePlate
 **AI-Powered Food Redistribution Platform**
 
 [![Frontend](https://img.shields.io/badge/Frontend-React%20Vite-61DAFB?logo=react&logoColor=black)](#)
@@ -15,7 +15,7 @@
 <br />
 
 <details>
-  <summary><h2>📖 Table of Contents</h2></summary>
+  <summary><h2>Table of Contents</h2></summary>
   <ul>
     <li><a href="#-overview">Overview</a></li>
     <li><a href="#-key-features">Key Features</a></li>
@@ -40,7 +40,7 @@
 
 ---
 
-## 🌍 Overview
+## Overview
 
 ### The Problem
 Globally, nearly **one-third of all food produced is wasted**, while millions suffer from food insecurity. A massive logistics and communication gap exists between restaurants, events, and individuals with surplus food and the non-governmental organizations (NGOs) that can distribute it.
@@ -56,22 +56,22 @@ By automating logistics and intelligently evaluating the safety and perishabilit
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🧑‍🍳 Donor Features
+### Donor Features
 * **Authentication**: Secure JWT-based login and registration.
 * **Donation Creation**: Seamlessly submit surplus food details.
 * **AI Food Safety Prediction**: Instant, automated safety and urgency evaluation.
 * **Donation Tracking**: Real-time status updates (Pending, Matched, Completed).
 * **Dashboard**: Comprehensive analytics and historical donation data.
 
-### 🤝 NGO Features
+### NGO Features
 * **Authentication**: Secure role-based login.
 * **Browse Donations**: Geolocation-based browsing of available local surplus food.
 * **Accept Donations**: Claim food donations specifically tailored to NGO capacity.
 * **Dashboard**: Track accepted requests, logistics, and historical impact.
 
-### 🧠 AI Features
+### AI Features
 * **Food Safety Prediction**: Evaluates raw features to determine if food is safe for human consumption.
 * **Shelf Life Prediction**: Estimates the exact remaining hours before food spoilage.
 * **Urgency Prediction**: Classifies urgency into Critical, High, or Low to optimize pickup speed.
@@ -81,7 +81,7 @@ By automating logistics and intelligently evaluating the safety and perishabilit
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```mermaid
 graph TD
@@ -95,7 +95,7 @@ graph TD
 
 ---
 
-## 💻 Technology Stack
+## Technology Stack
 
 ### Frontend
 | Technology | Description |
@@ -137,7 +137,7 @@ graph TD
 
 ---
 
-## 🤖 Machine Learning Pipeline
+## Machine Learning Pipeline
 
 1. **BiLSTM-Attention Named Entity Recognition (NER)**: A custom PyTorch neural network that parses unstructured text descriptions provided by donors to extract food items, conditions, and properties automatically.
 2. **Food Safety Prediction**: A `CatBoostClassifier` trained to analyze ingredients, ambient temperature, humidity, and storage conditions to classify food as Safe or Unsafe.
@@ -148,7 +148,7 @@ graph TD
 
 ---
 
-## 🔄 Project Workflow
+## Project Workflow
 
 1. **User Login**: Users authenticate securely via JWT as either a Donor or an NGO.
 2. **Donation Submission**: Donors submit food surplus details (or unstructured text).
@@ -162,7 +162,7 @@ graph TD
 
 ---
 
-## 🚀 Deployment Links
+## Deployment Links
 
 * **Frontend (Vercel)**: [https://share-plate-ivory.vercel.app](https://share-plate-ivory.vercel.app)
 * **Backend (Render)**: [https://shareplate-6afu.onrender.com](https://shareplate-6afu.onrender.com)
@@ -170,7 +170,7 @@ graph TD
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
 ### Landing Page
 <!-- Add screenshot -->
@@ -195,7 +195,7 @@ graph TD
 
 ---
 
-## 🔌 API Reference
+## API Reference
 
 SharePlate provides a fully documented REST API. Below are some of the critical endpoints:
 
@@ -221,7 +221,7 @@ SharePlate provides a fully documented REST API. Below are some of the critical 
 
 ---
 
-## 🛠️ Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 * Node.js (v18+)
@@ -254,7 +254,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 ---
 
-## 🔐 Environment Variables
+## Environment Variables
 
 ### Frontend (`frontend/.env`)
 ```env
@@ -272,7 +272,7 @@ FRONTEND_URL=http://localhost:5173
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 SharePlate/
@@ -295,7 +295,7 @@ SharePlate/
 
 ---
 
-## 🛡️ Security Features
+## Security Features
 * **JWT Authentication**: Stateless, secure token-based user verification.
 * **Role-Based Access Control (RBAC)**: Strict segregation between `Donor` and `NGO` routes.
 * **Protected Routes**: Frontend routing explicitly blocks unauthenticated access.
@@ -305,14 +305,14 @@ SharePlate/
 
 ---
 
-## ⚡ Performance Highlights
+## Performance Highlights
 * **Edge Deployment**: Frontend served globally via Vercel Edge Network.
 * **Asynchronous API**: FastAPI handles thousands of concurrent requests natively.
 * **Optimized ML Inference**: Pickled `joblib` models pre-loaded into memory during server startup to provide sub-100ms inference times.
 
 ---
 
-## 🔮 Future Improvements
+## Future Improvements
 * Integration of real-time WebSockets for instant NGO notifications.
 * Mobile application via React Native.
 * Expansion of the Deep Neural Network to handle computer vision (image-based food spoilage detection).
@@ -320,7 +320,7 @@ SharePlate/
 
 ---
 
-## 🤝 Contributing
+## Contributing
 Contributions are always welcome! 
 1. Fork the project.
 2. Create a Feature Branch (`git checkout -b feature/AmazingFeature`).
@@ -330,12 +330,12 @@ Contributions are always welcome!
 
 ---
 
-## 📄 License
+## License
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Somiya Namdeo**
 * GitHub: [@somiya-namdeo](https://github.com/somiya-namdeo)
@@ -343,5 +343,5 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 <br />
 <div align="center">
-Made with ❤️ to reduce global food waste.
+Made with love to reduce global food waste.
 </div>
