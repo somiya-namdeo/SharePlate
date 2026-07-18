@@ -75,26 +75,11 @@ export function FoodSafety() {
         estimated_shelf_life_hr: Number(formData.estimated_shelf_life_hr) || 0
       };
 
-      const response = await fetch('http://127.0.0.1:8000/api/ai/food-safety', {
+      const data = await apiFetch('/api/ai/food-safety', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        data: payload
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        if (response.status === 422 && errorData && errorData.detail) {
-          console.error("422 Validation Error Response:", errorData);
-          const firstError = errorData.detail[0];
-          if (firstError) {
-            const field = firstError.loc ? firstError.loc[firstError.loc.length - 1] : "unknown";
-            throw new Error(`Field "${field}" ${firstError.msg}`);
-          }
-        }
-        throw new Error(`Server returned ${response.status}`);
-      }
-
-      const data = await response.json();
       setResult(data);
 
       if (donationId) {

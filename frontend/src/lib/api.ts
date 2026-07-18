@@ -48,8 +48,15 @@ export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
         }
       }
 
-      // Backend error response format
       let errorMessage = responseData?.detail || responseData?.message || responseData?.error;
+
+      // FastAPI validation error (detail is an array)
+      if (Array.isArray(errorMessage)) {
+        errorMessage = errorMessage.map((err: any) => {
+          const field = err.loc ? err.loc[err.loc.length - 1] : 'unknown';
+          return `Field "${field}" ${err.msg}`;
+        }).join(', ');
+      }
 
       if (!errorMessage) {
         if (endpoint === '/api/auth/login' && response.status === 401) {
