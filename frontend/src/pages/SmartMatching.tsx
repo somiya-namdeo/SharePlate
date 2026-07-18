@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { Topbar } from '../components/dashboard/Topbar';
-import { ChevronDown, Phone, Route, Loader2, CheckCircle2, Bot, ListX, ArrowDownUp, Users, BarChart2, AlertCircle } from 'lucide-react';
+import { ChevronDown, Phone, Route, Loader2, CheckCircle2, Bot, ListX, ArrowDownUp, Users, BarChart2, AlertCircle, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { apiFetch } from '../lib/api';
 import { getUser } from '../lib/auth';
@@ -28,6 +28,7 @@ export function SmartMatching() {
   const [queue, setQueue] = useState<any[]>([]);
   const [loadingQueue, setLoadingQueue] = useState(false);
   const [sortBy, setSortBy] = useState<'score' | 'distance' | 'priority' | 'newest'>('newest');
+  const [selectedDetails, setSelectedDetails] = useState<any | null>(null);
 
   const sortedQueue = [...queue].sort((a, b) => {
     if (sortBy === 'score') return (b.match_score || 0) - (a.match_score || 0);
@@ -188,7 +189,7 @@ export function SmartMatching() {
                   className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] focus-visible:ring-2 focus-visible:ring-[#F07154]/20 transition-all appearance-none pr-10 truncate cursor-pointer hover:border-[#33251E]/30"
                 >
                   {donationsList.length === 0 ? (
-                    <option value="" disabled>No donations available...</option>
+                    <option value="" disabled>No donations available</option>
                   ) : (
                     donationsList.map(d => {
                       const locality = d.address ? d.address.split(',')[0].trim() : '';
@@ -234,8 +235,8 @@ export function SmartMatching() {
             <div className="w-full flex items-center gap-3">
               <button 
                 onClick={handleFindMatches}
-                disabled={loading}
-                className="w-full bg-[#33251E] hover:bg-[#33251E]/90 focus-visible:ring-2 focus-visible:ring-[#33251E]/30 text-white rounded-xl px-4 py-3 text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-wait"
+                disabled={loading || !donationId || donationsList.length === 0}
+                className="w-full bg-[#33251E] hover:bg-[#33251E]/90 focus-visible:ring-2 focus-visible:ring-[#33251E]/30 text-white rounded-xl px-4 py-3 text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {loading && <Loader2 size={16} className="animate-spin" />}
                 {loading ? 'Finding Matches...' : 'Find Matches'}
@@ -376,20 +377,22 @@ export function SmartMatching() {
         </div>
 
         {/* Match Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-           <div className="bg-white rounded-2xl p-4 border border-[#33251E]/10 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
-             <div className="w-12 h-12 rounded-full bg-[#33251E]/5 flex items-center justify-center text-[#33251E]"><Users size={20}/></div>
-             <div><div className="text-2xl font-bold text-[#33251E]">{totalMatches}</div><div className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">Matches Found</div></div>
-           </div>
-           <div className="bg-white rounded-2xl p-4 border border-[#33251E]/10 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
-             <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600"><BarChart2 size={20}/></div>
-             <div><div className="text-2xl font-bold text-[#33251E]">{avgScore}%</div><div className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">Avg Match Score</div></div>
-           </div>
-           <div className="bg-white rounded-2xl p-4 border border-[#33251E]/10 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
-             <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600"><AlertCircle size={20}/></div>
-             <div><div className="text-2xl font-bold text-[#33251E]">{highPriorityCount}</div><div className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">High Priority</div></div>
-           </div>
-        </div>
+        {sortedQueue.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+             <div className="bg-white rounded-2xl p-4 border border-[#33251E]/10 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+               <div className="w-12 h-12 rounded-full bg-[#33251E]/5 flex items-center justify-center text-[#33251E]"><Users size={20}/></div>
+               <div><div className="text-2xl font-bold text-[#33251E]">{totalMatches}</div><div className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">Matches Found</div></div>
+             </div>
+             <div className="bg-white rounded-2xl p-4 border border-[#33251E]/10 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+               <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600"><BarChart2 size={20}/></div>
+               <div><div className="text-2xl font-bold text-[#33251E]">{avgScore}%</div><div className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">Avg Match Score</div></div>
+             </div>
+             <div className="bg-white rounded-2xl p-4 border border-[#33251E]/10 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+               <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600"><AlertCircle size={20}/></div>
+               <div><div className="text-2xl font-bold text-[#33251E]">{highPriorityCount}</div><div className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-widest">High Priority</div></div>
+             </div>
+          </div>
+        )}
 
         {/* Assignment Queue */}
         <div className="bg-white rounded-3xl shadow-sm border border-[#33251E]/10 flex flex-col overflow-hidden">
@@ -455,7 +458,11 @@ export function SmartMatching() {
                     const displayFood = row.food_type || row.donation_id?.slice(0, 8);
                     
                     return (
-                      <tr key={row.id || i} className="border-b border-[#33251E]/5 hover:bg-[#FDFBF7] transition-colors duration-200 cursor-pointer group">
+                      <tr 
+                        key={row.id || i} 
+                        onClick={() => setSelectedDetails(row)}
+                        className="border-b border-[#33251E]/5 hover:bg-[#FDFBF7] transition-colors duration-200 cursor-pointer group"
+                      >
                         <td className="py-5 align-middle text-sm font-semibold text-[#33251E]/80">
                           {displayFood}
                         </td>
@@ -512,7 +519,13 @@ export function SmartMatching() {
                           </span>
                         </td>
                         <td className="py-5 align-middle text-sm text-right">
-                          <button className="bg-white border border-[#33251E]/10 hover:bg-gray-50 text-[#33251E] font-bold text-xs px-3 py-1.5 rounded-lg transition-colors duration-200 group-hover:border-[#33251E]/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F07154]/50">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedDetails(row);
+                            }}
+                            className="bg-white border border-[#33251E]/10 hover:bg-gray-50 text-[#33251E] font-bold text-xs px-3 py-1.5 rounded-lg transition-colors duration-200 group-hover:border-[#33251E]/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F07154]/50"
+                          >
                             Details
                           </button>
                         </td>
@@ -526,6 +539,68 @@ export function SmartMatching() {
         </div>
 
       </main>
+
+      {/* Details Modal */}
+      {selectedDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#33251E]/20 backdrop-blur-sm" onClick={() => setSelectedDetails(null)}>
+          <div 
+            className="bg-white rounded-3xl shadow-xl border border-[#33251E]/10 w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center p-6 border-b border-[#33251E]/5">
+              <h3 className="font-serif text-2xl font-bold text-[#33251E]">Match Details</h3>
+              <button onClick={() => setSelectedDetails(null)} className="p-2 hover:bg-[#33251E]/5 rounded-full text-[#33251E]/60 transition-colors">
+                <span className="sr-only">Close</span>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto flex-1 space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest block mb-1">Donation Type</span>
+                  <div className="text-sm font-semibold text-[#33251E]">{selectedDetails.food_type || 'Unknown'}</div>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest block mb-1">Status</span>
+                  <div className="text-sm font-semibold text-[#33251E] capitalize">{selectedDetails.status || 'Pending'}</div>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest block mb-1">Quantity / Needed</span>
+                  <div className="text-sm font-semibold text-[#33251E]">
+                    {(() => {
+                      const d = donationsList.find(don => don.id === selectedDetails.donation_id);
+                      const q = selectedDetails.quantity || d?.quantity;
+                      if (q) return `${q} ${!isNaN(Number(q)) ? 'kg' : ''}`.trim();
+                      return selectedDetails.quantity_needed || 'Unknown';
+                    })()}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest block mb-1">Distance</span>
+                  <div className="text-sm font-semibold text-[#33251E]">{selectedDetails.distance_km ?? '?'} km</div>
+                </div>
+              </div>
+
+              <div className="bg-[#FDFBF7] rounded-xl p-4 border border-[#33251E]/5">
+                <span className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest block mb-2">Assigned NGO</span>
+                <div className="text-base font-bold text-[#33251E] mb-1">{selectedDetails.ngo_name || 'Unknown NGO'}</div>
+                <div className="text-sm font-mono text-[#33251E]/60">{selectedDetails.request_id ? `REQ: ${selectedDetails.request_id.slice(0, 12)}...` : 'No Request ID'}</div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-1 bg-[#FDFBF7] rounded-xl p-4 border border-[#33251E]/5 flex flex-col items-center justify-center text-center">
+                  <span className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest block mb-1">Match Score</span>
+                  <div className="text-2xl font-bold text-[#F07154]">{Math.round(selectedDetails.match_score || 0)}%</div>
+                </div>
+                <div className="flex-1 bg-[#FDFBF7] rounded-xl p-4 border border-[#33251E]/5 flex flex-col items-center justify-center text-center">
+                  <span className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest block mb-1">Priority Level</span>
+                  <div className="text-lg font-bold text-[#33251E] capitalize">{selectedDetails.urgency || 'Low'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

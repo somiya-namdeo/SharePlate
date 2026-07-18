@@ -57,6 +57,13 @@ export function MapLogistics() {
   const [donations, setDonations] = useState<any[]>([]);
   const [requests, setRequests] = useState<any[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
+
+  // Filter States
+  const [filterUrgency, setFilterUrgency] = useState("All");
+  const [filterSafety, setFilterSafety] = useState("All");
+  const [filterCategory, setFilterCategory] = useState("All");
+  const [filterNGO, setFilterNGO] = useState("All");
+  const [filterPickup, setFilterPickup] = useState("All");
   
   const [selectedPickup, setSelectedPickup] = useState<any | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
@@ -191,6 +198,43 @@ export function MapLogistics() {
   const displayDonations = useMemo(() => {
     let filteredDonations = donations;
     
+    if (filterUrgency !== 'All') {
+      filteredDonations = filteredDonations.filter(d => {
+        const u = d.urgency_level || (matches.find(m => m.donation_id === d.id)?.urgency) || '';
+        return u.toLowerCase() === filterUrgency.toLowerCase();
+      });
+    }
+    if (filterSafety !== 'All') {
+      if (filterSafety === 'Pending Safety') {
+        filteredDonations = filteredDonations.filter(d => !d.safety_status || d.safety_status.toLowerCase() === 'pending');
+      } else {
+        filteredDonations = filteredDonations.filter(d => (d.safety_status || '').toLowerCase() === filterSafety.toLowerCase());
+      }
+    }
+    if (filterCategory !== 'All') {
+      filteredDonations = filteredDonations.filter(d => (d.category || d.food_type) === filterCategory);
+    }
+    if (filterPickup !== 'All') {
+      const statusMap: Record<string, string[]> = {
+        'Pending': ['pending'],
+        'In Progress': ['accepted', 'picked_up'],
+        'Completed': ['completed']
+      };
+      const tgts = statusMap[filterPickup] || [];
+      filteredDonations = filteredDonations.filter(d => {
+        const match = matches.find(m => m.donation_id === d.id);
+        const st = match ? match.status : d.status;
+        return tgts.includes((st || '').toLowerCase());
+      });
+    }
+    if (filterNGO !== 'All') {
+      if (filterNGO === 'Assigned') {
+        filteredDonations = filteredDonations.filter(d => matches.some(m => m.donation_id === d.id && ['pending', 'accepted', 'picked_up'].includes((m.status || '').toLowerCase())));
+      } else {
+        filteredDonations = filteredDonations.filter(d => !matches.some(m => m.donation_id === d.id && ['pending', 'accepted', 'picked_up'].includes((m.status || '').toLowerCase())));
+      }
+    }
+
     // Deep-link isolation: if request ID is passed, only show its matched donation
     if (requestIdParam && matches.length > 0) {
       const activeMatch = matches.find((m: any) => 
@@ -198,7 +242,7 @@ export function MapLogistics() {
         ['pending', 'accepted'].includes((m.status || '').toLowerCase())
       );
       if (activeMatch) {
-        filteredDonations = donations.filter(d => d.id === activeMatch.donation_id);
+        filteredDonations = filteredDonations.filter(d => d.id === activeMatch.donation_id);
       }
     }
 
@@ -211,14 +255,28 @@ export function MapLogistics() {
         displayLng: d.longitude + Math.cos(angle) * radius 
       };
     });
-  }, [donations, requestIdParam, matches]);
+  }, [donations, requestIdParam, matches, filterUrgency, filterSafety, filterCategory, filterPickup, filterNGO]);
 
   const displayRequests = useMemo(() => {
     let filteredRequests = requests;
     
+    if (filterUrgency !== 'All') {
+      filteredRequests = filteredRequests.filter(r => (r.urgency_level || '').toLowerCase() === filterUrgency.toLowerCase());
+    }
+    if (filterCategory !== 'All') {
+      filteredRequests = filteredRequests.filter(r => (r.category || r.preferred_food_type || r.food_type) === filterCategory);
+    }
+    if (filterNGO !== 'All') {
+      if (filterNGO === 'Assigned') {
+        filteredRequests = filteredRequests.filter(r => matches.some(m => m.request_id === r.id && ['pending', 'accepted', 'picked_up'].includes((m.status || '').toLowerCase())));
+      } else {
+        filteredRequests = filteredRequests.filter(r => !matches.some(m => m.request_id === r.id && ['pending', 'accepted', 'picked_up'].includes((m.status || '').toLowerCase())));
+      }
+    }
+
     // Deep-link isolation: if request ID is passed, only show that specific request
     if (requestIdParam) {
-      filteredRequests = requests.filter(r => r.id === requestIdParam);
+      filteredRequests = filteredRequests.filter(r => r.id === requestIdParam);
     }
 
     return filteredRequests.map((r, i) => {
@@ -230,7 +288,7 @@ export function MapLogistics() {
         displayLng: r.longitude + Math.cos(angle) * radius 
       };
     });
-  }, [requests, requestIdParam]);
+  }, [requests, requestIdParam, matches, filterUrgency, filterCategory, filterNGO]);
 
   const allValidCoords = useMemo(() => {
     const coords: [number, number][] = [];
@@ -317,18 +375,50 @@ export function MapLogistics() {
         <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 p-4 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-[10px] font-bold text-[#33251E]/40 uppercase tracking-widest mr-2">Filters</span>
-            {filters.map((f, i) => (
-              <button key={i} className="bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-2 text-xs font-semibold text-[#33251E]/80 flex items-center gap-2 hover:border-[#33251E]/30 transition-colors">
-                {f}
-                <ChevronDown size={14} className="text-[#33251E]/40" />
+            
+            <select value={filterUrgency} onChange={e => setFilterUrgency(e.target.value)} className="bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-3 py-2 text-xs font-semibold text-[#33251E]/80 hover:border-[#33251E]/30 focus:outline-none focus:border-[#F07154] appearance-none pr-8 relative bg-no-repeat bg-[right_8px_center] cursor-pointer transition-colors" style={{backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2333251E66' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`}}>
+              <option value="All">Urgency: All</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+
+            <select value={filterSafety} onChange={e => setFilterSafety(e.target.value)} className="bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-3 py-2 text-xs font-semibold text-[#33251E]/80 hover:border-[#33251E]/30 focus:outline-none focus:border-[#F07154] appearance-none pr-8 relative bg-no-repeat bg-[right_8px_center] cursor-pointer transition-colors" style={{backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2333251E66' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`}}>
+              <option value="All">Safety: All</option>
+              <option value="Safe">Safe</option>
+              <option value="Pending Safety">Pending Safety</option>
+              <option value="Unsafe">Unsafe</option>
+            </select>
+
+            <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} className="bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-3 py-2 text-xs font-semibold text-[#33251E]/80 hover:border-[#33251E]/30 focus:outline-none focus:border-[#F07154] appearance-none pr-8 relative bg-no-repeat bg-[right_8px_center] cursor-pointer transition-colors max-w-[150px] truncate" style={{backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2333251E66' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`}}>
+              <option value="All">Category: All</option>
+              {Array.from(new Set(donations.map(d => d.category || d.food_type).filter(Boolean))).map(c => (
+                 <option key={c as string} value={c as string}>{c as string}</option>
+              ))}
+            </select>
+
+            <select value={filterNGO} onChange={e => setFilterNGO(e.target.value)} className="bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-3 py-2 text-xs font-semibold text-[#33251E]/80 hover:border-[#33251E]/30 focus:outline-none focus:border-[#F07154] appearance-none pr-8 relative bg-no-repeat bg-[right_8px_center] cursor-pointer transition-colors" style={{backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2333251E66' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`}}>
+              <option value="All">NGO Request: All</option>
+              <option value="Assigned">Assigned</option>
+              <option value="Unassigned">Unassigned</option>
+            </select>
+
+            <select value={filterPickup} onChange={e => setFilterPickup(e.target.value)} className="bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-3 py-2 text-xs font-semibold text-[#33251E]/80 hover:border-[#33251E]/30 focus:outline-none focus:border-[#F07154] appearance-none pr-8 relative bg-no-repeat bg-[right_8px_center] cursor-pointer transition-colors" style={{backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2333251E66' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`}}>
+              <option value="All">Pickup: All</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+
+            {(filterUrgency !== 'All' || filterSafety !== 'All' || filterCategory !== 'All' || filterNGO !== 'All' || filterPickup !== 'All') && (
+              <button onClick={() => { setFilterUrgency('All'); setFilterSafety('All'); setFilterCategory('All'); setFilterNGO('All'); setFilterPickup('All'); }} className="text-xs font-bold text-[#F07154] hover:text-[#D95D40] underline underline-offset-2 ml-2 transition-colors">
+                Reset Filters
               </button>
-            ))}
+            )}
           </div>
           
           <div className="flex flex-wrap items-center gap-4 text-[10px] font-bold text-[#33251E]/60 uppercase tracking-widest bg-[#FDFBF7] px-4 py-2.5 rounded-xl border border-[#33251E]/5">
              <span className="mr-2 opacity-50">LEGEND</span>
-             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> Safe</span>
-             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500"></span> Pending Safety</span>
              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#F07154]"></span> Donor</span>
              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#33251E]"></span> NGO</span>
           </div>
@@ -338,17 +428,31 @@ export function MapLogistics() {
         <div className="grid grid-cols-1 xl:grid-cols-[7fr_3fr] gap-6 items-stretch xl:h-[560px] min-h-[500px] xl:min-h-0">
           
           {/* Map Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 flex flex-col h-full overflow-hidden relative">
+          <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 flex flex-col h-full overflow-hidden relative z-0">
              
              {/* Card Header */}
-             <div className="p-6 border-b border-[#33251E]/5 shrink-0 bg-white relative z-20">
+             <div className="p-6 border-b border-[#33251E]/5 shrink-0 bg-white relative z-10">
                 <h3 className="font-serif text-2xl font-bold text-[#33251E]">Live Rescue Map</h3>
                 <p className="text-sm text-[#33251E]/70 mt-1">Track urgent pickups, NGOs, donors, and demand hotspots.</p>
              </div>
              
              {/* Map Canvas */}
-             <div className="flex-1 w-full relative z-10 bg-[#e5e3df]">
-                <MapContainer center={defaultCenter} zoom={13} style={{ height: '100%', width: '100%', zIndex: 10 }}>
+             <div className="flex-1 w-full relative z-0 min-h-0 bg-[#e5e3df]">
+                {displayDonations.length === 0 && displayRequests.length === 0 && (
+                  <div className="absolute inset-0 z-[10] flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+                    <MapPin size={40} className="text-[#33251E]/20 mb-4" />
+                    <h4 className="text-lg font-bold text-[#33251E] mb-1">No Logistics Found</h4>
+                    <p className="text-sm font-medium text-[#33251E]/60 mb-4">No donations match the selected filters.</p>
+                    <button 
+                      onClick={() => { setFilterUrgency('All'); setFilterSafety('All'); setFilterCategory('All'); setFilterNGO('All'); setFilterPickup('All'); }}
+                      className="bg-[#33251E] text-white px-5 py-2 rounded-xl font-bold text-sm hover:bg-[#33251E]/90 transition-colors"
+                    >
+                      Reset Filters
+                    </button>
+                  </div>
+                )}
+                <div className="absolute inset-0 z-0">
+                  <MapContainer center={defaultCenter} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }}>
                   <TileLayer
                     url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -386,11 +490,12 @@ export function MapLogistics() {
                     </Marker>
                   ))}
                 </MapContainer>
+                </div>
              </div>
           </div>
           
           {/* Selected Marker Panel */}
-          <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 flex flex-col justify-between h-full overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 flex flex-col justify-between h-full overflow-hidden relative z-0">
              <div className="p-6 pb-4 overflow-y-auto">
                <span className="text-[11px] font-bold text-[#F07154] uppercase tracking-[0.1em] mb-2 flex items-center gap-1.5">
                  <span className="w-1.5 h-1.5 rounded-full bg-[#F07154]"></span>

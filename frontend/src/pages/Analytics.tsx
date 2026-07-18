@@ -19,6 +19,7 @@ interface AnalyticsData {
     quantity_rescued: { value: number; trend_percent: number | null; unit?: string };
     active_requests: { value: number; trend_percent: number | null; unit?: string };
     critical_resolved_percent: { value: number | string; trend_percent: number | null; unit?: string };
+    ngos_served?: { value: number; trend_percent: number | null };
   };
   donations_over_time: { date: string; count: number }[];
   food_categories: { category: string; count: number; percentage: number }[];
@@ -213,7 +214,8 @@ export function Analytics() {
               successful_rescues: { value: completedMatches.length, trend_percent: null },
               quantity_rescued: { value: quantityRescued, trend_percent: null, unit: 'kg' },
               active_requests: { value: activeReqs, trend_percent: null },
-              critical_resolved_percent: { value: criticalTotal === 0 ? "N/A" : Math.round((criticalResolved / criticalTotal) * 100), trend_percent: null }
+              critical_resolved_percent: { value: criticalTotal === 0 ? "N/A" : Math.round((criticalResolved / criticalTotal) * 100), trend_percent: null },
+              ngos_served: { value: new Set(completedMatches.map(m => m.ngo_id || m.request_id)).size, trend_percent: null }
            },
            donations_over_time,
            food_categories,
@@ -249,8 +251,8 @@ export function Analytics() {
   const renderTrend = (trendPercent: number | null, inverseColors = false) => {
     if (trendPercent === null) {
       return (
-        <div className="text-[10px] font-bold px-2 py-1 rounded-md border w-fit text-gray-500 bg-gray-50 border-gray-100">
-          Historical trends will become available as more rescue data is collected.
+        <div className="text-[10px] font-bold px-2.5 py-1.5 rounded-md border text-gray-500 bg-gray-50 border-gray-100 leading-relaxed text-center">
+          Insights are generated from the currently available rescue data and become more accurate as additional history is collected.
         </div>
       );
     }
@@ -320,16 +322,16 @@ export function Analytics() {
                  <Calendar size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#33251E]/50" />
                  <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#33251E]/50 pointer-events-none" />
               </div>
-              <div className="relative group">
-                 <select value={city} onChange={(e) => setCity(e.target.value)} disabled={loading} className="bg-white shadow-sm border border-[#33251E]/10 rounded-xl pl-9 pr-8 py-2.5 text-sm font-bold text-[#33251E] focus:outline-none focus:border-[#F07154] cursor-pointer appearance-none transition-colors group-hover:bg-gray-50 disabled:opacity-50">
+              <div className="relative group" title="Filtering will be available as more analytics data is collected.">
+                 <select value={city} onChange={(e) => setCity(e.target.value)} disabled={true} className="bg-white shadow-sm border border-[#33251E]/10 rounded-xl pl-9 pr-8 py-2.5 text-sm font-bold text-[#33251E] focus:outline-none focus:border-[#F07154] cursor-not-allowed appearance-none transition-colors group-hover:bg-gray-50 disabled:opacity-50">
                     <option value="">All Cities</option>
                     {data?.available_filters.cities.map(c => <option key={c} value={c}>{c}</option>)}
                  </select>
                  <MapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#33251E]/50" />
                  <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#33251E]/50 pointer-events-none" />
               </div>
-              <div className="relative group">
-                 <select value={category} onChange={(e) => setCategory(e.target.value)} disabled={loading} className="bg-white shadow-sm border border-[#33251E]/10 rounded-xl pl-9 pr-8 py-2.5 text-sm font-bold text-[#33251E] focus:outline-none focus:border-[#F07154] cursor-pointer appearance-none transition-colors group-hover:bg-gray-50 disabled:opacity-50">
+              <div className="relative group" title="Filtering will be available as more analytics data is collected.">
+                 <select value={category} onChange={(e) => setCategory(e.target.value)} disabled={true} className="bg-white shadow-sm border border-[#33251E]/10 rounded-xl pl-9 pr-8 py-2.5 text-sm font-bold text-[#33251E] focus:outline-none focus:border-[#F07154] cursor-not-allowed appearance-none transition-colors group-hover:bg-gray-50 disabled:opacity-50">
                     <option value="">All Categories</option>
                     {data?.available_filters.categories.map(c => <option key={c} value={c}>{c}</option>)}
                  </select>
@@ -376,6 +378,15 @@ export function Analytics() {
                 <div className="text-sm font-bold text-white/90 mb-1">Quantity Rescued</div>
                 <div className="text-[11px] text-white/60 font-semibold">prevented from waste</div>
             </div>
+            <div className="flex-1 flex flex-col items-center text-center md:items-start md:text-left border-b md:border-b-0 md:border-r border-white/10 pb-6 md:pb-0 md:pr-6">
+                <div className="flex items-center gap-2 mb-2 text-white/60">
+                <Users size={14} />
+                <div className="text-[10px] font-bold uppercase tracking-widest">REACH</div>
+                </div>
+                <div className="font-serif text-3xl font-bold mb-1">{data.kpis.ngos_served?.value || 0}</div>
+                <div className="text-sm font-bold text-white/90 mb-1">NGOs Served</div>
+                <div className="text-[11px] text-white/60 font-semibold">successfully partnered</div>
+            </div>
             <div className="flex-1 flex flex-col items-center text-center md:items-start md:text-left">
                 <div className="flex items-center gap-2 mb-2 text-white/60">
                 <TrendingUp size={14} />
@@ -386,7 +397,7 @@ export function Analytics() {
                         {data.kpis.successful_rescues.trend_percent >= 0 ? '↑' : '↓'} {Math.abs(data.kpis.successful_rescues.trend_percent)}%
                     </div>
                 ) : (
-                    <div className="font-serif text-sm font-bold mb-1 text-white/80 leading-snug">Historical trends will become available as more rescue data is collected.</div>
+                    <div className="font-serif text-[13px] font-bold mb-2 text-white/80 leading-snug">Insights are generated from the currently available rescue data and become more accurate as additional history is collected.</div>
                 )}
                 <div className="text-sm font-bold text-white/90 mb-1">Growth in rescues</div>
                 <div className="text-[11px] text-white/60 font-semibold">vs previous period</div>
