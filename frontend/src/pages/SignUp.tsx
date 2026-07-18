@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Heart, Store, Truck, Sparkles, CheckCircle2, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { ArrowRight, Heart, Store, Sparkles, CheckCircle2, Eye, EyeOff, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiFetch } from '../lib/api';
 import { cn } from '../lib/utils';
@@ -19,7 +19,7 @@ export function SignUp() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !email || !password || !confirmPassword) return;
-    
+
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
       return;
@@ -29,14 +29,14 @@ export function SignUp() {
     try {
       const data = await apiFetch('/api/auth/signup', {
         method: 'POST',
-        data: { 
-          full_name: fullName, 
-          email, 
-          password, 
-          role 
+        data: {
+          full_name: fullName,
+          email,
+          password,
+          role
         }
       });
-      
+
       if (data.success) {
         toast.success(data.message || 'Account created successfully!');
         navigate('/signin');
@@ -57,14 +57,14 @@ export function SignUp() {
       <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-gradient-to-br from-[#F07154]/10 via-[#F07154]/5 to-transparent rounded-full blur-3xl -translate-y-1/2 -translate-x-1/3"></div>
 
       <div className="max-w-7xl w-full grid lg:grid-cols-2 gap-8 xl:gap-16 items-center z-10 my-8">
-        
+
         {/* LEFT SIDE - FORM CARD */}
         <div className="flex flex-col justify-center lg:items-end w-full">
           <div className="w-full max-w-[540px]">
             <Link to="/" className="inline-block mb-4 text-sm font-semibold text-[#33251E]/60 hover:text-[#F07154] transition-colors">
               &larr; Back to Home
             </Link>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
@@ -79,7 +79,7 @@ export function SignUp() {
             <p className="text-[#33251E]/70 mb-8 text-sm leading-relaxed">Join SharePlate to donate surplus food or manage food redistribution through AI-assisted matching and logistics.</p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              
+
               <div className="space-y-3">
                 <label className="text-sm font-bold text-[#33251E]">I am joining as a...</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -88,8 +88,8 @@ export function SignUp() {
                     onClick={() => setRole('donor')}
                     className={cn(
                       "flex flex-col items-start p-4 rounded-2xl border-2 transition-all text-left relative overflow-hidden",
-                      role === 'donor' 
-                        ? "border-[#F07154] bg-[#F07154]/5 shadow-sm" 
+                      role === 'donor'
+                        ? "border-[#F07154] bg-[#F07154]/5 shadow-sm"
                         : "border-[#33251E]/10 hover:border-[#33251E]/20 bg-[#FDFBF7]"
                     )}
                   >
@@ -103,8 +103,8 @@ export function SignUp() {
                     onClick={() => setRole('ngo')}
                     className={cn(
                       "flex flex-col items-start p-4 rounded-2xl border-2 transition-all text-left relative overflow-hidden",
-                      role === 'ngo' 
-                        ? "border-emerald-500 bg-emerald-50 shadow-sm" 
+                      role === 'ngo'
+                        ? "border-emerald-500 bg-emerald-50 shadow-sm"
                         : "border-[#33251E]/10 hover:border-[#33251E]/20 bg-[#FDFBF7]"
                     )}
                   >
@@ -119,8 +119,8 @@ export function SignUp() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-[#33251E]">Full Name</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     required
                     placeholder="Enter your full name"
                     value={fullName}
@@ -130,8 +130,8 @@ export function SignUp() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-[#33251E]">Email Address</label>
-                  <input 
-                    type="email" 
+                  <input
+                    type="email"
                     required
                     placeholder="Enter your email"
                     value={email}
@@ -142,7 +142,7 @@ export function SignUp() {
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-[#33251E]">Password</label>
                   <div className="relative">
-                    <input 
+                    <input
                       type={showPassword ? "text" : "password"}
                       required
                       placeholder="Enter your password"
@@ -161,8 +161,8 @@ export function SignUp() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-[#33251E]">Confirm Password</label>
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     required
                     placeholder="Confirm your password"
                     value={confirmPassword}
@@ -184,7 +184,7 @@ export function SignUp() {
                 </label>
               </div>
 
-              <button 
+              <button
                 type="submit"
                 disabled={isLoading}
                 className="w-full bg-[#F07154] hover:bg-[#E05F42] text-white py-4 rounded-xl font-bold transition-all hover:shadow-[0_8px_20px_-8px_rgba(240,113,84,0.6)] hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:shadow-none cursor-pointer disabled:cursor-not-allowed"
@@ -212,16 +212,16 @@ export function SignUp() {
 
         {/* RIGHT SIDE - VISUAL PANEL */}
         <div className="hidden lg:flex justify-start items-center">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="w-full max-w-[500px]"
           >
             <div className="bg-gradient-to-bl from-[#F5E6DA] via-[#FDFBF7] to-[#E8F0EA] p-10 rounded-3xl border border-[#33251E]/5 shadow-[0_8px_30px_-10px_rgba(0,0,0,0.05)] relative overflow-hidden">
-              
+
               <div className="relative z-10 w-full max-w-md mx-auto">
-                
+
                 <h2 className="font-serif text-3xl leading-[1.2] text-[#33251E] mb-4">
                   A second chance for food. <br /> A better chance for <span className="text-[#F07154]">someone else.</span>
                 </h2>
@@ -234,7 +234,7 @@ export function SignUp() {
                   <Sparkles size={14} />
                   Match Found
                 </div>
-                
+
                 {/* Donation Matched Preview Card */}
                 <div className="bg-white p-5 rounded-3xl shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] border border-[#33251E]/5 mb-6">
                   <div className="flex items-center justify-between mb-4 pb-4 border-b border-[#33251E]/5">
@@ -248,7 +248,7 @@ export function SignUp() {
                       <div className="font-bold text-[#33251E] text-sm">Aashraya Orphanage</div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between bg-[#FDFBF7] p-2.5 rounded-xl border border-[#33251E]/5 mb-4">
                     <span className="text-xs font-bold text-[#33251E]">Fresh Dal & Roti</span>
                     <span className="text-xs text-[#33251E]/60">~ 80 meals</span>

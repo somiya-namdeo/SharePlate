@@ -37,7 +37,6 @@ export function Dashboard() {
     const fetchData = async () => {
       try {
 
-        
         let fetchedMatches: any[] = [];
         let fetchedRequests: any[] = [];
         let fetchedDonations: any[] = [];
@@ -68,7 +67,7 @@ export function Dashboard() {
         }
 
         // --- Process Data for Lists --- //
-        
+
         // Active Matches
         const pendingMatches = fetchedMatches.filter((m: any) => ['pending', 'scheduled'].includes(m.status?.toLowerCase()));
         setActiveMatches(pendingMatches.slice(0, 5));
@@ -106,16 +105,15 @@ export function Dashboard() {
           setRecentRequests(myRequests.slice(0, 5));
         }
 
-
         // --- Process KPIs --- //
         const completedMatches = fetchedMatches.filter((m: any) => m.status?.toLowerCase() === 'completed');
 
         if (role === 'ngo') {
           const activeReqs = fetchedRequests.filter((r: any) => r.status?.toLowerCase() === 'open');
-          
+
           let mealsReq = 0;
           fetchedRequests.forEach((r: any) => { mealsReq += (r.meals_needed || 0); });
-          
+
           let mealsRes = 0;
           completedMatches.forEach((m: any) => {
             if (m.ngo_requests && m.ngo_requests.meals_needed) {
@@ -134,7 +132,7 @@ export function Dashboard() {
         } else {
           // Donor KPIs
           const activeDons = fetchedDonations.filter((d: any) => d.status?.toLowerCase() === 'pending');
-          
+
           let quantRes = 0;
           completedMatches.forEach((m: any) => {
             if (m.donations && m.donations.quantity) {
@@ -165,9 +163,9 @@ export function Dashboard() {
     <div className="min-h-screen bg-[#F8F5F0] font-sans selection:bg-[#F07154]/20 selection:text-[#33251E]">
       <Sidebar />
       <Topbar title="Overview" />
-        
+
       <main className="ml-0 md:ml-[280px] pt-[112px] pb-12 px-4 md:px-8 max-w-[1200px] mx-auto flex flex-col gap-8">
-          
+
         {/* KPI Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {role === 'ngo' ? (
@@ -197,12 +195,12 @@ export function Dashboard() {
               <RecentRequestsList requests={recentRequests} className="h-[380px]" />
             </div>
             <div className="min-w-0 w-full md:col-span-2 xl:col-span-1">
-              <DonationList 
-                donations={availableDonations} 
-                title="Available Donations" 
-                label="Claim Food" 
+              <DonationList
+                donations={availableDonations}
+                title="Available Donations"
+                label="Claim Food"
                 emptyTitle="No Available Donations"
-                emptyDesc="No pending donations available right now." 
+                emptyDesc="No pending donations available right now."
                 className="h-[380px]"
               />
             </div>
@@ -210,12 +208,12 @@ export function Dashboard() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
             <div className="min-w-0 w-full">
-              <DonationList 
-                donations={activeDonations} 
-                title="Recent Donations" 
-                label="Pending Match" 
+              <DonationList
+                donations={activeDonations}
+                title="Recent Donations"
+                label="Pending Match"
                 emptyTitle="No Active Donations"
-                emptyDesc="You haven't created any donations yet. Start by adding your first food donation." 
+                emptyDesc="You haven't created any donations yet. Start by adding your first food donation."
                 actionLabel="Add Donation"
                 actionLink="/donations"
                 className="h-[380px]"
@@ -225,12 +223,12 @@ export function Dashboard() {
               <ActiveMatchesList matches={activeMatches} role={role} title="Recent Matches" className="h-[380px]" />
             </div>
             <div className="min-w-0 w-full md:col-span-2 xl:col-span-1">
-              <DonationList 
-                donations={completedDonations} 
-                title="Recent Completed Rescues" 
-                label="Completed" 
+              <DonationList
+                donations={completedDonations}
+                title="Recent Completed Rescues"
+                label="Completed"
                 emptyTitle="No Completed Rescues"
-                emptyDesc="No completed donations yet." 
+                emptyDesc="No completed donations yet."
                 className="h-[380px]"
               />
             </div>

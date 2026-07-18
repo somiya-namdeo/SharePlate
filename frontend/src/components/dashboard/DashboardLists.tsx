@@ -6,7 +6,7 @@ const getTimeAgo = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
+
   if (diffInSeconds < 3600) return `Completed ${Math.max(1, Math.floor(diffInSeconds / 60))} minutes ago`;
   if (diffInSeconds < 86400) return `Completed ${Math.floor(diffInSeconds / 3600)} hours ago`;
   if (diffInSeconds < 172800) return 'Completed Yesterday';
@@ -49,15 +49,15 @@ export function ActiveMatchesList({ matches, role, title = "Recent Matches", cla
   return (
     <SectionWrapper title={title} label="In Progress" link="/matches" showLink={matches.length > 0} className={className}>
       {matches.length === 0 ? (
-        <EmptyState icon={HeartHandshake} title="No Active Matches" desc="Your donations will appear here once they have been matched with an NGO." />
+        <EmptyState icon={HeartHandshake} title="No Active Matches" desc={role === 'ngo' ? "Matched donations will appear here once donor donations are assigned to your requests." : "Your donations will appear here once they have been matched with an NGO."} />
       ) : (
         matches.map((m) => {
-          const otherParty = role === 'ngo' 
+          const otherParty = role === 'ngo'
             ? m.donor_profile?.organization || m.donor_profile?.full_name || 'Donor'
             : m.ngo_profile?.organization || m.ngo_profile?.full_name || 'NGO';
-            
+
           const foodName = m.donations?.food_category || m.donations?.food_type || 'Food Donation';
-          
+
           return (
             <div key={m.id} className="bg-white p-3 rounded-2xl border border-[#33251E]/5 flex items-center gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
               <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 flex-shrink-0 group-hover:scale-105 transition-transform">
@@ -130,7 +130,7 @@ export function DonationList({ donations, title, label, emptyTitle, emptyDesc, a
                 {d.food_category || d.food_type || 'Food Donation'}
               </h4>
               <div className="text-xs text-[#33251E]/60 truncate">
-                {d.quantity ? `${d.quantity} kg` : ''} 
+                {d.quantity ? `${d.quantity} kg` : ''}
                 {d.quantity && d.address ? ' · ' : ''}
                 {d.address || 'Unknown Location'}
                 {d.status?.toLowerCase() === 'completed' && <span className="block mt-1 font-medium opacity-80">{getTimeAgo(d.updated_at || d.created_at)}</span>}

@@ -15,7 +15,7 @@ class MatchResponse(MatchCreate):
     match_score: Optional[float] = None
     status: str
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -33,7 +33,7 @@ class MatchDetailResponse(BaseModel):
     distance_km: Optional[float] = None
     recommended_pickup_time: Optional[datetime] = None
     created_at: datetime
-    
+
     # Extra donation/request fields
     food_type: Optional[str] = None
     quantity: Optional[float] = None
@@ -44,7 +44,7 @@ class MatchDetailResponse(BaseModel):
     donor_email: Optional[str] = None
     ngo_phone: Optional[str] = None
     ngo_email: Optional[str] = None
-    
+
     donation_latitude: Optional[float] = None
     donation_longitude: Optional[float] = None
     donation_address: Optional[str] = None

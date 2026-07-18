@@ -30,7 +30,7 @@ export function RescueFlow() {
   return (
     <section id="how-it-works" className="w-full bg-[#3B2B23] py-24 text-white">
       <div className="container mx-auto px-6">
-        
+
         <div className="max-w-3xl mx-auto text-center mb-20">
           <h3 className="text-[#F07154] text-xs font-bold uppercase tracking-widest mb-4 flex justify-center">Rescue Flow</h3>
           <h2 className="font-serif text-5xl leading-tight mb-6">From surplus to served — in five steps.</h2>

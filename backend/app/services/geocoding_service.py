@@ -47,15 +47,15 @@ class GeocodingService:
                 response = client.get(self.base_url, params=params)
                 response.raise_for_status()
                 data = response.json()
-                
+
                 if data and len(data) > 0:
                     lat_str = data[0].get("lat")
                     lon_str = data[0].get("lon")
-                    
+
                     if lat_str is not None and lon_str is not None:
                         lat = float(lat_str)
                         lon = float(lon_str)
-                        
+
                         # Validate coordinates
                         if -90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0:
                             return (lat, lon)

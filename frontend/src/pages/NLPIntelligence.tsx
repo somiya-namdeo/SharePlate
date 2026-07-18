@@ -17,7 +17,7 @@ export function NLPIntelligence() {
       toast.error('Please enter some text');
       return;
     }
-    
+
     setIsLoading(true);
     setResult(null);
     try {
@@ -25,7 +25,7 @@ export function NLPIntelligence() {
         method: 'POST',
         data: { text }
       });
-      
+
       setResult(response);
       toast.success('Extraction complete');
     } catch (error: any) {
@@ -37,7 +37,7 @@ export function NLPIntelligence() {
 
   const handleUseData = () => {
     if (!result) return;
-    
+
     navigate('/donations', {
       state: {
         prefillData: {
@@ -55,7 +55,7 @@ export function NLPIntelligence() {
       <Topbar title="NLP Intelligence" />
 
       <main className="ml-[280px] pt-[112px] pb-12 px-8 max-w-[1600px] mx-auto flex flex-col items-start">
-        
+
         {/* Workflow Strip */}
         <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.1em] mb-8 border border-[#33251E]/10 bg-white rounded-full px-4 py-2 shadow-sm">
           <span className="text-[#33251E]/50">Message</span>
@@ -66,29 +66,29 @@ export function NLPIntelligence() {
         </div>
 
         <div className="flex flex-col gap-8 w-full">
-          
+
           {/* AI Input Card & Examples */}
           <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 p-6 flex flex-col relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-            
+
             <div className="flex justify-between items-center mb-2 relative z-10">
               <span className="text-[11px] font-bold text-[#F07154] uppercase tracking-[0.1em]">AI Assistant</span>
               <span className="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#F07154]"></span> AI Assisted
               </span>
             </div>
-            
+
             <h2 className="font-serif text-3xl font-bold text-[#33251E] mb-1 relative z-10">Paste a donation message</h2>
             <p className="text-sm text-[#33251E]/70 mb-6 relative z-10">WhatsApp, email or SMS — we'll structure it.</p>
-            
-            <textarea 
+
+            <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl p-4 text-sm text-[#33251E] placeholder:text-[#33251E]/40 focus:outline-none focus:ring-2 focus:ring-[#F07154]/20 min-h-[160px] resize-none relative z-10 shadow-inner"
               placeholder="Enter your donation message here..."
             />
-            
-            <button 
+
+            <button
               onClick={handleExtract}
               disabled={isLoading}
               className="mt-6 bg-[#F07154] hover:bg-[#E05F42] text-white font-semibold py-3 px-6 rounded-full inline-flex items-center justify-center gap-2 w-max transition-colors relative z-10 shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
@@ -105,8 +105,8 @@ export function NLPIntelligence() {
                   "25 kg cooked rice available near AIIMS Bhopal.",
                   "100 food packets available at Arera Colony before 8 PM."
                 ].map((example, i) => (
-                  <button 
-                    key={i} 
+                  <button
+                    key={i}
                     onClick={() => setText(example)}
                     className="text-left flex-1 p-4 rounded-xl border border-[#33251E]/10 hover:border-[#F07154]/40 hover:bg-[#F07154]/5 transition-colors text-sm text-[#33251E]/80 italic bg-[#FDFBF7]"
                   >
@@ -120,7 +120,7 @@ export function NLPIntelligence() {
           {/* Results Grid */}
           {result && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-              
+
               {/* Extracted Entities Card */}
               <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 p-6 flex flex-col h-full">
                 <div className="flex justify-between items-start mb-6">
@@ -155,7 +155,7 @@ export function NLPIntelligence() {
                       </div>
                     </div>
                   ))}
-                  
+
                 </div>
               </div>
 
@@ -163,7 +163,7 @@ export function NLPIntelligence() {
               <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 p-6 flex flex-col h-full">
                 <span className="text-[11px] font-bold text-[#F07154] uppercase tracking-[0.1em] mb-1 block">Auto-filled preview</span>
                 <h2 className="font-serif text-2xl font-bold text-[#33251E] mb-6">Structured donation, ready to save</h2>
-                
+
                 <div className="grid grid-cols-2 gap-4 mb-8 flex-1">
                   {[
                     { label: "Food Item", value: result.food_item || "—" },
@@ -178,7 +178,7 @@ export function NLPIntelligence() {
                 </div>
 
                 <div className="mt-auto pt-4 flex flex-wrap items-center gap-4">
-                  <button 
+                  <button
                     onClick={handleUseData}
                     className="bg-[#F07154] hover:bg-[#E05F42] text-white font-semibold py-3 px-6 rounded-full inline-flex items-center gap-2 transition-colors shadow-sm"
                   >

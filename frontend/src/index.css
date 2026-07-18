@@ -26,7 +26,7 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .scrollbar-brand::-webkit-scrollbar {
     width: 6px;
   }

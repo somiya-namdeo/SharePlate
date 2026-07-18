@@ -2,12 +2,12 @@ from fastapi import APIRouter, HTTPException, Depends
 from supabase import Client
 from app.database import get_db
 from app.schemas.ai import (
-    FoodSafetyRequest, 
-    FoodSafetyResponse, 
-    SurplusPredictionRequest, 
-    SurplusPredictionResponse, 
+    FoodSafetyRequest,
+    FoodSafetyResponse,
+    SurplusPredictionRequest,
+    SurplusPredictionResponse,
 
-    DonationNERRequest, 
+    DonationNERRequest,
     DonationNERResponse
 )
 from app.services.ai_service import AIService
@@ -22,7 +22,7 @@ def get_ai_service():
 
 @router.post("/food-safety", response_model=FoodSafetyResponse, summary="Predict Food Safety and Urgency")
 async def predict_food_safety(
-    request: FoodSafetyRequest, 
+    request: FoodSafetyRequest,
     service: AIService = Depends(get_ai_service),
     db: Client = Depends(get_db)
 ):
@@ -37,8 +37,6 @@ async def predict_surplus(request: SurplusPredictionRequest, service: AIService 
         return service.predict_surplus(request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
 
 @router.post("/donation-ner", response_model=DonationNERResponse, summary="Extract Entities from Donation Text")
 async def extract_donation_ner(request: DonationNERRequest, service: AIService = Depends(get_ai_service)):

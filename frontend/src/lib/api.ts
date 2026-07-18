@@ -8,9 +8,9 @@ interface FetchOptions extends RequestInit {
 
 export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
   const url = `${API_URL}${endpoint}`;
-  
+
   const headers = new Headers(options.headers || {});
-  
+
   if (options.data) {
     headers.set('Content-Type', 'application/json');
     options.body = JSON.stringify(options.data);
@@ -26,8 +26,7 @@ export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
     headers,
   };
 
-  try {
-    const response = await fetch(url, config);
+  const response = await fetch(url, config);
 
     // Parse JSON
     let responseData;
@@ -42,7 +41,7 @@ export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
       if (response.status === 401) {
         // Unauthorized - clear token
         logout();
-        
+
         // Do not redirect if it's the login endpoint or we are already on signin
         if (endpoint !== '/api/auth/login' && window.location.pathname !== '/signin') {
           window.location.href = '/signin';
@@ -51,7 +50,7 @@ export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
 
       // Backend error response format
       let errorMessage = responseData?.detail || responseData?.message || responseData?.error;
-      
+
       if (!errorMessage) {
         if (endpoint === '/api/auth/login' && response.status === 401) {
           errorMessage = 'Invalid email or password.';
@@ -59,12 +58,9 @@ export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
           errorMessage = response.statusText || 'An error occurred';
         }
       }
-      
+
       throw new Error(errorMessage);
     }
 
     return responseData;
-  } catch (error) {
-    throw error;
-  }
 }

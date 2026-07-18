@@ -37,7 +37,7 @@ export function Features() {
   return (
     <section id="features" className="w-full bg-[#FDFBF7] py-24">
       <div className="container mx-auto px-6">
-        
+
         <div className="mb-16">
           <h3 className="text-[#F07154] text-xs font-bold uppercase tracking-widest mb-4">The Platform</h3>
           <h2 className="font-serif text-5xl text-[#33251E] mb-4">Six modules. One rescue flow.</h2>

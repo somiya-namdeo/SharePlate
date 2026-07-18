@@ -3,13 +3,13 @@ import sharp from 'sharp';
 async function process() {
   try {
     const img = sharp('public/logo.png');
-    
+
     // Extract the symbol area (459x459 from top-left)
     const icon = img.extract({ left: 0, top: 0, width: 459, height: 459 });
-    
+
     // Convert to buffer to chain operations
     const iconBuffer = await icon.toBuffer();
-    
+
     // Add 20% transparent padding (459 * 0.2 = ~92px on each side)
     const paddedIcon = sharp(iconBuffer)
       .extend({
@@ -39,7 +39,7 @@ async function process() {
     await paddedIcon.clone().resize(32, 32, { fit: 'contain' }).toFile('public/favicon-32x32.png');
     await paddedIcon.clone().resize(16, 16, { fit: 'contain' }).toFile('public/favicon-16x16.png');
     await paddedIcon.clone().resize(32, 32, { fit: 'contain' }).toFile('public/favicon.ico');
-    
+
     console.log('Padded favicons generated successfully.');
   } catch (err) {
     console.error(err);

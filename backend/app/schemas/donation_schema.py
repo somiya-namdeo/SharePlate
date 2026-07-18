@@ -36,7 +36,7 @@ class DonationCreate(BaseModel):
     predicted_shelf_life: Optional[float] = None
     urgency_level: Optional[str] = None
     spoilage_risk_score: Optional[float] = None
-    
+
 class DonationResponse(DonationCreate):
     id: str
     status: str = "pending"

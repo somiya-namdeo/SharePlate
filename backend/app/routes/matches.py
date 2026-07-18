@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
 from typing import Optional
 from app.schemas.match_schema import (
-    MatchCreate, MatchStatusUpdate, 
-    MatchCreateAPIResponse, MatchSuggestionAPIResponse, 
+    MatchCreate, MatchStatusUpdate,
+    MatchCreateAPIResponse, MatchSuggestionAPIResponse,
     MatchListAPIResponse, MatchUpdateAPIResponse
 )
 from app.database import get_db
@@ -21,7 +21,7 @@ def get_matches_service(db: Client = Depends(get_db)):
 
 @router.post("/", response_model=MatchCreateAPIResponse)
 def create_match(
-    match: MatchCreate, 
+    match: MatchCreate,
     service: MatchesService = Depends(get_matches_service),
     current_user = Depends(get_current_user)
 ):
@@ -41,7 +41,7 @@ def create_match(
 
 @router.get("/suggest/{donation_id}", response_model=MatchSuggestionAPIResponse)
 def suggest_matches(
-    donation_id: str, 
+    donation_id: str,
     ngo_request_id: Optional[str] = None,
     service: MatchesService = Depends(get_matches_service),
     current_user = Depends(get_current_user)
@@ -50,7 +50,7 @@ def suggest_matches(
         result = service.suggest_matches(donation_id, ngo_request_id)
         if not result:
             raise HTTPException(status_code=404, detail="Donation not found")
-        
+
         return {
             "success": True,
             "message": "Matches suggested successfully",
@@ -73,7 +73,7 @@ def update_match_status(
         role = current_user.user_metadata.get("role", "")
         if role != "ngo":
             raise HTTPException(status_code=403, detail="Only NGOs can complete a rescue.")
-            
+
         result = service.update_match_status(match_id, update_data.status)
         return {
             "success": True,

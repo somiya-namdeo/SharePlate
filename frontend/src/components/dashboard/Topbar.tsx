@@ -28,12 +28,12 @@ export function Topbar({ title = 'Overview' }: { title?: string }) {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setDropdownOpen(false);
     };
-    
+
     if (dropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleEscape);
     }
-    
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscape);
@@ -57,7 +57,7 @@ export function Topbar({ title = 'Overview' }: { title?: string }) {
 
   return (
     <header className="h-[80px] bg-[#FDFBF7] border-b border-[#33251E]/10 shadow-sm flex items-center justify-between px-8 fixed top-0 right-0 left-[280px] z-20">
-      
+
       {/* Left - Page Title */}
       <div>
         <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#33251E]/40 mb-1">SharePlate</div>
@@ -66,7 +66,7 @@ export function Topbar({ title = 'Overview' }: { title?: string }) {
 
       {/* Right - Controls */}
       <div className="flex items-center gap-4 relative" ref={dropdownRef}>
-        
+
         {/* Primary CTA */}
         {user?.user_metadata?.role === 'ngo' ? (
           <button onClick={() => navigate('/requests')} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-full text-sm font-bold transition-all shadow-[0_4px_12px_-4px_rgba(16,185,129,0.6)] hover:-translate-y-0.5 flex items-center gap-2">
@@ -81,7 +81,7 @@ export function Topbar({ title = 'Overview' }: { title?: string }) {
         )}
 
         {/* Avatar */}
-        <div 
+        <div
           onClick={() => setDropdownOpen(!dropdownOpen)}
           className="w-10 h-10 rounded-full bg-[#33251E] text-white flex items-center justify-center text-sm font-bold shadow-md cursor-pointer hover:opacity-90 transition-opacity select-none"
         >
@@ -96,15 +96,15 @@ export function Topbar({ title = 'Overview' }: { title?: string }) {
               <div className="text-xs text-[#33251E]/60 truncate mt-0.5">{user?.email || ''}</div>
             </div>
             <div className="p-1">
-              <Link 
-                to="/settings" 
+              <Link
+                to="/settings"
                 onClick={() => setDropdownOpen(false)}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-[#33251E]/80 hover:text-[#33251E] hover:bg-gray-50 rounded-xl transition-colors"
               >
                 <SettingsIcon size={16} />
                 Settings
               </Link>
-              <button 
+              <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-colors mt-1"
               >

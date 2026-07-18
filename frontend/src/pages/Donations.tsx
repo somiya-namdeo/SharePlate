@@ -7,10 +7,9 @@ import { apiFetch } from '../lib/api';
 import { getUser } from '../lib/auth';
 import toast from 'react-hot-toast';
 
-
 function Badge({ text }: { text: string }) {
   const titleText = text ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase() : '';
-  
+
   let color = "bg-gray-100 text-gray-700 border-gray-200";
   if (titleText === 'Safe' || titleText === 'Completed' || titleText === 'Delivered') color = "bg-emerald-50 text-emerald-700 border-emerald-200";
   if (titleText === 'Review' || titleText === 'Medium' || titleText === 'Scheduled') color = "bg-amber-50 text-amber-700 border-amber-200";
@@ -71,7 +70,7 @@ export function Donations() {
       } else {
         toast.error(data.message || 'Failed to load donations');
       }
-    } catch (error: any) {
+    } catch {
       toast.error('Failed to load donations');
     } finally {
       setIsFetching(false);
@@ -115,7 +114,7 @@ export function Donations() {
         description: formData.foodCategory,
         contact_phone: formData.donorContact || null,
         address: formData.pickupLocation,
-        
+
         food_category: formData.foodCategory || null,
         preparation_method: formData.prepMethod || null,
         storage_condition: formData.storageCondition || null,
@@ -151,7 +150,7 @@ export function Donations() {
       }
 
       toast.success('Donation saved successfully!');
-      
+
       const newId = res.data.id;
       setFormData({
         id: '', foodItem: '', foodCategory: '', prepMethod: '', storageCondition: '',
@@ -174,14 +173,14 @@ export function Donations() {
     <div className="min-h-screen bg-[#F8F5F0] font-sans selection:bg-[#F07154]/20 selection:text-[#33251E]">
       <Sidebar />
       <Topbar title="Donations" />
-        
+
       <main className="ml-[280px] pt-[112px] pb-12 px-8 max-w-[1600px] mx-auto">
         <div className="grid grid-cols-1 xl:grid-cols-[40%_60%] gap-6 h-[calc(100vh-160px)] min-h-[600px]">
-          
+
           {/* Left Column: Form */}
           <div className="bg-white rounded-3xl border border-[#33251E]/5 p-6 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] relative overflow-hidden flex flex-col h-full">
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#F07154]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-            
+
             <div className="flex justify-between items-start mb-6 relative z-10 flex-shrink-0">
               <div>
                 <div className="text-[10px] uppercase font-bold tracking-wider text-[#F07154] mb-1">{formData.id ? 'Edit Donation' : 'New Donation'}</div>
@@ -288,7 +287,7 @@ export function Donations() {
                   <label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Pickup location</label>
                   <input type="text" name="pickupLocation" value={formData.pickupLocation} onChange={handleChange} placeholder="MP Nagar, Bhopal" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154] focus:ring-1 focus:ring-[#F07154] text-[#33251E] placeholder:text-[#33251E]/30" />
                 </div>
-                
+
                 <div>
                   <label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Donor contact</label>
                   <input type="text" name="donorContact" value={formData.donorContact} onChange={handleChange} placeholder="+91 98xxxxxx01" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154] focus:ring-1 focus:ring-[#F07154] text-[#33251E] placeholder:text-[#33251E]/30" />
@@ -296,22 +295,20 @@ export function Donations() {
               </div>
 
               <div className="flex flex-wrap items-center gap-3 pt-4 mt-4 border-t border-[#33251E]/5 flex-shrink-0">
-                <button 
+                <button
                   type="button"
                   disabled={isLoading}
                   onClick={() => {
                     if (!formData.foodItem || !formData.quantity || !formData.pickupLocation) {
-                      import('react-hot-toast').then(({ default: toast }) => {
                         toast.error('Please fill required fields (Food item, Quantity, Pickup location)');
-                      });
                       return;
                     }
-                    navigate('/food-safety', { 
-                      state: { 
-                        prefillData: formData, 
+                    navigate('/food-safety', {
+                      state: {
+                        prefillData: formData,
                         donationId: formData.id || null,
-                        existingAiData: formData.existingAiData 
-                      } 
+                        existingAiData: formData.existingAiData
+                      }
                     });
                   }}
                   className="bg-[#F07154] hover:bg-[#E05F42] text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-[0_4px_12px_-4px_rgba(240,113,84,0.6)] hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-70 disabled:hover:translate-y-0"
@@ -323,14 +320,12 @@ export function Donations() {
                   {isLoading ? <Loader2 size={16} className="animate-spin text-[#33251E]/60" /> : <Save size={16} className="text-[#33251E]/60" />}
                   {formData.id ? 'Update donation' : 'Save donation'}
                 </button>
-                <button 
+                <button
                   type="button"
                   disabled={isLoading}
                   onClick={async () => {
                     if (!formData.id && !formData.foodItem && !formData.quantity && !formData.pickupLocation) {
-                      import('react-hot-toast').then(({ default: toast }) => {
                         toast.error('Please select or save a donation first.');
-                      });
                       return;
                     }
 
@@ -340,9 +335,9 @@ export function Donations() {
                       if (!newId) return; // Save failed
                       currentId = newId;
                     }
-                    
-                    navigate('/matching', { 
-                      state: { donationId: currentId } 
+
+                    navigate('/matching', {
+                      state: { donationId: currentId }
                     });
                   }}
                   className="bg-white hover:bg-[#33251E]/5 border border-[#33251E]/10 text-[#33251E] px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
@@ -363,7 +358,7 @@ export function Donations() {
                 <h2 className="font-serif text-2xl text-[#33251E] leading-none">Live rescue list</h2>
               </div>
               <div className="flex gap-2">
-                <select 
+                <select
                   value={urgencyFilter}
                   onChange={(e) => setUrgencyFilter(e.target.value)}
                   className="bg-white border border-[#33251E]/10 rounded-xl px-3 py-1.5 text-xs font-semibold text-[#33251E]/70 hover:border-[#33251E]/30 transition-colors focus:outline-none cursor-pointer"
@@ -374,7 +369,7 @@ export function Donations() {
                   <option value="Medium">Medium</option>
                   <option value="Low">Low</option>
                 </select>
-                <select 
+                <select
                   value={safetyFilter}
                   onChange={(e) => setSafetyFilter(e.target.value)}
                   className="bg-white border border-[#33251E]/10 rounded-xl px-3 py-1.5 text-xs font-semibold text-[#33251E]/70 hover:border-[#33251E]/30 transition-colors focus:outline-none cursor-pointer"
@@ -459,7 +454,7 @@ export function Donations() {
                         )}
                       </div>
                     </div>
-                    
+
                     {/* Middle Info */}
                     <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs">
                       <div>
@@ -530,7 +525,6 @@ export function Donations() {
                 ));
               })()}
             </div>
-
 
           </div>
 

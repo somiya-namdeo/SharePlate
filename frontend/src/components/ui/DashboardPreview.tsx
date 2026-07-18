@@ -46,7 +46,7 @@ export function DashboardPreview() {
               <h3 className="text-xs font-semibold text-[#33251E]">Urgent pickup queue</h3>
               <span className="text-[10px] text-[#33251E]/40 font-medium">shelf-life aware</span>
             </div>
-            
+
             <div className="space-y-2">
               {[
                 { item: 'Dal & Rice', qty: '25 kg', loc: 'MP Nagar', tag: 'Critical', safe: 'Safe' },
@@ -79,7 +79,7 @@ export function DashboardPreview() {
               Live Map
             </div>
             <div className="font-serif text-lg z-10 mb-auto">Live rescue zones</div>
-            
+
             {/* Abstract Map Dots */}
             <div className="absolute inset-0 opacity-50">
               <div className="absolute top-1/2 left-1/4 w-2 h-2 bg-red-400 rounded-full shadow-[0_0_10px_rgba(248,113,113,0.8)]"></div>

@@ -111,7 +111,7 @@ export function FoodSafety() {
               prediction_time: new Date().toISOString()
             }
           });
-          
+
           navigate('.', {
             replace: true,
             state: {
@@ -125,7 +125,7 @@ export function FoodSafety() {
               }
             }
           });
-          
+
           toast.success("Food safety prediction saved successfully.");
         } catch (updateErr) {
           console.error("Failed to update donation with AI results:", updateErr);
@@ -179,10 +179,10 @@ export function FoodSafety() {
     <div className="min-h-screen bg-[#F8F5F0] font-sans selection:bg-[#F07154]/20 selection:text-[#33251E]">
       <Sidebar />
       <Topbar title="Food Safety" />
-        
+
       <main className="ml-[280px] pt-[112px] pb-12 px-8 max-w-[1600px] mx-auto">
         <div className="grid grid-cols-1 xl:grid-cols-[45%_55%] gap-8 items-start">
-          
+
           {/* Left Column: Form */}
           <div className="bg-white rounded-3xl border border-[#33251E]/5 p-6 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] relative overflow-hidden flex flex-col">
             <div className="flex justify-between items-start mb-6 relative z-10">
@@ -194,7 +194,7 @@ export function FoodSafety() {
             </div>
 
             <form className="space-y-4 relative z-10" onSubmit={handlePredict}>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-[11px] font-semibold text-[#33251E]/70 mb-1">Food item</label>
                 <input name="food_item" value={formData.food_item} onChange={handleChange} type="text" className="w-full bg-white border border-[#33251E]/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#F07154]" /></div>
@@ -252,7 +252,7 @@ export function FoodSafety() {
               </div>
 
               <div className="pt-2">
-                <button 
+                <button
                   type="submit"
                   disabled={loading}
                   className="bg-[#F07154] hover:bg-[#E05F42] text-white px-8 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_4px_12px_-4px_rgba(240,113,84,0.6)] hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 w-full"
@@ -266,10 +266,10 @@ export function FoodSafety() {
 
           {/* Right Column: Results */}
           <div className="space-y-6">
-            
+
             <div className="bg-white rounded-3xl border border-[#33251E]/5 p-8 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] relative overflow-hidden">
               <div className="absolute top-0 left-0 w-64 h-64 bg-[#F07154]/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2 z-0"></div>
-              
+
               <div className="flex justify-between items-start mb-8 relative z-10">
                 <div>
                   <div className="text-[10px] uppercase font-bold tracking-wider text-[#33251E]/50 mb-1">AI Prediction</div>
@@ -300,7 +300,7 @@ export function FoodSafety() {
               {!error && result && (() => {
                 const parsedRemaining = Number(result.remaining_shelf_life_hr ?? (result as any).predicted_shelf_life ?? formData.estimated_shelf_life_hr);
                 const safeShelfLife = !isNaN(parsedRemaining) ? parsedRemaining : 24;
-                
+
                 const parsedTotal = Number(formData.estimated_shelf_life_hr);
                 const safeTotalShelfLife = (!isNaN(parsedTotal) && parsedTotal > 0) ? parsedTotal : 24;
                 const safePrediction = result.prediction || "Unknown";
@@ -311,7 +311,7 @@ export function FoodSafety() {
 
                 return (
                   <div className="grid grid-cols-3 gap-4 relative z-10">
-                    
+
                     {/* Urgency Score Card */}
                     <div className="bg-[#FDFBF7] p-5 rounded-2xl border border-[#33251E]/5 flex flex-col items-center justify-center text-center col-span-1 shadow-sm">
                       <div className="text-[10px] font-bold uppercase tracking-wider text-[#33251E]/50 mb-4">Urgency Score</div>
@@ -319,11 +319,11 @@ export function FoodSafety() {
                         {/* Fake Circular Meter */}
                         <svg className="absolute inset-0 w-full h-full rotate-[-90deg]">
                           <circle cx="48" cy="48" r="44" stroke="#E5E0DD" strokeWidth="6" fill="none" />
-                          <circle 
-                            cx="48" cy="48" r="44" 
-                            stroke={safeUrgencyScore > 75 ? "#EF4444" : safeUrgencyScore > 40 ? "#F59E0B" : "#10B981"} 
-                            strokeWidth="6" fill="none" 
-                            strokeDasharray="276" 
+                          <circle
+                            cx="48" cy="48" r="44"
+                            stroke={safeUrgencyScore > 75 ? "#EF4444" : safeUrgencyScore > 40 ? "#F59E0B" : "#10B981"}
+                            strokeWidth="6" fill="none"
+                            strokeDasharray="276"
                             strokeDashoffset={276 - (276 * safeUrgencyScore) / 100}
                             className="transition-all duration-1000 ease-out"
                           />
@@ -369,11 +369,11 @@ export function FoodSafety() {
                     {/* Priority Rank Card */}
                     <div className="bg-[#33251E] p-6 rounded-2xl text-white flex flex-col col-span-1 shadow-lg relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-[#F07154]/20 rounded-full blur-xl -translate-y-1/2 translate-x-1/2"></div>
-                      
+
                       <div className="text-[10px] font-bold uppercase tracking-wider text-white/50 mb-1 relative z-10">Priority Rank</div>
                       <div className="text-5xl font-serif mb-1 relative z-10">#{safePriority}</div>
                       <div className="text-[10px] text-white/50 mb-6 relative z-10">among active donations</div>
-                      
+
                       <div className="mt-auto space-y-2 relative z-10">
                         <div className="flex justify-between text-[11px]">
                           <span className="text-white/60">Urgency level</span>

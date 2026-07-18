@@ -22,7 +22,7 @@ def get_all_settings(db: Client = Depends(get_db), current_user = Depends(get_cu
         notifications = db.table("notification_preferences").select("*").eq("user_id", user_id).execute().data
         ai_thresholds = db.table("ai_threshold_settings").select("*").eq("user_id", user_id).execute().data
         pickup_prefs = db.table("pickup_preferences").select("*").eq("user_id", user_id).execute().data
-        
+
         return {
             "success": True,
             "message": "Settings retrieved",

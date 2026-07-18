@@ -80,7 +80,6 @@ def refresh_session(refresh_token: str, db: Client = Depends(get_db)) -> Any:
     except Exception as e:
         raise HTTPException(status_code=401, detail="Failed to refresh session")
 
-
 @router.put("/change-password")
 def change_password(data: ChangePassword, db: Client = Depends(get_db), current_user = Depends(get_current_user)) -> Any:
     try:
@@ -96,7 +95,7 @@ def change_password(data: ChangePassword, db: Client = Depends(get_db), current_
                 "success": False,
                 "message": "Incorrect old password"
             }
-        
+
         # If old password is correct, update to new password
         db.auth.update_user({"password": data.new_password})
         return {

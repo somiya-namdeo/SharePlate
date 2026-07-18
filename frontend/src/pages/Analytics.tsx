@@ -41,7 +41,7 @@ export function Analytics() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Filters
   const [period, setPeriod] = useState('30d');
   const [city, setCity] = useState('');
@@ -49,14 +49,14 @@ export function Analytics() {
 
   useEffect(() => {
     let isMounted = true;
-    
+
     async function fetchAnalytics() {
       setLoading(true);
       setError(null);
       try {
         const user = getUser();
         const role = user?.user_metadata?.role;
-        
+
         let fetchedDonations: any[] = [];
         let fetchedRequests: any[] = [];
         let fetchedMatches: any[] = [];
@@ -86,7 +86,7 @@ export function Analytics() {
         else pastDate.setFullYear(2000);
 
         const isWithinPeriod = (dateStr: string) => new Date(dateStr) >= pastDate;
-        
+
         // Filter Collections
         const donations = fetchedDonations.filter(d => isWithinPeriod(d.created_at));
         const requests = fetchedRequests.filter(r => isWithinPeriod(r.created_at));
@@ -119,10 +119,10 @@ export function Analytics() {
         // Compute KPIs
         let quantityRescued = 0;
         const terminalStatuses = ['completed', 'fulfilled', 'cancelled', 'expired'];
-        let activeReqs = role === 'ngo' 
-            ? requests.filter(r => (r.status || '').toLowerCase() === 'open').length 
+        let activeReqs = role === 'ngo'
+            ? requests.filter(r => (r.status || '').toLowerCase() === 'open').length
             : donations.filter(d => !terminalStatuses.includes((d.status || '').toLowerCase())).length;
-        
+
         if (role === 'donor') {
            completedMatches.forEach(m => {
               quantityRescued += (m.quantity || 0);
@@ -138,26 +138,24 @@ export function Analytics() {
         const safeCounts: Record<string, number> = { 'safe': 0, 'review': 0, 'unsafe': 0 };
         const urgCounts: Record<string, number> = { 'low': 0, 'medium': 0, 'high': 0, 'critical': 0 };
         const cityCounts: Record<string, number> = {};
-        
+
         let criticalTotal = 0;
         let criticalResolved = 0;
-
-        
 
         if (role === 'donor') {
            donations.forEach(item => {
               if (item.food_category) catCounts[item.food_category] = (catCounts[item.food_category] || 0) + 1;
-              
+
               const urg = (item.urgency_level || 'medium').toLowerCase();
               if (urgCounts[urg] !== undefined) urgCounts[urg]++;
               if (urg === 'critical') {
                   criticalTotal++;
                   if ((item.status || '').toLowerCase() === 'completed') criticalResolved++;
               }
-              
+
               const safe = (item.safety_status || 'review').toLowerCase();
               if (safeCounts[safe] !== undefined) safeCounts[safe]++;
-              
+
               const city = item.address ? extractCity(item.address) : (item.city_tier || 'Unknown');
               cityCounts[city] = (cityCounts[city] || 0) + 1;
            });
@@ -169,29 +167,29 @@ export function Analytics() {
                   criticalTotal++;
                   if ((item.status || '').toLowerCase() === 'fulfilled' || completedMatches.some(m => m.request_id === item.id)) criticalResolved++;
               }
-              
+
               const city = item.address ? extractCity(item.address) : 'Unknown';
               cityCounts[city] = (cityCounts[city] || 0) + 1;
            });
-           
+
            completedMatches.forEach(m => {
               const cat = m.food_type;
               if (cat) catCounts[cat] = (catCounts[cat] || 0) + 1;
-              
+
               const safe = (m.donation_safety_status || 'review').toLowerCase();
               if (safeCounts[safe] !== undefined) safeCounts[safe]++;
            });
         }
-        
+
         const totalCat = Object.values(catCounts).reduce((a, b) => a + b, 0);
         const food_categories = Object.entries(catCounts).map(([k, v]) => ({ category: k, count: v, percentage: Math.round((v/totalCat)*100) || 0 }));
-        
+
         const safetyBaseTotal = role === 'donor' ? donations.length : completedMatches.length;
         const safety_distribution = Object.entries(safeCounts).map(([k, v]) => ({ safety_status: k, count: v, percentage: safetyBaseTotal > 0 ? Math.round((v/safetyBaseTotal)*100) : 0 })).filter(d => d.count > 0);
-        
+
         const urgency_distribution = Object.entries(urgCounts).map(([k, v]) => ({ urgency_level: k, count: v }));
         const requests_by_city = Object.entries(cityCounts).map(([k, v]) => ({ city: k, count: v }));
-        
+
         // Donations over time (simple daily group)
         const dateMap: Record<string, number> = {};
         if (role === 'donor') {
@@ -225,7 +223,7 @@ export function Analytics() {
            operational_insights: {
               most_donated_category: food_categories.sort((a,b) => b.count - a.count)[0]?.category || null,
               highest_demand_city: requests_by_city.sort((a,b) => b.count - a.count)[0]?.city || null,
-              rescue_completion_rate_percent: role === 'donor' 
+              rescue_completion_rate_percent: role === 'donor'
                  ? (matches.length ? Math.round((completedMatches.length / matches.length) * 100) : null)
                  : (requests.length ? Math.round((completedMatches.length / requests.length) * 100) : null),
               unsafe_rate_percent: donations.length ? Math.round((safeCounts['unsafe'] / donations.length) * 100) : 0,
@@ -242,9 +240,9 @@ export function Analytics() {
         if (isMounted) setLoading(false);
       }
     }
-    
+
     fetchAnalytics();
-    
+
     return () => { isMounted = false; };
   }, [period, city, category]);
 
@@ -259,7 +257,7 @@ export function Analytics() {
     const isUp = trendPercent > 0;
     const isZero = trendPercent === 0;
     const arrow = isUp ? '↑' : isZero ? '-' : '↓';
-    
+
     let colorClass = 'text-gray-600 bg-gray-50 border-gray-100';
     if (!isZero) {
         if (inverseColors) {
@@ -279,12 +277,12 @@ export function Analytics() {
     const getKPIsArray = () => {
     if (!data) return [];
     const k = data.kpis;
-    
+
     const fourthKPILabel = role === 'donor' ? "Critical resolved" : "Request fulfillment rate";
-    const fourthKPIValue = role === 'donor' 
+    const fourthKPIValue = role === 'donor'
         ? (typeof k.critical_resolved_percent.value === 'number' ? `${k.critical_resolved_percent.value}%` : k.critical_resolved_percent.value)
         : (data.operational_insights.rescue_completion_rate_percent !== null && data.operational_insights.rescue_completion_rate_percent !== undefined ? `${data.operational_insights.rescue_completion_rate_percent}%` : "—");
-    
+
     return [
       { label: "Successful rescues", value: k.successful_rescues.value, icon: ShieldCheck, color: "text-[#F07154]", trend: k.successful_rescues.trend_percent, inverse: false },
       { label: `Quantity rescued ${k.quantity_rescued.unit ? `(${k.quantity_rescued.unit})` : ''}`, value: k.quantity_rescued.value, icon: Leaf, color: "text-[#F07154]", trend: k.quantity_rescued.trend_percent, inverse: false },
@@ -303,14 +301,14 @@ export function Analytics() {
       <Topbar title="Analytics" />
 
       <main className="ml-0 lg:ml-[280px] pt-[112px] pb-12 px-4 lg:px-8 max-w-[1600px] mx-auto flex flex-col gap-6">
-        
+
         {/* Analytics Filters */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
            <div className="flex items-center gap-4">
               <h2 className="font-serif text-2xl font-bold text-[#33251E]">Operations Intelligence</h2>
               {loading && <Loader2 className="animate-spin text-[#F07154]" size={20} />}
            </div>
-           
+
            <div className="flex flex-wrap items-center gap-3">
               <div className="relative group">
                  <select value={period} onChange={(e) => setPeriod(e.target.value)} disabled={loading} className="bg-white shadow-sm border border-[#33251E]/10 rounded-xl pl-9 pr-8 py-2.5 text-sm font-bold text-[#33251E] focus:outline-none focus:border-[#F07154] cursor-pointer appearance-none transition-colors group-hover:bg-gray-50 disabled:opacity-50">
@@ -417,7 +415,7 @@ export function Analytics() {
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                                 <XAxis dataKey="date" stroke="#9ca3af" tick={{fill: '#6b7280'}} axisLine={false} tickLine={false} />
                                 <YAxis stroke="#9ca3af" tick={{fill: '#6b7280'}} axisLine={false} tickLine={false} />
-                                <RechartsTooltip 
+                                <RechartsTooltip
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
                                     cursor={{ stroke: '#F07154', strokeWidth: 1, strokeDasharray: '3 3' }}
                                 />
@@ -464,7 +462,7 @@ export function Analytics() {
                                 {data.food_categories.map((cat, idx) => (
                                     <div key={cat.category} className="flex justify-between items-center text-[10px] font-bold uppercase text-[#33251E]/60 truncate pr-2">
                                         <span className="flex items-center gap-1.5 truncate">
-                                            <span className="w-2 h-2 rounded-full shrink-0" style={{backgroundColor: CATEGORY_COLORS[idx % CATEGORY_COLORS.length]}}></span> 
+                                            <span className="w-2 h-2 rounded-full shrink-0" style={{backgroundColor: CATEGORY_COLORS[idx % CATEGORY_COLORS.length]}}></span>
                                             <span className="truncate">{cat.category}</span>
                                         </span>
                                         <span className="text-[#33251E] ml-1">{cat.percentage}%</span>
@@ -488,22 +486,33 @@ export function Analytics() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch h-[340px]">
             {/* Safety Distribution */}
             <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 p-6 flex flex-col h-full overflow-hidden">
-                <h3 className="font-serif text-xl font-bold text-[#33251E] mb-6">Safety distribution</h3>
-                <div className="flex-1 flex flex-col justify-center gap-4">
+                <h3 className="font-serif text-xl font-bold text-[#33251E] mb-2 shrink-0">Safety distribution</h3>
+                <div className="flex-1 flex flex-col justify-center mt-2">
                     {data.safety_distribution.length > 0 ? (
-                        data.safety_distribution.map(stat => (
-                            <div key={stat.safety_status} className="flex items-center gap-4 group">
-                                <span className="w-14 text-xs font-semibold text-[#33251E]/80 text-right group-hover:text-[#33251E] transition-colors capitalize">{stat.safety_status}</span>
-                                <div className="flex-1 h-10 bg-gray-50 rounded-r-md relative flex items-center group-hover:bg-gray-100 transition-colors shadow-inner">
-                                    <div 
-                                        className="h-full rounded-r-md flex items-center justify-end pr-3 transition-all duration-700 shadow-sm" 
-                                        style={{width: `${Math.max(stat.percentage, 5)}%`, backgroundColor: SAFETY_COLORS[stat.safety_status.toLowerCase()] || '#9ca3af'}}
-                                    >
-                                        <span className="text-[10px] font-bold text-white mix-blend-difference">{stat.percentage}%</span>
+                        <div className="flex flex-col gap-6 w-full px-2">
+                            {data.safety_distribution.map(stat => {
+                                const label = stat.safety_status.toLowerCase() === 'review' ? 'Pending Safety' : stat.safety_status;
+                                return (
+                                    <div key={stat.safety_status} className="flex flex-col gap-2 group">
+                                        <div className="flex justify-between items-center text-xs font-bold text-[#33251E]/80 group-hover:text-[#33251E] transition-colors">
+                                            <span className="capitalize">{label}</span>
+                                            <span>{stat.percentage}%</span>
+                                        </div>
+                                        <div className="w-full h-2.5 bg-[#33251E]/5 rounded-full overflow-hidden shadow-inner">
+                                            <div
+                                                className="h-full rounded-full transition-all duration-1000 ease-out shadow-sm"
+                                                style={{width: `${stat.percentage}%`, backgroundColor: SAFETY_COLORS[stat.safety_status.toLowerCase()] || '#9ca3af'}}
+                                            ></div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        ))
+                                );
+                            })}
+                            {data.safety_distribution.length === 1 && (
+                                <p className="text-[11px] text-[#33251E]/40 font-medium text-center mt-2 px-2 leading-relaxed">
+                                    All analyzed donations are currently classified as <span className="font-bold">{data.safety_distribution[0].safety_status.toLowerCase() === 'review' ? 'Pending Safety' : data.safety_distribution[0].safety_status.charAt(0).toUpperCase() + data.safety_distribution[0].safety_status.slice(1)}</span>.
+                                </p>
+                            )}
+                        </div>
                     ) : (
                         <div className="flex-1 flex flex-col items-center justify-center text-[#33251E]/40 font-bold gap-3 text-center px-4">
                             <ShieldCheck size={32} className="opacity-40" />
@@ -512,7 +521,7 @@ export function Analytics() {
                     )}
                 </div>
             </div>
-            
+
             {/* Urgency Levels */}
             <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 p-6 flex flex-col h-full overflow-hidden">
                 <h3 className="font-serif text-xl font-bold text-[#33251E] mb-2 shrink-0">Urgency levels</h3>
@@ -536,7 +545,7 @@ export function Analytics() {
                     )}
                 </div>
             </div>
-            
+
             {/* Requests by City */}
             <div className="bg-white rounded-2xl shadow-sm border border-[#33251E]/10 p-6 flex flex-col h-full overflow-hidden">
                 <h3 className="font-serif text-xl font-bold text-[#33251E] mb-2 shrink-0">{role === 'donor' ? 'Rescue Locations' : 'Requests by City'}</h3>

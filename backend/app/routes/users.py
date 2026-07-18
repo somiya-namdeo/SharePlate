@@ -28,10 +28,10 @@ def update_profile(profile_data: ProfileUpdate, db: Client = Depends(get_db), cu
         update_dict = profile_data.model_dump(exclude_unset=True)
         if not update_dict:
             return {"success": True, "message": "No changes provided", "data": None}
-            
+
         response = db.table("profiles").update(update_dict).eq("id", current_user.id).execute()
         updated_profile = response.data[0] if response.data else None
-        
+
         return {
             "success": True,
             "message": "Profile updated",
@@ -45,7 +45,7 @@ async def upload_avatar(file: UploadFile = File(...), db: Client = Depends(get_d
     try:
         file_ext = file.filename.split(".")[-1]
         file_name = f"{current_user.id}/{uuid.uuid4()}.{file_ext}"
-        
+
         # We assume a bucket named "avatars" exists and is public
         contents = await file.read()
         res = db.storage.from_("avatars").upload(
@@ -53,13 +53,13 @@ async def upload_avatar(file: UploadFile = File(...), db: Client = Depends(get_d
             path=file_name,
             file_options={"content-type": file.content_type}
         )
-        
+
         # Get public URL
         public_url = db.storage.from_("avatars").get_public_url(file_name)
-        
+
         # Update profile
         db.table("profiles").update({"avatar_url": public_url}).eq("id", current_user.id).execute()
-        
+
         return {
             "success": True,
             "message": "Avatar uploaded",

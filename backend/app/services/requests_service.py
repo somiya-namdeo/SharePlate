@@ -10,7 +10,7 @@ class RequestsService:
 
     def create_request(self, request_data: dict, ngo_id: str) -> dict:
         request_data["ngo_id"] = ngo_id
-        
+
         address = request_data.get("address", "")
         coords = self.geocoder.geocode(address)
         if coords:
@@ -18,7 +18,7 @@ class RequestsService:
             request_data["longitude"] = coords[1]
         else:
             raise HTTPException(status_code=400, detail="Could not locate this address. Please enter a more specific address.")
-            
+
         response = self.db.table("ngo_requests").insert(request_data).execute()
         return response.data[0] if response.data else None
 
@@ -32,7 +32,7 @@ class RequestsService:
             query = query.eq("status", status)
         response = query.order("created_at", desc=True).limit(limit).execute()
         return response.data
-    
+
     def get_request_by_id(self, request_id: str) -> dict:
         response = self.db.table("ngo_requests").select("*").eq("id", request_id).execute()
         return response.data[0] if response.data else None

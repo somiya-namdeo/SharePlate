@@ -2,32 +2,32 @@ import math
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """
-    Calculate the great circle distance in kilometers between two points 
+    Calculate the great circle distance in kilometers between two points
     on the earth (specified in decimal degrees)
     """
     if lat1 is None or lon1 is None or lat2 is None or lon2 is None:
         return None
 
-    # Convert decimal degrees to radians 
+    # Convert decimal degrees to radians
     lon1, lat1, lon2, lat2 = map(math.radians, [lon1, lat1, lon2, lat2])
 
-    # Haversine formula 
-    dlon = lon2 - lon1 
-    dlat = lat2 - lat1 
+    # Haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
     a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-    c = 2 * math.asin(math.sqrt(a)) 
+    c = 2 * math.asin(math.sqrt(a))
     r = 6371 # Radius of earth in kilometers
     return c * r
 
 def calculate_match_score(donation: dict, request: dict) -> float:
     """
     Calculate a compatibility score between a donation and an NGO request.
-    Score is out of 100 based on heuristics: Food category (30%), Distance (25%), 
+    Score is out of 100 based on heuristics: Food category (30%), Distance (25%),
     Urgency (20%), Safety (15%), Quantity compatibility (10%).
     """
-    
+
     print("\n=== USING NEW MATCHING SERVICE ===")
-    
+
     KNOWN_FOOD_CATEGORIES = {
         "cooked meal",
         "uncooked",
@@ -66,9 +66,9 @@ def calculate_match_score(donation: dict, request: dict) -> float:
     d_lon = donation.get("longitude")
     r_lat = request.get("latitude")
     r_lon = request.get("longitude")
-    
+
     distance_km = haversine_distance(d_lat, d_lon, r_lat, r_lon)
-    
+
     if distance_km is not None:
         if distance_km <= 5:
             dist_score = 25.0
@@ -81,7 +81,7 @@ def calculate_match_score(donation: dict, request: dict) -> float:
     else:
         # Fallback if no location data
         dist_score = 10.0
-        
+
     # 3. Urgency Level (20%)
     urgency = request.get("urgency_level", "Low").lower() if request.get("urgency_level") else "low"
     if urgency == "critical":
@@ -105,7 +105,7 @@ def calculate_match_score(donation: dict, request: dict) -> float:
     # 5. Quantity Compatibility (10%)
     donation_qty = float(donation.get("quantity", 0) or 0)
     meals_needed = float(request.get("meals_needed", 1) or 1)
-    
+
     if donation_qty >= meals_needed:
         qty_score = 10.0
     elif donation_qty >= (meals_needed * 0.5):

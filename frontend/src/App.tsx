@@ -42,7 +42,7 @@ function App() {
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/donations" element={<ProtectedRoute allowedRoles={['donor']}><Donations /></ProtectedRoute>} />
         <Route path="/food-safety" element={<ProtectedRoute allowedRoles={['donor']}><FoodSafety /></ProtectedRoute>} />
-        <Route path="/nlp" element={<ProtectedRoute><NLPIntelligence /></ProtectedRoute>} />
+        <Route path="/nlp" element={<ProtectedRoute allowedRoles={['donor']}><NLPIntelligence /></ProtectedRoute>} />
 
         <Route path="/matching" element={<ProtectedRoute><SmartMatching /></ProtectedRoute>} />
         <Route path="/logistics" element={<ProtectedRoute><MapLogistics /></ProtectedRoute>} />

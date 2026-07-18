@@ -13,7 +13,7 @@ def get_requests_service(db: Client = Depends(get_db)):
 
 @router.post("/")
 def create_request(
-    request: RequestCreate, 
+    request: RequestCreate,
     service: RequestsService = Depends(get_requests_service),
     current_user = Depends(get_current_user)
 ):
@@ -52,7 +52,7 @@ def get_my_requests(
                 status_code=403,
                 content={"success": False, "message": "Only NGOs can view their personal requests here."}
             )
-        
+
         result = service.get_requests_by_ngo(current_user.id, status=status)
         return {
             "success": True,

@@ -18,12 +18,11 @@ export function SmartMatching() {
   const [donationsList, setDonationsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [matches, setMatches] = useState<any[]>([]);
-  const [hasSearched, setHasSearched] = useState(false);
   const [assigningMatch, setAssigningMatch] = useState<string | null>(null);
   const [isMatched, setIsMatched] = useState(false);
   const [ngoRequestsList, setNgoRequestsList] = useState<any[]>([]);
   const [selectedNgoRequestId, setSelectedNgoRequestId] = useState<string>('');
-  
+
   // Assignment queue state
   const [queue, setQueue] = useState<any[]>([]);
   const [loadingQueue, setLoadingQueue] = useState(false);
@@ -47,7 +46,7 @@ export function SmartMatching() {
   const fetchQueue = async () => {
     const user = getUser();
     if (!user || !user.id) return;
-    
+
     setLoadingQueue(true);
     try {
       const response = await apiFetch('/api/matches/me');
@@ -69,11 +68,11 @@ export function SmartMatching() {
         const endpoint = role === 'donor' ? '/api/donations/me?status=pending' : '/api/donations/';
         const response = await apiFetch(endpoint);
         const list = Array.isArray(response) ? response : (response.data || []);
-        
+
         const matchingEligible = list;
-        
+
         setDonationsList(matchingEligible);
-        
+
         if (stateDonationId) {
           setDonationId(stateDonationId);
         } else if (matchingEligible.length > 0) {
@@ -103,14 +102,13 @@ export function SmartMatching() {
       toast.error('Please select a donation');
       return;
     }
-    
+
     setLoading(true);
-    setHasSearched(true);
     setIsMatched(false);
-    
+
     try {
-      const url = selectedNgoRequestId 
-        ? `/api/matches/suggest/${donationId}?ngo_request_id=${selectedNgoRequestId}` 
+      const url = selectedNgoRequestId
+        ? `/api/matches/suggest/${donationId}?ngo_request_id=${selectedNgoRequestId}`
         : `/api/matches/suggest/${donationId}`;
       const response = await apiFetch(url);
       if (response.success && response.data?.best_matches) {
@@ -128,12 +126,12 @@ export function SmartMatching() {
 
   const handleAssignNGO = async (requestId: string) => {
     if (!donationId) return;
-    
+
     setAssigningMatch(requestId);
     try {
       const pickupTime = new Date();
       pickupTime.setMinutes(pickupTime.getMinutes() + 30);
-      
+
       const response = await apiFetch('/api/matches/', {
         method: 'POST',
         data: {
@@ -142,7 +140,7 @@ export function SmartMatching() {
           recommended_pickup_time: pickupTime.toISOString()
         }
       });
-      
+
       if (response.success) {
         toast.success('Successfully assigned NGO!');
         setIsMatched(true);
@@ -168,9 +166,9 @@ export function SmartMatching() {
       <Topbar title="Smart Matching" />
 
       <main className="ml-[280px] pt-[112px] pb-12 px-8 max-w-[1600px] mx-auto flex flex-col min-h-screen">
-        
+
         {/* Top Control Card */}
-        <div className={cn("bg-white rounded-2xl shadow-sm border p-4 mb-6 transition-colors duration-300", 
+        <div className={cn("bg-white rounded-2xl shadow-sm border p-4 mb-6 transition-colors duration-300",
             isAlreadyMatched ? "border-emerald-400 bg-emerald-50/30" : "border-[#33251E]/10"
         )}>
           <div className="flex justify-between items-center mb-4 md:hidden">
@@ -183,7 +181,7 @@ export function SmartMatching() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="w-full relative">
               <div className="relative">
-                <select 
+                <select
                   value={donationId}
                   onChange={(e) => setDonationId(e.target.value)}
                   className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] focus-visible:ring-2 focus-visible:ring-[#F07154]/20 transition-all appearance-none pr-10 truncate cursor-pointer hover:border-[#33251E]/30"
@@ -206,7 +204,7 @@ export function SmartMatching() {
             </div>
             <div className="w-full relative">
               <div className="relative">
-                <select 
+                <select
                   value={selectedNgoRequestId}
                   onChange={(e) => setSelectedNgoRequestId(e.target.value)}
                   className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] focus-visible:ring-2 focus-visible:ring-[#F07154]/20 transition-all appearance-none pr-10 truncate cursor-pointer hover:border-[#33251E]/30"
@@ -233,7 +231,7 @@ export function SmartMatching() {
               )}
             </div>
             <div className="w-full flex items-center gap-3">
-              <button 
+              <button
                 onClick={handleFindMatches}
                 disabled={loading || !donationId || donationsList.length === 0}
                 className="w-full bg-[#33251E] hover:bg-[#33251E]/90 focus-visible:ring-2 focus-visible:ring-[#33251E]/30 text-white rounded-xl px-4 py-3 text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
@@ -258,10 +256,10 @@ export function SmartMatching() {
             const scoreTextColor = match.match_score >= 90 ? "text-emerald-600" : match.match_score >= 70 ? "text-[#F07154]" : "text-amber-600";
             const confidence = match.match_score >= 90 ? "Excellent Match" : match.match_score >= 70 ? "Strong Match" : "Good Match";
             const isAssigningThis = assigningMatch === match.request_id;
-            
+
             return (
-              <div 
-                key={match.request_id || i} 
+              <div
+                key={match.request_id || i}
                 className={cn(
                   "rounded-3xl shadow-sm border p-5 flex flex-col relative h-[360px] transition-opacity duration-300",
                   isHighlight ? "bg-[#FDF6F4] border-[#F07154]" : "bg-white border-[#33251E]/10",
@@ -283,20 +281,20 @@ export function SmartMatching() {
                       {match.distance_km ?? 'Unknown'} km • {match.quantity_needed} needed • {match.food_needed}
                     </p>
                   </div>
-                  
+
                   {/* Score Circle */}
                   <div className="relative w-14 h-14 flex-shrink-0 flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90 absolute inset-0">
                       <circle cx="28" cy="28" r="24" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-gray-100" />
-                      <circle 
-                        cx="28" cy="28" r="24" 
-                        stroke="currentColor" 
-                        strokeWidth="4" 
-                        fill="transparent" 
-                        strokeDasharray={2 * Math.PI * 24} 
-                        strokeDashoffset={2 * Math.PI * 24 * (1 - (match.match_score || 0) / 100)} 
-                        className={scoreColor} 
-                        strokeLinecap="round" 
+                      <circle
+                        cx="28" cy="28" r="24"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="transparent"
+                        strokeDasharray={2 * Math.PI * 24}
+                        strokeDashoffset={2 * Math.PI * 24 * (1 - (match.match_score || 0) / 100)}
+                        className={scoreColor}
+                        strokeLinecap="round"
                       />
                     </svg>
                     <div className="absolute flex flex-col items-center justify-center">
@@ -338,7 +336,7 @@ export function SmartMatching() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 mt-auto">
-                    <button 
+                    <button
                       onClick={() => handleAssignNGO(match.request_id)}
                       disabled={isAlreadyMatched || assigningMatch !== null}
                       className="bg-[#33251E] hover:bg-[#33251E]/90 text-white rounded-full px-5 py-2.5 text-sm font-bold flex items-center justify-center gap-2 flex-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -401,7 +399,7 @@ export function SmartMatching() {
               <span className="text-[11px] font-bold text-[#33251E]/40 uppercase tracking-[0.1em] mb-1 block">ALL MATCHES</span>
               <h2 className="font-serif text-2xl font-semibold text-[#33251E]">Assignment queue</h2>
             </div>
-            
+
             <div className="flex items-center gap-3 w-full md:w-auto">
               <div className="relative w-full md:w-auto">
                 <select
@@ -422,7 +420,7 @@ export function SmartMatching() {
               </span>
             </div>
           </div>
-          
+
           <div className="w-full overflow-x-auto p-6 pt-0">
             {loadingQueue ? (
               <div className="flex justify-center py-12">
@@ -456,10 +454,10 @@ export function SmartMatching() {
                     const pColor = urgency === "critical" || urgency === "high" ? "amber" : urgency === "medium" ? "blue" : "slate";
                     const status = row.status ? row.status.charAt(0).toUpperCase() + row.status.slice(1) : "Pending";
                     const displayFood = row.food_type || row.donation_id?.slice(0, 8);
-                    
+
                     return (
-                      <tr 
-                        key={row.id || i} 
+                      <tr
+                        key={row.id || i}
                         onClick={() => setSelectedDetails(row)}
                         className="border-b border-[#33251E]/5 hover:bg-[#FDFBF7] transition-colors duration-200 cursor-pointer group"
                       >
@@ -519,7 +517,7 @@ export function SmartMatching() {
                           </span>
                         </td>
                         <td className="py-5 align-middle text-sm text-right">
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedDetails(row);
@@ -543,7 +541,7 @@ export function SmartMatching() {
       {/* Details Modal */}
       {selectedDetails && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#33251E]/20 backdrop-blur-sm" onClick={() => setSelectedDetails(null)}>
-          <div 
+          <div
             className="bg-white rounded-3xl shadow-xl border border-[#33251E]/10 w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >

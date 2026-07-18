@@ -30,7 +30,7 @@ export function Settings() {
     orgName: '',
     city: ''
   });
-  
+
   const [saving, setSaving] = useState(false);
 
   // Password state
@@ -79,7 +79,7 @@ export function Settings() {
 
   const handleSaveProfile = async () => {
     if (!hasChanges || saving) return;
-    
+
     try {
       setSaving(true);
       const res = await apiFetch('/api/users/profile', {
@@ -91,7 +91,7 @@ export function Settings() {
           city: profile.city
         }
       });
-      
+
       if (res.success) {
         setBaselineProfile(profile);
         updateUserLocal({ full_name: profile.fullName, city: profile.city });
@@ -119,7 +119,7 @@ export function Settings() {
     if (passwords.newPassword.length < 6) {
       return toast.error('Password must be at least 6 characters long');
     }
-    
+
     try {
       setPasswordSaving(true);
       const res = await apiFetch('/api/auth/change-password', {
@@ -129,7 +129,7 @@ export function Settings() {
           new_password: passwords.newPassword
         }
       });
-      
+
       if (res.success) {
         toast.success('Password updated successfully');
         setPasswords({ oldPassword: '', newPassword: '', confirmPassword: '' });
@@ -156,7 +156,7 @@ export function Settings() {
       <Topbar title="Settings" />
 
       <main className="ml-0 lg:ml-[280px] pt-[112px] pb-12 px-4 lg:px-8 max-w-[1200px] mx-auto flex flex-col gap-6">
-        
+
         {/* Action Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white rounded-2xl shadow-sm border border-[#33251E]/10 p-6">
            <div>
@@ -169,14 +169,14 @@ export function Settings() {
                     Unsaved changes
                  </span>
               )}
-              <button 
+              <button
                 onClick={handleDiscard}
                 disabled={!hasChanges || saving}
                 className={`border rounded-xl px-5 py-2.5 text-sm font-bold transition-colors ${hasChanges && !saving ? 'border-[#33251E]/20 hover:bg-gray-50 text-[#33251E]' : 'border-transparent bg-gray-50/50 text-[#33251E]/30 cursor-not-allowed'}`}
               >
                  Discard Changes
               </button>
-              <button 
+              <button
                 onClick={handleSaveProfile}
                 disabled={!hasChanges || saving}
                 className={`rounded-xl px-6 py-2.5 text-sm font-bold transition-all shadow-sm flex items-center justify-center gap-2 min-w-[140px] ${hasChanges && !saving ? 'bg-[#F07154] hover:bg-[#E05F42] text-white' : 'bg-[#F07154]/50 text-white/90 cursor-not-allowed shadow-none'}`}
@@ -196,11 +196,11 @@ export function Settings() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-6 items-start">
-            
+
             {/* User & Organization Profile */}
             <div className="bg-white rounded-2xl border border-[#33251E]/10 shadow-sm p-6">
               <h3 className="font-serif text-xl font-bold text-[#33251E] mb-6">User & Organization Profile</h3>
-              
+
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-14 h-14 rounded-full bg-[#33251E] text-white flex items-center justify-center font-bold text-lg shadow-md select-none">
                   {getInitials(baselineProfile.fullName)}
@@ -210,51 +210,51 @@ export function Settings() {
                   <div className="text-xs text-[#33251E]/60 font-medium">{baselineProfile.email}</div>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Full Name</label>
-                  <input 
-                    value={profile.fullName} 
-                    onChange={(e) => handleProfileChange('fullName', e.target.value)} 
-                    type="text" 
-                    className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" 
+                  <input
+                    value={profile.fullName}
+                    onChange={(e) => handleProfileChange('fullName', e.target.value)}
+                    type="text"
+                    className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Email</label>
-                  <input 
-                    value={profile.email} 
+                  <input
+                    value={profile.email}
                     disabled
-                    type="email" 
-                    className="w-full bg-gray-50 border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E]/60 cursor-not-allowed" 
+                    type="email"
+                    className="w-full bg-gray-50 border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E]/60 cursor-not-allowed"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Phone</label>
-                  <input 
-                    value={profile.phone} 
-                    onChange={(e) => handleProfileChange('phone', e.target.value)} 
-                    type="tel" 
-                    className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" 
+                  <input
+                    value={profile.phone}
+                    onChange={(e) => handleProfileChange('phone', e.target.value)}
+                    type="tel"
+                    className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Organization Name</label>
-                  <input 
-                    value={profile.orgName} 
-                    onChange={(e) => handleProfileChange('orgName', e.target.value)} 
-                    type="text" 
-                    className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" 
+                  <input
+                    value={profile.orgName}
+                    onChange={(e) => handleProfileChange('orgName', e.target.value)}
+                    type="text"
+                    className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors"
                   />
                 </div>
                 <div className="md:col-span-2">
                   <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">City</label>
-                  <input 
-                    value={profile.city} 
-                    onChange={(e) => handleProfileChange('city', e.target.value)} 
-                    type="text" 
-                    className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" 
+                  <input
+                    value={profile.city}
+                    onChange={(e) => handleProfileChange('city', e.target.value)}
+                    type="text"
+                    className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors"
                   />
                 </div>
               </div>
@@ -266,37 +266,37 @@ export function Settings() {
                 <Key size={20} className="text-[#33251E]" />
                 <h3 className="font-serif text-xl font-bold text-[#33251E]">Account Security</h3>
               </div>
-              
+
               <form onSubmit={handleSavePassword} className="space-y-5">
                 <div>
                   <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Current Password</label>
-                  <input 
-                    value={passwords.oldPassword} 
-                    onChange={(e) => handlePasswordChange('oldPassword', e.target.value)} 
-                    type="password" 
-                    className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" 
+                  <input
+                    value={passwords.oldPassword}
+                    onChange={(e) => handlePasswordChange('oldPassword', e.target.value)}
+                    type="password"
+                    className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">New Password</label>
-                  <input 
-                    value={passwords.newPassword} 
-                    onChange={(e) => handlePasswordChange('newPassword', e.target.value)} 
-                    type="password" 
-                    className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" 
+                  <input
+                    value={passwords.newPassword}
+                    onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                    type="password"
+                    className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-[#33251E]/60 mb-2 block">Confirm New Password</label>
-                  <input 
-                    value={passwords.confirmPassword} 
-                    onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)} 
-                    type="password" 
-                    className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors" 
+                  <input
+                    value={passwords.confirmPassword}
+                    onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
+                    type="password"
+                    className="w-full bg-[#FDFBF7] border border-[#33251E]/10 rounded-xl px-4 py-3 text-sm text-[#33251E] focus:outline-none focus:border-[#F07154] transition-colors"
                   />
                 </div>
                 <div className="pt-2">
-                  <button 
+                  <button
                     type="submit"
                     disabled={passwordSaving || !passwords.oldPassword || !passwords.newPassword || !passwords.confirmPassword}
                     className="bg-[#33251E] hover:bg-[#4A362C] disabled:bg-[#33251E]/50 text-white rounded-xl px-6 py-2.5 text-sm font-bold transition-colors flex items-center justify-center gap-2 min-w-[180px]"

@@ -12,7 +12,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     """
     if not db:
         raise HTTPException(status_code=500, detail="Database client not initialized")
-    
+
     token = credentials.credentials
     try:
         # Supabase Python SDK (gotrue) validates the token automatically
@@ -23,10 +23,10 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
                 detail="Invalid or expired token",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        
+
         # Establish the session for this specific request's client instance
         db.auth.set_session(token, "dummy_refresh_token")
-        
+
         return user_response.user
     except Exception as e:
         raise HTTPException(

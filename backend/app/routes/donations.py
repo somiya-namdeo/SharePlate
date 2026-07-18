@@ -14,7 +14,7 @@ def get_donations_service(db: Client = Depends(get_db)):
 
 @router.post("/")
 def create_donation(
-    donation: DonationCreate, 
+    donation: DonationCreate,
     service: DonationsService = Depends(get_donations_service),
     current_user = Depends(get_current_user)
 ):
@@ -50,7 +50,7 @@ def get_my_donations(
                 status_code=403,
                 content={"success": False, "message": "Only donors can view their donations here."}
             )
-        
+
         result = service.get_donations_by_donor(current_user.id, status=status)
         return {
             "success": True,
@@ -72,7 +72,7 @@ def get_donations(
                 status_code=403,
                 content={"success": False, "message": "Only NGOs can browse available donations."}
             )
-            
+
         # Optional: Can restrict to authenticated users if needed
         result = service.get_available_donations()
         return {
@@ -97,7 +97,7 @@ def update_donation(
                 status_code=403,
                 content={"success": False, "message": "Only donors can update donations."}
             )
-            
+
         donor_id = current_user.id
         result = service.update_donation(donation_id, update_data, donor_id)
         if not result:

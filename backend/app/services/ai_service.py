@@ -20,15 +20,14 @@ class BiLSTMAttentionNER(nn.Module):
         output = self.fc(lstm_out)
         return output
 
-
 import logging
 from app.schemas.ai import (
-    FoodSafetyRequest, 
-    FoodSafetyResponse, 
-    SurplusPredictionRequest, 
-    SurplusPredictionResponse, 
+    FoodSafetyRequest,
+    FoodSafetyResponse,
+    SurplusPredictionRequest,
+    SurplusPredictionResponse,
 
-    DonationNERRequest, 
+    DonationNERRequest,
     DonationNERResponse
 )
 
@@ -45,14 +44,13 @@ class AIService:
         self.food_safety_encoder = None
         self.food_safety_features = None
         self.surplus_model = None
-        
 
         # NER model and vocab
         self.ner_model = None
         self.ner_word2idx = None
         self.ner_tag2idx = None
         self.ner_idx2tag = None
-        
+
         self._load_models()
 
     def _load_models(self):
@@ -60,14 +58,14 @@ class AIService:
             food_safety_path = os.path.join(MODELS_DIR, "shareplate_food_safety_model.pkl")
             encoder_path = os.path.join(MODELS_DIR, "food_safety_label_encoder.pkl")
             features_path = os.path.join(MODELS_DIR, "food_safety_features.pkl")
-            
+
             if os.path.exists(food_safety_path):
                 self.food_safety_model = joblib.load(food_safety_path)
             if os.path.exists(encoder_path):
                 self.food_safety_encoder = joblib.load(encoder_path)
             if os.path.exists(features_path):
                 self.food_safety_features = joblib.load(features_path)
-                
+
             logger.info("Food safety models loaded successfully.")
         except Exception as e:
             logger.error(f"Error loading food safety models: {e}")
@@ -80,7 +78,6 @@ class AIService:
         except Exception as e:
             logger.error(f"Error loading surplus prediction model: {e}")
 
-
         try:
             ner_model_path = os.path.join(MODELS_DIR, "shareplate_ner_bilstm_attention_v2.pth")
             word2idx_path = os.path.join(BASE_DIR, "artifacts", "word2idx.pkl")
@@ -91,14 +88,14 @@ class AIService:
                 self.ner_word2idx = joblib.load(word2idx_path)
                 self.ner_tag2idx = joblib.load(tag2idx_path)
                 self.ner_idx2tag = joblib.load(idx2tag_path)
-                
+
                 EMBEDDING_DIM = 100
                 HIDDEN_DIM = 128
-                
+
                 self.ner_model = BiLSTMAttentionNER(
-                    vocab_size=len(self.ner_word2idx), 
-                    embedding_dim=EMBEDDING_DIM, 
-                    hidden_dim=HIDDEN_DIM, 
+                    vocab_size=len(self.ner_word2idx),
+                    embedding_dim=EMBEDDING_DIM,
+                    hidden_dim=HIDDEN_DIM,
                     num_tags=len(self.ner_tag2idx)
                 )
                 self.ner_model.load_state_dict(torch.load(ner_model_path, map_location=torch.device('cpu')))
@@ -117,11 +114,11 @@ class AIService:
             request.city_tier = "Tier-1" # Default assumption
         if not request.event_type:
             request.event_type = "Regular"
-            
+
         if request.perishability_score is None:
             # Simple heuristic
             request.perishability_score = 3 if "cooked" in request.food_category.lower() else 1
-            
+
         if request.estimated_shelf_life_hr is None:
             # Basic shelf life estimation
             if "cooked" in request.food_category.lower():
@@ -134,9 +131,9 @@ class AIService:
             urgency_score = (request.hours_since_prepared / request.estimated_shelf_life_hr) * 100
         else:
             urgency_score = 100.0
-            
+
         urgency_score = min(urgency_score, 100.0)
-        
+
         # 2. Map to urgency level
         if urgency_score <= 25:
             urgency_level = "Low"
@@ -146,14 +143,14 @@ class AIService:
             urgency_level = "High"
         else:
             urgency_level = "Critical"
-            
+
         urgency_priority = 1
         if db:
             try:
                 # Fetch all active/eligible donations from DB
                 response = db.table('donations').select('id, urgency_level, spoilage_risk_score, hours_since_prepared, predicted_shelf_life').eq('status', 'pending').execute()
                 active_donations = response.data
-                
+
                 # Calculate scores for existing active eligible donations
                 scores = []
                 for d in active_donations:
@@ -161,7 +158,7 @@ class AIService:
                     risk = d.get('spoilage_risk_score')
                     if risk is not None and risk > 0.8:
                         continue
-                        
+
                     hrs = d.get('hours_since_prepared')
                     shelf = d.get('predicted_shelf_life')
                     if shelf and shelf > 0 and hrs is not None:
@@ -169,13 +166,13 @@ class AIService:
                         scores.append(s)
                     else:
                         scores.append(0.0)
-                        
+
                 # Add current request score
                 scores.append(urgency_score)
-                
+
                 # Sort descending to rank from highest urgency to lowest
                 scores.sort(reverse=True)
-                
+
                 # Rank is 1-indexed position
                 urgency_priority = scores.index(urgency_score) + 1
             except Exception as e:
@@ -191,9 +188,9 @@ class AIService:
             elif urgency_score <= 50: urgency_priority = 3
             elif urgency_score <= 75: urgency_priority = 2
             else: urgency_priority = 1
-            
+
         remaining_shelf_life = max(0.0, request.estimated_shelf_life_hr - request.hours_since_prepared)
-        
+
         # 3. Model Inference
         prediction = "Yes" # Default if model fails
         if self.food_safety_model:
@@ -201,7 +198,7 @@ class AIService:
                 # Prepare input DataFrame based on request
                 input_data = request.model_dump()
                 df = pd.DataFrame([input_data])
-                
+
                 # Try to apply label encoder if it's a dict of encoders
                 if isinstance(self.food_safety_encoder, dict):
                     for col, le in self.food_safety_encoder.items():
@@ -217,7 +214,7 @@ class AIService:
                         except:
                             # Fallback if the encoder doesn't work this way
                             df[col] = 0
-                            
+
                 # If specific features are required, filter df
                 if self.food_safety_features is not None:
                     # Fill missing columns with 0
@@ -225,19 +222,19 @@ class AIService:
                         if col not in df.columns:
                             df[col] = 0
                     df = df[self.food_safety_features]
-                
+
                 # Predict
                 pred_output = self.food_safety_model.predict(df)
-                
+
                 # Safely extract scalar value whether it's nested array, list, or scalar
                 if isinstance(pred_output, (list, np.ndarray)):
                     while isinstance(pred_output, (list, np.ndarray)) and len(pred_output) > 0:
                         pred_output = pred_output[0]
-                
+
                 try:
                     # Convert to integer class index
                     pred_int = int(pred_output)
-                    
+
                     # Inverse transform using the saved label encoder
                     if self.food_safety_encoder and hasattr(self.food_safety_encoder, 'inverse_transform'):
                         prediction = self.food_safety_encoder.inverse_transform([pred_int])[0]
@@ -252,7 +249,7 @@ class AIService:
                 except Exception as inner_ex:
                     logger.warning(f"Failed to inverse transform prediction '{pred_output}': {inner_ex}")
                     prediction = str(pred_output)
-                    
+
             except Exception as e:
                 logger.error(f"Food safety inference error: {e}")
 
@@ -278,16 +275,15 @@ class AIService:
                 prediction = 10.0
         else:
             prediction = 12.5 # Mock value
-            
-        return SurplusPredictionResponse(predicted_surplus_quantity=round(prediction, 2))
 
+        return SurplusPredictionResponse(predicted_surplus_quantity=round(prediction, 2))
 
     @staticmethod
     def _normalize_ner_outputs(food_item: str, quantity: str):
         import re
         units = {"kg", "kgs", "gram", "grams", "g", "plate", "plates", "packet", "packets", "box", "boxes", "serving", "servings", "meal", "meals"}
         food_phrases = {"food packets", "food packet", "meal boxes", "meal box", "lunch boxes", "lunch box"}
-        
+
         def process_string(s):
             if not s: return [], []
             s = s.lower()
@@ -300,7 +296,7 @@ class AIService:
                 if match:
                     num = match.group(1)
                     rest = match.group(2).strip()
-                    
+
                     matched_phrase = False
                     for phrase in food_phrases:
                         if rest.startswith(phrase):
@@ -308,14 +304,14 @@ class AIService:
                             new_f.append(rest)
                             matched_phrase = True
                             break
-                    
+
                     if matched_phrase:
                         continue
-                        
+
                     words = rest.split()
                     q_words = [num]
                     f_words = []
-                    
+
                     i = 0
                     while i < len(words):
                         w = words[i]
@@ -325,10 +321,10 @@ class AIService:
                             f_words.extend(words[i:])
                             break
                         i += 1
-                        
+
                     q_str = " ".join(q_words)
                     f_str = " ".join(f_words)
-                    
+
                     new_q.append(q_str)
                     if f_str:
                         new_f.append(f_str)
@@ -338,7 +334,7 @@ class AIService:
 
         q_q, f_q = process_string(quantity)
         q_f, f_f = process_string(food_item)
-        
+
         final_quantities = q_q + q_f
         seen_q = set()
         unique_q = []
@@ -347,7 +343,7 @@ class AIService:
                 seen_q.add(q)
                 unique_q.append(q)
         final_quantity = ", ".join(unique_q) if unique_q else None
-        
+
         all_foods = f_q + f_f
         seen_f = set()
         final_foods = []
@@ -356,7 +352,7 @@ class AIService:
                 seen_f.add(f)
                 final_foods.append(f)
         final_food_item = ", ".join(final_foods) if final_foods else None
-        
+
         if final_food_item:
             remove_words = [
                 "and", "with", "plus",
@@ -365,7 +361,7 @@ class AIService:
             for w in remove_words:
                 final_food_item = re.sub(r'\b' + re.escape(w) + r'\b', '', final_food_item, flags=re.IGNORECASE)
             final_food_item = final_food_item.replace('&', '')
-            
+
             cleaned_parts = []
             for p in final_food_item.split(','):
                 p = re.sub(r'^[^\w]+|[^\w]+$', '', p).strip()
@@ -377,51 +373,51 @@ class AIService:
         if final_quantity:
             final_quantity = re.sub(r'^[^\w]+|[^\w]+$', '', final_quantity).strip()
             final_quantity = re.sub(r'\s+', ' ', final_quantity)
-            
+
         return final_food_item, final_quantity
 
     def extract_donation_ner(self, request: DonationNERRequest) -> DonationNERResponse:
         if not self.ner_model or not self.ner_word2idx or not self.ner_idx2tag:
             raise RuntimeError("NER model or vocabularies are not loaded. Inference cannot proceed.")
-            
+
         try:
             text = request.text.lower()
             tokens = text.split()
-            
+
             unk_idx = self.ner_word2idx.get("<UNK>", 0)
             input_ids = [self.ner_word2idx.get(w, unk_idx) for w in tokens]
-            
+
             MAX_LEN = 50
             if len(input_ids) > MAX_LEN:
                 input_ids = input_ids[:MAX_LEN]
                 tokens = tokens[:MAX_LEN]
-            
+
             tensor = torch.tensor([input_ids], dtype=torch.long)
             with torch.no_grad():
                 outputs = self.ner_model(tensor)
                 preds = torch.argmax(outputs, dim=2)[0].tolist()
-                
+
             tags = [self.ner_idx2tag.get(idx, "O") for idx in preds]
-            
+
             entities = {"food": [], "quantity": [], "location": [], "time": []}
             current_entity = None
             current_words = []
-            
+
             for word, tag in zip(tokens, tags):
                 if tag.startswith("B-"):
                     if current_entity and current_entity in entities:
                         entities[current_entity].append(" ".join(current_words))
-                    
+
                     raw_ent = tag.split("-")[1].lower()
                     if raw_ent in ["food_type", "food", "item"]: current_entity = "food"
                     elif raw_ent in ["quantity", "qty"]: current_entity = "quantity"
                     elif raw_ent in ["location", "loc"]: current_entity = "location"
                     elif raw_ent in ["time", "pickup", "pickup_time"]: current_entity = "time"
                     else: current_entity = None
-                    
+
                     if current_entity:
                         current_words = [word]
-                        
+
                 elif tag.startswith("I-"):
                     raw_ent = tag.split("-")[1].lower()
                     mapped_ent = None
@@ -429,7 +425,7 @@ class AIService:
                     elif raw_ent in ["quantity", "qty"]: mapped_ent = "quantity"
                     elif raw_ent in ["location", "loc"]: mapped_ent = "location"
                     elif raw_ent in ["time", "pickup", "pickup_time"]: mapped_ent = "time"
-                    
+
                     if current_entity and mapped_ent == current_entity:
                         current_words.append(word)
                     else:
@@ -445,10 +441,10 @@ class AIService:
                         entities[current_entity].append(" ".join(current_words))
                     current_entity = None
                     current_words = []
-                    
+
             if current_entity and current_entity in entities:
                 entities[current_entity].append(" ".join(current_words))
-                
+
             food_item = ", ".join(entities["food"]) if entities["food"] else None
             quantity = ", ".join(entities["quantity"]) if entities["quantity"] else None
             location = ", ".join(entities["location"]) if entities["location"] else None
@@ -462,9 +458,9 @@ class AIService:
                 while parts and re.match(r'^(\d+|am|pm|a\.m\.|p\.m\.|by|at|before|after)$', parts[-1], re.IGNORECASE):
                     parts.pop()
                 food_item = ", ".join(parts) if parts else original_food
-            
+
             food_item, quantity = self._normalize_ner_outputs(food_item, quantity)
-            
+
             if pickup_time and pickup_time.lower() in ["before", "after", "by"]:
                 pt_lower = pickup_time.lower()
                 match = re.search(r'\b(' + re.escape(pt_lower) + r'\s+\d{1,2}(?::\d{2})?(?:\s*(?:am|pm|a\.m\.|p\.m\.|hours|hrs))?)\b', text, re.IGNORECASE)

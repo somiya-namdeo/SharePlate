@@ -7,12 +7,12 @@ export function ForNGOs() {
   return (
     <section id="for-ngos" className="w-full bg-[#FDFBF7] py-24">
       <div className="container mx-auto px-6">
-        
+
         <div className="w-full rounded-3xl bg-gradient-to-r from-[#FFF0EB] via-[#FDFBF7] to-[#E8F7F0] border border-[#33251E]/10 p-10 lg:p-16 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)] relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-12">
-          
+
           {/* Subtle dotted background pattern */}
           <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(#33251E 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
-          
+
           <div className="relative z-10 max-w-xl">
             <h2 className="font-serif text-5xl text-[#33251E] mb-6 leading-tight">
               Built for the people already doing this work.
@@ -33,7 +33,7 @@ export function ForNGOs() {
               <Link to="/signup" className="inline-block bg-[#F07154] hover:bg-[#E05F42] text-white px-6 py-3 rounded-full text-sm font-medium transition-colors">
                 Start Donating
               </Link>
-              <button 
+              <button
                 onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                 className="inline-block bg-white hover:bg-neutral-50 text-[#33251E] border border-[#33251E]/10 px-6 py-3 rounded-full text-sm font-medium transition-colors shadow-sm"
               >
@@ -51,7 +51,7 @@ export function ForNGOs() {
               </div>
               <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Success</span>
             </div>
-            
+
             <div className="space-y-4 mb-6">
               <div className="bg-[#FDFBF7] p-3 rounded-xl border border-[#33251E]/5">
                 <div className="text-[10px] text-[#33251E]/50 uppercase tracking-wider font-semibold mb-1">Donor</div>

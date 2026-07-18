@@ -6,10 +6,10 @@ export function Hero() {
   return (
     <section className="relative w-full pt-20 pb-16 overflow-hidden">
       <div className="container mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
-        
+
         {/* Left Content */}
         <div className="max-w-xl z-10">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -22,7 +22,7 @@ export function Hero() {
             AI-Powered Food Redistribution Platform
           </motion.div>
 
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
@@ -31,7 +31,7 @@ export function Hero() {
             A second chance for food. <br/> A better chance for <span className="text-[#F07154]">someone else</span>.
           </motion.h1>
 
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -40,7 +40,7 @@ export function Hero() {
             SharePlate combines AI-powered food safety assessment, urgency scoring, NLP-assisted donation processing, intelligent NGO matching, and live logistics to redistribute surplus food safely, efficiently, and transparently.
           </motion.p>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
@@ -54,7 +54,7 @@ export function Hero() {
         </div>
 
         {/* Right Dashboard Preview */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
@@ -62,7 +62,7 @@ export function Hero() {
         >
           {/* Subtle gradient blob behind card */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-[#F07154]/20 to-emerald-200/20 blur-3xl -z-10 rounded-full" />
-          
+
           <DashboardPreview />
         </motion.div>
       </div>

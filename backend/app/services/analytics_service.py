@@ -18,11 +18,11 @@ class AnalyticsService:
         now = datetime.utcnow()
         days_map = {'7d': 7, '30d': 30, '90d': 90}
         days = days_map.get(period)
-        
+
         current_start = None
         previous_start = None
         previous_end = None
-        
+
         if days:
             current_start = now - timedelta(days=days)
             previous_end = current_start
@@ -31,22 +31,22 @@ class AnalyticsService:
         # 2. Fetch all raw data (we filter locally to allow trend calculation in one pass if needed, but Supabase can filter too)
         # We will fetch EVERYTHING and filter in pandas to calculate both current and previous periods easily.
         # This is safe for MVP data volumes.
-        
+
         donations_res = self.db.table("donations").select("*").execute().data or []
         requests_res = self.db.table("ngo_requests").select("*").execute().data or []
         matches_res = self.db.table("matches").select("*").execute().data or []
         profiles_res = self.db.table("profiles").select("*").execute().data or []
-        
+
         df_donations = pd.DataFrame(donations_res)
         df_requests = pd.DataFrame(requests_res)
         df_matches = pd.DataFrame(matches_res)
         df_profiles = pd.DataFrame(profiles_res)
-        
+
         # Ensure datetimes
         for df in [df_donations, df_requests, df_matches]:
             if not df.empty and 'created_at' in df.columns:
                 df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce', utc=True)
-                
+
         # Link profiles city to requests
         if not df_requests.empty:
             def extract_city(address):
@@ -69,8 +69,8 @@ class AnalyticsService:
 
             if not df_profiles.empty:
                 df_requests = df_requests.merge(
-                    df_profiles[['id', 'city']], 
-                    left_on='ngo_id', right_on='id', 
+                    df_profiles[['id', 'city']],
+                    left_on='ngo_id', right_on='id',
                     how='left', suffixes=('', '_profile')
                 )
             else:
@@ -80,7 +80,7 @@ class AnalyticsService:
             df_requests['city'] = df_requests['derived_city'].combine_first(df_requests['city']).fillna('Unknown')
         else:
             df_requests = pd.DataFrame(columns=['city'])
-            
+
         # 2b. Normalize Data before filtering or aggregations
         if not df_donations.empty and 'safety_status' in df_donations.columns:
             df_donations['safety_status'] = (
@@ -94,7 +94,7 @@ class AnalyticsService:
                     'No': 'Unsafe'
                 })
             )
-            
+
         if not df_donations.empty and 'food_category' in df_donations.columns:
             df_donations['food_category'] = (
                 df_donations['food_category']
@@ -107,7 +107,7 @@ class AnalyticsService:
                     'Cooked Food': 'Cooked Meal'
                 })
             )
-            
+
         if not df_requests.empty and 'city' in df_requests.columns:
             df_requests['city'] = (
                 df_requests['city']
@@ -116,11 +116,11 @@ class AnalyticsService:
                 .str.strip()
                 .replace({'': 'Unknown'})
             )
-            
+
         # Available filters
         available_cities = sorted([c for c in (df_requests['city'].unique().tolist() if not df_requests.empty else []) if c and c != 'Unknown'])
         available_categories = sorted([c for c in (df_donations['food_category'].unique().tolist() if not df_donations.empty else []) if c])
-        
+
         # 3. Apply Filters for Current Data
         def apply_filters(df, date_col, start_date, end_date):
             if df.empty: return df
@@ -131,20 +131,20 @@ class AnalyticsService:
             if end_date:
                 end_date = pd.to_datetime(end_date, utc=True)
                 mask &= (df[date_col] < end_date)
-            
+
             # City and Category filters are global context
             if city and 'city' in df.columns:
                 mask &= (df['city'] == city)
-            
+
             if category and 'food_category' in df.columns:
                 mask &= (df['food_category'] == category)
-                
+
             return df[mask]
 
         df_don_cur = apply_filters(df_donations, 'created_at', current_start, None)
         df_req_cur = apply_filters(df_requests, 'created_at', current_start, None)
         df_mat_cur = apply_filters(df_matches, 'created_at', current_start, None)
-        
+
         df_don_prev = apply_filters(df_donations, 'created_at', previous_start, previous_end)
         df_req_prev = apply_filters(df_requests, 'created_at', previous_start, previous_end)
         df_mat_prev = apply_filters(df_matches, 'created_at', previous_start, previous_end)
@@ -153,25 +153,25 @@ class AnalyticsService:
             # 1. Successful Rescues
             completed_matches = d_mat[d_mat['status'] == 'completed'] if not d_mat.empty else pd.DataFrame()
             successful_rescues = len(completed_matches)
-            
+
             # 2. Quantity Rescued (Sum quantity from donations linked to completed matches)
             quantity_rescued = 0.0
             if not completed_matches.empty and not d_don.empty:
                 linked_donations = d_don[d_don['id'].isin(completed_matches['donation_id'].unique())]
                 quantity_rescued = float(linked_donations['quantity'].sum())
-                
+
             # 3. Meals Fulfilled (Sum meals from requests linked to completed matches)
             meals_fulfilled = 0
             if not completed_matches.empty and not d_req.empty:
                 linked_reqs = d_req[d_req['id'].isin(completed_matches['request_id'].unique())]
                 meals_fulfilled = int(linked_reqs['meals_needed'].sum())
-                
+
             # 4. NGOs Served
             ngos_served = int(completed_matches['ngo_id'].nunique()) if not completed_matches.empty else 0
-            
+
             # 5. Active Requests
             active_requests = len(d_req[d_req['status'] == 'open']) if not d_req.empty else 0
-            
+
             # 6. Critical Resolved Percent
             if not d_req.empty:
                 crit_reqs = d_req[d_req['urgency_level'].str.lower() == 'critical']
@@ -179,7 +179,7 @@ class AnalyticsService:
                 crit_percent = (len(crit_fulfilled) / len(crit_reqs) * 100) if len(crit_reqs) > 0 else 0.0
             else:
                 crit_percent = 0.0
-                
+
             return {
                 'successful_rescues': successful_rescues,
                 'quantity_rescued': quantity_rescued,
@@ -255,17 +255,17 @@ class AnalyticsService:
 
         # Operational Insights
         most_donated = df_don_cur['food_category'].mode()[0] if not df_don_cur.empty and 'food_category' in df_don_cur.columns and not df_don_cur['food_category'].dropna().empty else None
-        
+
         valid_cities = df_req_cur[df_req_cur['city'] != 'Unknown'] if not df_req_cur.empty and 'city' in df_req_cur.columns else pd.DataFrame()
         highest_demand = valid_cities['city'].mode()[0] if not valid_cities.empty else None
-        
+
         avg_shelf = round(float(df_don_cur['predicted_shelf_life'].mean()), 1) if not df_don_cur.empty and 'predicted_shelf_life' in df_don_cur.columns and not df_don_cur['predicted_shelf_life'].isna().all() else None
-        
+
         rescue_comp_rate = None
         if not df_mat_cur.empty:
             comp_matches = len(df_mat_cur[df_mat_cur['status'] == 'completed'])
             rescue_comp_rate = round((comp_matches / len(df_mat_cur)) * 100, 1)
-            
+
         uns_rate = None
         if not df_don_cur.empty and 'safety_status' in df_don_cur.columns:
             tested_don = df_don_cur[df_don_cur['safety_status'] != 'Unknown']
@@ -273,14 +273,14 @@ class AnalyticsService:
             if tot_tested > 0:
                 uns_don = len(tested_don[tested_don['safety_status'].str.lower() == 'unsafe'])
                 uns_rate = round((uns_don / tot_tested) * 100, 1)
-            
+
         ngo_ful_rate = None
         if not df_req_cur.empty:
             valid_reqs = df_req_cur[df_req_cur['status'].str.lower() != 'cancelled']
             if len(valid_reqs) > 0:
                 ful_reqs = len(valid_reqs[valid_reqs['status'] == 'fulfilled'])
                 ngo_ful_rate = round((ful_reqs / len(valid_reqs)) * 100, 1)
-                
+
         crit_today = 0
         if not df_req_cur.empty:
             today_start = pd.to_datetime(now.date(), utc=True)
