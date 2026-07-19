@@ -192,6 +192,19 @@ Building a full-stack AI application taught me several practical engineering les
 
 ## Technology Stack
 
+<div align="center">
+  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch" />
+  <img src="https://img.shields.io/badge/CatBoost-F7931E?style=for-the-badge" alt="CatBoost" />
+  <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+</div>
+<br />
+
 | Component | Technology | 
 | :--- | :--- | 
 | **Machine Learning** | `PyTorch`, `CatBoost`, `Scikit-Learn`, `Pandas` |
@@ -259,14 +272,31 @@ npm run dev
 
 ## Future Work
 
-* **Volunteer Application**: Introduce a third user role for independent volunteers to handle last-mile delivery.
-* **OCR-Based Donation Extraction**: Allow donors to scan physical inventory receipts using Optical Character Recognition.
-* **Image-Based Spoilage Detection**: Expand the PyTorch models to utilize Convolutional Neural Networks (CNNs) for visual spoilage detection from uploaded photos.
+* **Independent Volunteer Routing**: Expand the ecosystem with a dedicated volunteer application to optimize and crowdsource last-mile delivery.
+* **OCR-Assisted Data Entry**: Implement Optical Character Recognition to allow corporate donors to automatically digitize physical inventory manifests.
+* **Computer Vision Spoilage Detection**: Augment the existing ML pipeline with Convolutional Neural Networks (CNNs) to detect spoilage directly from uploaded donation images.
 
 ---
 
-## Author
+## Contributing
 
-**Somiya Namdeo**
-* GitHub: [somiya-namdeo](https://github.com/somiya-namdeo)
-* LinkedIn: [Somiya Namdeo](https://www.linkedin.com/in/somiya-namdeo-/)
+Contributions are always welcome. Whether you're interested in improving the AI models, optimizing the logistics algorithms, or enhancing the frontend dashboard, feel free to open a Pull Request. For major bugs or feature requests, please open an Issue first to discuss your ideas.
+
+## Collaboration
+
+I am always interested in collaborating on projects involving Artificial Intelligence, Machine Learning, NLP, Computer Vision, and Full-Stack Development. If you have an interesting idea or research opportunity, feel free to reach out.
+
+## Connect
+
+<div align="center">
+  <a href="https://github.com/somiya-namdeo">
+    <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" />
+  </a>
+  <a href="https://www.linkedin.com/in/somiya-namdeo-/">
+    <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
+  </a>
+</div>
+
+<br />
+
+SharePlate demonstrates the integration of Machine Learning, Natural Language Processing, and Full-Stack Engineering to solve real-world food redistribution challenges.
