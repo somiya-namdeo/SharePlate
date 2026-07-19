@@ -69,7 +69,7 @@ export function SignIn() {
             </Link>
 
             <h1 className="font-serif text-4xl text-[#33251E] mb-3">Welcome back.</h1>
-            <p className="text-[#33251E]/70 mb-10 text-sm leading-relaxed">Continue rescuing food and creating impact.</p>
+            <p className="text-[#33251E]/70 mb-10 text-sm leading-relaxed">Continue reducing food waste through AI-powered redistribution.</p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
@@ -181,7 +181,7 @@ export function SignIn() {
                 </div>
 
                 <div className="bg-white/40 backdrop-blur-sm p-5 rounded-2xl border border-[#33251E]/5 italic text-[#33251E]/80 text-sm font-medium text-center">
-                  "Every donation can become a meal."
+                  "Every shared meal creates hope."
                 </div>
               </div>
 
