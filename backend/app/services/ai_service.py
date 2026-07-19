@@ -51,9 +51,9 @@ class AIService:
         self.ner_tag2idx = None
         self.ner_idx2tag = None
 
-        self._load_models()
-
-    def _load_models(self):
+    def _load_food_safety_models(self):
+        if self.food_safety_model is not None:
+            return
         try:
             food_safety_path = os.path.join(MODELS_DIR, "shareplate_food_safety_model.pkl")
             encoder_path = os.path.join(MODELS_DIR, "food_safety_label_encoder.pkl")
@@ -70,6 +70,9 @@ class AIService:
         except Exception as e:
             logger.error(f"Error loading food safety models: {e}")
 
+    def _load_surplus_model(self):
+        if self.surplus_model is not None:
+            return
         try:
             surplus_path = os.path.join(MODELS_DIR, "shareplate_surplus_food_predictor.pkl")
             if os.path.exists(surplus_path):
@@ -78,6 +81,9 @@ class AIService:
         except Exception as e:
             logger.error(f"Error loading surplus prediction model: {e}")
 
+    def _load_ner_model(self):
+        if self.ner_model is not None:
+            return
         try:
             ner_model_path = os.path.join(MODELS_DIR, "shareplate_ner_bilstm_attention_v2.pth")
             word2idx_path = os.path.join(BASE_DIR, "artifacts", "word2idx.pkl")
@@ -107,6 +113,7 @@ class AIService:
             logger.error(f"Error loading NER BiLSTM model: {e}")
 
     def predict_food_safety(self, request: FoodSafetyRequest, db=None) -> FoodSafetyResponse:
+        self._load_food_safety_models()
         # Auto-derive missing fields
         if not request.season:
             request.season = "Summer" if request.temperature_c > 25 else "Winter"
@@ -262,6 +269,7 @@ class AIService:
         )
 
     def predict_surplus(self, request: SurplusPredictionRequest) -> SurplusPredictionResponse:
+        self._load_surplus_model()
         prediction = 0.0
         if self.surplus_model:
             try:
@@ -377,6 +385,7 @@ class AIService:
         return final_food_item, final_quantity
 
     def extract_donation_ner(self, request: DonationNERRequest) -> DonationNERResponse:
+        self._load_ner_model()
         if not self.ner_model or not self.ner_word2idx or not self.ner_idx2tag:
             raise RuntimeError("NER model or vocabularies are not loaded. Inference cannot proceed.")
 
