@@ -37,7 +37,7 @@ export function Hero() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-lg text-[#33251E]/70 mb-10 leading-relaxed"
           >
-            SharePlate combines AI-powered food safety assessment, urgency scoring, NLP-assisted donation processing, intelligent NGO matching, and live logistics to redistribute surplus food safely, efficiently, and transparently.
+            SharePlate combines AI-powered food safety assessment, surplus prediction, NLP-assisted donation processing, intelligent NGO matching, and live logistics to redistribute surplus food safely, efficiently, and transparently.
           </motion.p>
 
           <motion.div
