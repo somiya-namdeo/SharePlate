@@ -5,7 +5,7 @@
 # SharePlate
 ### AI-Powered Food Redistribution Platform
 
-SharePlate is an AI-first platform that connects food donors with NGOs using Machine Learning, Natural Language Processing, and geospatial logistics to reduce global food waste and optimize redistribution.
+SharePlate is a full-stack AI-powered platform that connects food donors with NGOs using Machine Learning, Natural Language Processing, and geospatial logistics to reduce global food waste and optimize food redistribution.
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](#)
 [![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](#)
@@ -22,85 +22,42 @@ SharePlate is an AI-first platform that connects food donors with NGOs using Mac
 
 ## Overview
 
-Globally, nearly one-third of all food produced is wasted while millions suffer from food insecurity. The core issue isn't a lack of food—it's a logistics and communication breakdown. Traditional food rescue operations rely heavily on manual coordination, phone calls, and disjointed communication channels. For donors, it's difficult to know who needs the food. For NGOs, it's impossible to manually assess the safety and perishability of every spontaneous donation. 
+Globally, nearly one-third of all food produced is wasted, yet millions suffer from food insecurity. 
 
-SharePlate was built to solve this. By integrating AI at the core of the platform, SharePlate automates the heavy lifting: from understanding raw text donations via NLP, to predicting food safety using classification models, and finally matching the food to the optimal NGO based on geospatial distance and urgency.
+The core issue isn't a lack of food—it's a massive logistics and communication bottleneck. Traditional food rescue operations rely heavily on manual coordination. For donors, it's difficult to know who needs the food and coordinating pickups takes too much effort. For NGOs, it's nearly impossible to manually assess the safety and perishability of every spontaneous donation at scale.
 
----
-
-## Project Evolution
-
-This project started with a simple question: *How can we make food donation completely frictionless while guaranteeing safety?*
-
-The journey evolved naturally:
-1. **The Problem:** Donors abandon the donation process if it takes too long. NGOs reject food if they can't verify its safety or shelf life.
-2. **Research & Data Collection:** I started synthesizing tabular logistics data for food safety and building text datasets for donation requests.
-3. **Machine Learning Experiments:** I trained baseline models (Random Forest, Gradient Boosting) to classify food safety, iteratively discovering the strengths of gradient boosting algorithms on high-cardinality data.
-4. **NLP Development:** To solve the friction problem, I built a custom Deep Learning model to extract entities directly from unstructured text rather than forcing donors to fill out tedious forms.
-5. **Backend Integration:** Wrapped the trained `.pkl` and `.pth` models in a highly concurrent FastAPI asynchronous backend.
-6. **Frontend & Final Product:** Built a clean, role-based React dashboard to visualize the logistics, bridging the AI predictions with real-world users.
+I built SharePlate to solve this. By integrating AI at the core of the platform, SharePlate automates the heavy lifting: from effortlessly understanding raw text donations, to predicting food safety, and finally routing the food to the optimal NGO.
 
 ---
 
-## AI & Machine Learning
+## Key Features
 
-SharePlate is an AI-first project. The machine learning pipeline is the engine that drives the entire application.
+Before diving into the artificial intelligence that powers the platform, here is what SharePlate actually does:
 
-### Food Safety Prediction (CatBoost)
-**The Problem:** When an event organizer has 50kg of surplus food, an NGO needs to instantly know: *Is this safe to eat, and how much time do we have to transport it?*
-
-**The Experiments:** I began with simple Random Forest classifiers to predict safety based on 19 features including `temperature`, `humidity`, `hours_since_prepared`, and `packaging_type`. While Random Forest established a decent baseline, the dataset's high-cardinality categorical variables required massive one-hot encoding matrices, slowing down training and inference. 
-I evaluated XGBoost and LightGBM, but ultimately selected **CatBoost**. CatBoost handles categorical features natively and built optimal decision trees significantly faster on this specific dataset.
-
-**The Final Model:** 
-The deployed CatBoostClassifier triages donations into `Safe`, `Review`, or `Unsafe`.
-* **Accuracy:** 92.35%
-* **Weighted F1-Score:** 0.92
-
-*(Note: During experimentation, I also trained a model to predict logistical 'Urgency' which hit 99.6% accuracy. However, feature analysis revealed target leakage—the labels were directly derived from the shelf-life feature. I opted to scrap the ML urgency model in favor of deterministic business logic to keep the pipeline mathematically sound).*
-
-### NLP Donation Extraction (PyTorch)
-**The Problem:** Donors want to type *"We have 10kg of cooked rice available at MP Nagar"* and be done. Traditional regex fails at robustly extracting context-dependent entities, and calling external LLM APIs introduces latency and cost.
-
-**The Solution:** I built a custom Sequence Tagging model.
-* **Architecture**: **PyTorch BiLSTM + Attention**. 
-* **Why BiLSTM + Attention?**: A Bidirectional LSTM processes the text both forwards and backwards, capturing the context of a word based on the entire sentence. The Attention mechanism allows the network to assign dynamic weights to the most important words. It is incredibly lightweight, runs natively on the CPU, and executes in milliseconds.
-* **Extracted Entities**: The model tokenizes the input and decodes sequence labels for `B-EVENT_TYPE`, `B-FOOD_TYPE`, `B-LOCATION`, and `B-QUANTITY`, instantly converting raw text into structured JSON.
-
-**Evaluation:**
-* **Accuracy:** 97.41%
-* **Precision:** 97.44%
-* **F1-Score:** 97.34%
-
-*(Training loss curves and extracted confusion matrices are available in the `assets/readme/` folder).*
-
-### Demand Forecasting (Deep Neural Network)
-**The Problem:** NGOs need to anticipate surplus trends to allocate their volunteers effectively.
-* **Dataset**: 456,548 historical logistics records.
-* **Architecture**: A PyTorch Deep Neural Network (DNN) trained with Mean Squared Error (MSE) loss and the Adam optimizer.
-* **Evaluation**: To prevent time-series data leakage (where a model trains on future data to predict the past), I used a strict chronological train/test split.
-* **Metrics**: The model achieved a realistic Mean Absolute Error (MAE) of **113.88** on unseen future weeks.
+* **AI Food Safety Prediction:** Instantly predicts human-consumption safety based on tabular donation data.
+* **NLP Donation Extraction:** Donors submit raw, unstructured text; the system parses it automatically.
+* **Smart NGO Matching:** Uses Haversine distance and urgency routing to match donors with the optimal NGO.
+* **Interactive Maps:** Real-time geospatial rendering of active logistics and rescue zones.
+* **Analytics Dashboard:** Tenant-isolated tracking of organizational impact and meals rescued.
+* **Role-Based Authentication:** Distinct workflows, dashboards, and security rules for Donors vs. NGOs.
 
 ---
 
-## Features & Visual Interface
+## Platform Screenshots
 
-SharePlate wraps these AI engines in a clean, intuitive, and highly responsive user interface.
-
-* **NLP-powered Donation Extraction:** Donors submit raw text; the system structures it automatically.
-* **AI-based Food Safety Assessment:** Instant prediction of human-consumption safety based on tabular features.
-* **Smart NGO Matching:** Uses Haversine distance and availability routing to optimize pickups.
-* **Interactive Maps:** Real-time geospatial rendering of active logistics.
-* **Role-based Authentication:** Distinct workflows and secure dashboards for Donors vs. NGOs.
-
-### Platform Screenshots
-
-**Overview & Dashboards**
+### Landing Experience
 ![Landing Page](./assets/screenshots/landing_page.png)
-![Donor Dashboard](./assets/screenshots/donor-overview.png)
-![NGO Dashboard](./assets/screenshots/ngo_overview.png)
+*Primary marketing interface, highlighting core value propositions and platform statistics.*
 
-**AI Intelligence in Action**
+### Donor Experience
+![Donor Dashboard](./assets/screenshots/donor-overview.png)
+*Donor view showing real-time analytics, active donations, and historical contribution data.*
+
+### NGO Experience
+![NGO Dashboard](./assets/screenshots/ngo_overview.png)
+*NGO centralized view of claimed donations, pending logistics, and organizational impact.*
+
+### AI Features
 ![NLP Input](./assets/screenshots/nlp%20intelligence%20-%201.png)
 *Raw unstructured input provided by the donor.*
 
@@ -108,20 +65,96 @@ SharePlate wraps these AI engines in a clean, intuitive, and highly responsive u
 *The decoded sequence output mapped perfectly to the database schema.*
 
 ![Food Safety Assessment](./assets/screenshots/food%20safety-2%20(2).png)
-*Real-time CatBoost risk triage.*
+*Real-time CatBoost risk triage evaluating food safety.*
 
-**Geospatial Logistics**
+### Logistics
 ![Smart Matching](./assets/screenshots/smart_matching-1.png)
 *Algorithmically generated list of optimal NGO matches based on urgency and distance.*
 
 ![Map Logistics](./assets/screenshots/map-and-logistics.png)
-*Visualizing geospatial data using Leaflet to display live rescue zones and optimal routing paths.*
+*Visualizing geospatial data using Leaflet to display live rescue zones and routing paths.*
+
+---
+
+## Project Journey
+
+I started this project with a simple question: *How can we make food donation completely frictionless while guaranteeing safety?*
+
+After researching existing food donation workflows, I realized that donors abandon the process if it takes too long to fill out forms, and NGOs reject food if they can't verify its shelf life. This led me to synthesize tabular logistics data for food safety and build text datasets for donation requests.
+
+When the dataset was ready, a new challenge appeared: simple rules couldn't handle the complexity of food safety. I began experimenting with machine learning, iterating through baseline models like Random Forest before discovering the strengths of gradient boosting algorithms on high-cardinality data.
+
+With safety handled, I still needed to remove the friction for donors. This naturally transitioned into NLP development. I built a custom Deep Learning model to extract entities directly from unstructured text rather than forcing donors to fill out tedious forms. 
+
+Finally, I wrapped these trained models in a highly concurrent asynchronous backend and built a clean, role-based React dashboard to visualize the logistics, bridging the AI predictions with real-world users.
+
+---
+
+## AI & Machine Learning
+
+This is the heart of SharePlate. The machine learning pipeline is the engine that drives the entire application.
+
+### Food Safety Prediction
+
+**The Problem**  
+When an event organizer has 50kg of surplus food, an NGO needs to instantly know: *Is this safe to eat, and how much time do we have to transport it?*
+
+**The Approach & Models Tried**  
+I framed this as a multi-class classification problem. The dataset consisted of 50,000 synthesized records with 19 features (including `temperature`, `humidity`, `hours_since_prepared`, and `packaging_type`).
+
+I evaluated several algorithms:
+* **Random Forest**: Provided a solid baseline but struggled with the high-cardinality categorical variables.
+* **Gradient Boosting**: Improved accuracy but required massive one-hot encoding matrices, which slowed down training.
+* **XGBoost & LightGBM**: Offered great performance, but hyperparameter tuning for the categorical splits was tedious.
+* **CatBoost**: Handled the categorical features natively and built optimal decision trees significantly faster.
+
+**Why the Final Model?**  
+CatBoost was selected because it naturally processes categorical data without requiring heavy preprocessing or bloated one-hot encoding. It outperformed the others in both training time and memory footprint on this specific dataset.
+
+**Final Performance**  
+The deployed CatBoostClassifier triages donations into `Safe`, `Review`, or `Unsafe`.
+* **Accuracy:** 92.35%
+* **Weighted F1-Score:** 0.92
+
+### NLP Entity Extraction
+
+**The Problem**  
+Donors want to type *"We have 10kg of cooked rice available at MP Nagar"* and be done. 
+
+**The Approach**  
+Regex was immediately ruled out—it fails at robustly extracting context-dependent entities like obscure food items or unique location names. Calling external Large Language Models (LLMs) via API introduces unacceptable latency and cost for a simple sequence tagging task.
+
+**Why BiLSTM + Attention?**  
+I built a custom Sequence Tagging model using PyTorch. A Bidirectional LSTM processes the text both forwards and backwards, capturing the context of a word based on the entire sentence. The Attention mechanism allows the network to assign dynamic weights to the most important words. It is incredibly lightweight, runs natively on the CPU, and executes in milliseconds.
+
+The model extracts four entities: `B-EVENT_TYPE`, `B-FOOD_TYPE`, `B-LOCATION`, and `B-QUANTITY`, instantly converting raw text into structured JSON.
+
+**Final Performance**  
+* **Accuracy:** 97.41%
+* **Precision:** 97.44%
+* **F1-Score:** 97.34%
+
+*(Training loss curves and extracted confusion matrices are available in the `assets/readme/` folder).*
+
+### Demand Forecasting
+
+**The Problem**  
+NGOs need to anticipate surplus trends to allocate their volunteers effectively across different geographic zones.
+
+**Dataset & Architecture**  
+I used 456,548 historical logistics records comprising 17 operational features. The architecture is a PyTorch Deep Neural Network (DNN) trained with Mean Squared Error (MSE) loss and the Adam optimizer.
+
+**Training & Evaluation**  
+To prevent time-series data leakage (where a model inadvertently trains on future data to predict the past), I used a strict chronological train/test split. 
+
+**Final Performance**  
+The model achieved a highly realistic Mean Absolute Error (MAE) of **113.88** on unseen future weeks.
 
 ---
 
 ## Architecture
 
-The system is decoupled into an asynchronous Python backend handling inference and a TypeScript/React frontend managing state and geospatial visualization.
+The system is decoupled into a frontend client, an asynchronous Python backend, and an intelligent data layer.
 
 ```mermaid
 graph TD
@@ -139,26 +172,33 @@ graph TD
     end
 ```
 
----
-
-## Technology Stack
-
-* **Machine Learning**: `PyTorch`, `CatBoost`, `Scikit-Learn`, `Pandas`
-* **Backend**: `FastAPI`, `Python`, `JWT`
-* **Frontend**: `React`, `TypeScript`, `Vite`, `Tailwind CSS`
-* **Database**: `Supabase` (PostgreSQL)
-* **Maps**: `Leaflet`, `OpenStreetMap`
+* **Frontend**: React handles the state, routing, and geospatial map rendering.
+* **Backend**: FastAPI orchestrates the async REST endpoints and business logic.
+* **AI Engine**: PyTorch and CatBoost serialize inference within the backend.
+* **Database**: Supabase manages the PostgreSQL tables and Row Level Security.
 
 ---
 
 ## Lessons Learned
 
-Building a production-ready AI application taught me several practical engineering lessons:
+Building a full-stack AI application taught me several practical engineering lessons:
 
-* **Why Model Comparison Matters**: Starting with simple models like Random Forest provided a baseline that proved CatBoost's superiority in handling tabular food safety data without heavy preprocessing.
-* **Why Target Leakage is Dangerous**: Discovering that my 99.6% accurate urgency model was mathematically cheating (because the label was derived directly from an input feature) was a pivotal moment. It reinforced the importance of rigorously auditing feature sets.
-* **Importance of Evaluation Strategies**: In demand forecasting, switching from a random data split to a chronological split completely changed the metrics, proving that time-series models must be evaluated against the future, not the past.
-* **Practical Deployment Considerations**: Large `.pth` and `.pkl` models consume massive amounts of RAM. To deploy successfully on restricted cloud tiers (like Render's 512MB limit), I learned to implement lazy-loading patterns, caching models into memory only when an endpoint is actually triggered.
+* **Why Model Comparison Matters**: Starting with simple models like Random Forest provided a baseline that ultimately proved CatBoost's superiority in handling tabular data without heavy preprocessing.
+* **The Importance of Feature Engineering**: Knowing which features actually contribute to food spoilage completely dictated the success of the classification models.
+* **Detecting Target Leakage**: During experiments, I built an 'Urgency' model that hit 99.6% accuracy. Investigating this anomaly revealed the model was mathematically cheating because the label was derived directly from an input feature. It reinforced the importance of rigorously auditing feature sets.
+* **Choosing the Right Evaluation Strategy**: In demand forecasting, switching from a random data split to a chronological split completely changed the metrics, proving that time-series models must be evaluated against the future, not the past.
+
+---
+
+## Technology Stack
+
+| Component | Technology | 
+| :--- | :--- | 
+| **Machine Learning** | `PyTorch`, `CatBoost`, `Scikit-Learn`, `Pandas` |
+| **Backend API** | `FastAPI`, `Python`, `JWT` |
+| **Frontend UI** | `React`, `TypeScript`, `Vite`, `Tailwind CSS` |
+| **Database** | `Supabase` (PostgreSQL) | 
+| **Geospatial Maps** | `Leaflet`, `OpenStreetMap` |
 
 ---
 
