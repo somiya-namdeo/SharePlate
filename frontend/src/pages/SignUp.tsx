@@ -75,8 +75,8 @@ export function SignUp() {
               <span className="font-serif text-xl font-bold tracking-tight">SharePlate</span>
             </Link>
 
-            <h1 className="font-serif text-3xl text-[#33251E] mb-2">Join the rescue network.</h1>
-            <p className="text-[#33251E]/70 mb-8 text-sm leading-relaxed">Join SharePlate to donate surplus food or manage food redistribution through AI-assisted matching and logistics.</p>
+            <h1 className="font-serif text-3xl text-[#33251E] mb-2">Create your SharePlate account.</h1>
+            <p className="text-[#33251E]/70 mb-8 text-sm leading-relaxed">Join SharePlate to donate surplus food or manage food redistribution through AI-powered food safety assessment, surplus prediction, NLP-assisted donation processing, intelligent NGO matching, and live logistics.</p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
 
@@ -227,7 +227,7 @@ export function SignUp() {
                 </h2>
 
                 <p className="text-[#33251E]/70 text-sm leading-relaxed mb-8">
-                  AI-powered food safety assessment, urgency prediction, intelligent NGO matching, and live logistics help surplus food reach communities safely and efficiently.
+                  AI-powered food safety assessment, surplus prediction, NLP-assisted donation processing, intelligent NGO matching, and live logistics help redistribute surplus food safely, efficiently, and transparently.
                 </p>
 
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 backdrop-blur-sm text-emerald-600 text-xs font-bold tracking-wider mb-6 shadow-sm border border-[#33251E]/5">
@@ -276,7 +276,7 @@ export function SignUp() {
                     </div>
                     <div className="flex flex-col items-center gap-2 z-10">
                       <div className="w-8 h-8 rounded-full bg-[#F07154] text-white flex items-center justify-center text-xs shadow-md"><Sparkles size={14} /></div>
-                      <span className="text-[9px] font-bold text-[#F07154] uppercase">Check</span>
+                      <span className="text-[9px] font-bold text-[#F07154] uppercase">AI Assess</span>
                     </div>
                     <div className="flex flex-col items-center gap-2 z-10">
                       <div className="w-8 h-8 rounded-full bg-white border border-[#33251E]/10 text-[#33251E]/40 flex items-center justify-center text-xs shadow-sm"><span className="w-2 h-2 rounded-full bg-[#33251E]/20"></span></div>

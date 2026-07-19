@@ -162,7 +162,7 @@ export function SignIn() {
                 </h2>
 
                 <p className="text-[#33251E]/70 text-sm leading-relaxed mb-8">
-                  AI-powered food safety assessment, urgency prediction, intelligent NGO matching, and live logistics help surplus food reach communities safely and efficiently.
+                  AI-powered food safety assessment, surplus prediction, NLP-assisted donation processing, intelligent NGO matching, and live logistics help redistribute surplus food safely, efficiently, and transparently.
                 </p>
 
                 <div className="grid grid-cols-3 gap-3 mb-8">
