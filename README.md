@@ -1,14 +1,25 @@
 <div align="center">
 
+<img src="./frontend/public/logo.png" alt="SharePlate Logo" width="100"/>
+
 # SharePlate
 **AI-Powered Food Redistribution Platform**
 
-[![Frontend](https://img.shields.io/badge/Frontend-React%20Vite-61DAFB?logo=react&logoColor=black)](#)
-[![Backend](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)](#)
-[![Database](https://img.shields.io/badge/Database-Supabase-3ECF8E?logo=supabase&logoColor=white)](#)
-[![Machine Learning](https://img.shields.io/badge/AI%2FML-PyTorch%20%7C%20CatBoost-EE4C2C?logo=pytorch&logoColor=white)](#)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](#)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](#)
+[![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](#)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](#)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](#)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](#)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](#)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](#)
+[![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](#)
+[![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](#)
+[![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white)](#)
+[![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](#)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](#)
 
-[Live Demo](https://share-plate-ivory.vercel.app) • [Backend API](https://shareplate-6afu.onrender.com) • [API Documentation](https://shareplate-6afu.onrender.com/docs)
+[Live Demo](https://share-plate-ivory.vercel.app) | [Backend API](https://shareplate-6afu.onrender.com) | [Swagger Documentation](https://shareplate-6afu.onrender.com/docs) | [Repository](https://github.com/somiya-namdeo/SharePlate)
 
 </div>
 
@@ -17,67 +28,232 @@
 <details>
   <summary><h2>Table of Contents</h2></summary>
   <ul>
-    <li><a href="#-overview">Overview</a></li>
-    <li><a href="#-key-features">Key Features</a></li>
-    <li><a href="#-system-architecture">System Architecture</a></li>
-    <li><a href="#-technology-stack">Technology Stack</a></li>
-    <li><a href="#-machine-learning-pipeline">Machine Learning Pipeline</a></li>
-    <li><a href="#-project-workflow">Project Workflow</a></li>
-    <li><a href="#-deployment-links">Deployment Links</a></li>
-    <li><a href="#-screenshots">Screenshots</a></li>
-    <li><a href="#-api-reference">API Reference</a></li>
-    <li><a href="#-installation--setup">Installation & Setup</a></li>
-    <li><a href="#-environment-variables">Environment Variables</a></li>
-    <li><a href="#-project-structure">Project Structure</a></li>
-    <li><a href="#-security-features">Security Features</a></li>
-    <li><a href="#-performance-highlights">Performance Highlights</a></li>
-    <li><a href="#-future-improvements">Future Improvements</a></li>
-    <li><a href="#-contributing">Contributing</a></li>
-    <li><a href="#-license">License</a></li>
-    <li><a href="#-author">Author</a></li>
+    <li><a href="#project-overview">Project Overview</a></li>
+    <li><a href="#project-highlights">Project Highlights</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#screenshots">Screenshots</a></li>
+    <li><a href="#ai--machine-learning">AI & Machine Learning</a></li>
+    <li><a href="#tech-stack">Tech Stack</a></li>
+    <li><a href="#system-architecture">System Architecture</a></li>
+    <li><a href="#workflow">Workflow</a></li>
+    <li><a href="#rest-api">REST API</a></li>
+    <li><a href="#installation">Installation</a></li>
+    <li><a href="#environment-variables">Environment Variables</a></li>
+    <li><a href="#project-structure">Project Structure</a></li>
+    <li><a href="#security">Security</a></li>
+    <li><a href="#performance">Performance</a></li>
+    <li><a href="#future-enhancements">Future Enhancements</a></li>
+    <li><a href="#author">Author</a></li>
   </ul>
 </details>
 
 ---
 
-## Overview
+## Project Overview
 
-### The Problem
-Globally, nearly **one-third of all food produced is wasted**, while millions suffer from food insecurity. A massive logistics and communication gap exists between restaurants, events, and individuals with surplus food and the non-governmental organizations (NGOs) that can distribute it.
+**The Problem**
+Globally, nearly one-third of all food produced is wasted while millions suffer from food insecurity. A massive logistics and communication gap exists between restaurants, events, and individuals with surplus food and the non-governmental organizations (NGOs) equipped to distribute it.
 
-### The Solution
-**SharePlate** bridges this gap by providing an intelligent, real-time platform connecting food donors with NGOs. We ensure that surplus food reaches those in need before it spoils.
+**The Motivation**
+Traditional food rescue operations rely heavily on manual coordination, phone calls, and disjointed communication channels. This leads to inefficient routing, missed donation windows, and ultimately, preventable food spoilage.
 
-### The AI-Powered Approach
-SharePlate goes beyond standard CRUD applications by heavily integrating Machine Learning. We utilize **Natural Language Processing (NER)** to automatically extract donation details, **Tree-based Ensembles (CatBoost, XGBoost, Random Forest)** for predictive food safety and urgency scoring, and **Deep Neural Networks (DNN)** for demand forecasting. 
+**Why Food Redistribution is Difficult**
+Food is highly perishable. Coordinating a safe rescue requires verifying food safety, estimating remaining shelf life, determining transportation urgency, and matching the donor with an NGO that has the immediate capacity and proximity to accept the food safely.
 
-### Real-World Impact
-By automating logistics and intelligently evaluating the safety and perishability of food, SharePlate maximizes the efficiency of food redistribution, reduces global food waste, and ensures compliance with critical food safety standards.
+**How SharePlate Solves the Problem**
+SharePlate is an end-to-end AI-powered food redistribution platform that connects food donors with NGOs. It automates logistics by utilizing intelligent food safety assessment, NLP-based donation extraction, smart donor-NGO matching, and geospatial logistics to ensure surplus food reaches those in need before it spoils.
+
+**Real-World Impact**
+By automating logistics and intelligently evaluating perishability, SharePlate maximizes the efficiency of food redistribution, reduces global food waste, and ensures compliance with critical food safety standards.
 
 ---
 
-## Key Features
+## Project Highlights
+
+* AI-powered food safety assessment
+* Natural language donation processing
+* Role-based donor and NGO workflows
+* Smart NGO matching
+* Geospatial logistics
+* Interactive dashboards
+* REST API architecture
+* Real-time donation management
+
+---
+
+## Features
 
 ### Donor Features
-* **Authentication**: Secure JWT-based login and registration.
-* **Donation Creation**: Seamlessly submit surplus food details.
-* **AI Food Safety Prediction**: Instant, automated safety and urgency evaluation.
-* **Donation Tracking**: Real-time status updates (Pending, Matched, Completed).
-* **Dashboard**: Comprehensive analytics and historical donation data.
+| Feature | Description |
+|---|---|
+| **Authentication** | Secure JWT-based login and registration workflows. |
+| **Donation Creation** | Seamlessly submit surplus food details via structured forms or natural language descriptions. |
+| **Logistics Tracking** | Real-time monitoring of donation status (Pending, Matched, Completed). |
+| **Dashboard** | Comprehensive analytics and historical donation metrics. |
 
 ### NGO Features
-* **Authentication**: Secure role-based login.
-* **Browse Donations**: Geolocation-based browsing of available local surplus food.
-* **Accept Donations**: Claim food donations specifically tailored to NGO capacity.
-* **Dashboard**: Track accepted requests, logistics, and historical impact.
+| Feature | Description |
+|---|---|
+| **Secure Onboarding** | Role-based registration tailored specifically for NGOs. |
+| **Browse Donations** | Geolocation-based browsing of available local surplus food. |
+| **Accept Donations** | Claim food donations specifically tailored to current NGO capacity. |
+| **Dashboard** | Track accepted requests, live logistics, and total historical impact. |
 
 ### AI Features
-* **Food Safety Prediction**: Evaluates raw features to determine if food is safe for human consumption.
-* **Shelf Life Prediction**: Estimates the exact remaining hours before food spoilage.
-* **Urgency Prediction**: Classifies urgency into Critical, High, or Low to optimize pickup speed.
-* **BiLSTM-Attention NER**: Automatically extracts food entities, quantities, and properties from unstructured text.
-* **Smart Matching**: Connects the right NGO to the right donor using dynamic availability.
-* **Geospatial Logistics**: Calculates optimal routes and distances using Haversine formulas.
+| Feature | Description |
+|---|---|
+| **Food Safety Prediction** | Evaluates raw features to determine if food is safe for human consumption. |
+| **Shelf Life Prediction** | Estimates the exact remaining hours before food spoilage occurs. |
+| **Urgency Classification** | Classifies urgency into Critical, High, or Low to optimize pickup speed. |
+| **NLP Entity Extraction** | Extracts food entities, quantities, and locations automatically from unstructured text. |
+
+### Platform Features
+| Feature | Description |
+|---|---|
+| **Smart Matching** | Connects the right NGO to the right donor using dynamic availability and distance. |
+| **Geospatial Logistics** | Calculates optimal routes and distances using Haversine formulas. |
+| **Interactive Maps** | Live mapping interface using Leaflet and OpenStreetMap. |
+| **Performance Analytics** | System-wide statistics on total meals rescued and active partnerships. |
+
+---
+
+## Screenshots
+
+### Landing Page
+![Landing Page](./screenshots/landing_page.png)
+*Demonstrates the primary marketing interface, highlighting core value propositions and platform statistics.*
+
+### Donor Dashboard
+![Donor Dashboard](./screenshots/donor_dashboard.png)
+*Displays real-time analytics, active donations, and historical contribution data for registered donors.*
+
+### Donation Management
+![Donation Management](./screenshots/donation_management.png)
+*Shows the interface for tracking and updating the status of submitted food donations.*
+
+### AI Food Safety
+![AI Food Safety](./screenshots/ai_food_safety.png)
+*Illustrates the output of the CatBoost classification model predicting food safety and estimating remaining shelf life.*
+
+### NLP Intelligence - Input
+![NLP Input](./screenshots/nlp_input.png)
+*Demonstrates the unstructured text input interface where donors can quickly describe surplus food.*
+
+### NLP Intelligence - Extraction Result
+![NLP Extraction](./screenshots/nlp_extraction.png)
+*Displays the structured JSON output generated by the PyTorch BiLSTM Named Entity Recognition model.*
+
+### NGO Dashboard
+![NGO Dashboard](./screenshots/ngo_dashboard.png)
+*Provides NGOs with a centralized view of claimed donations, pending logistics, and organizational impact.*
+
+### Smart Matching - Recommendation
+![Smart Matching Recommendation](./screenshots/smart_matching_recommendation.png)
+*Shows the algorithmically generated list of optimal NGO matches for a specific food donation.*
+
+### Smart Matching - Assignment Queue
+![Smart Matching Queue](./screenshots/smart_matching_queue.png)
+*Displays the prioritized queue of donations awaiting NGO acceptance based on urgency scores.*
+
+### Map & Logistics
+![Map and Logistics](./screenshots/map_logistics.png)
+*Visualizes geospatial data using Leaflet, displaying live rescue zones and optimal routing paths.*
+
+---
+
+## AI & Machine Learning
+
+Machine Learning is a core component of SharePlate's architecture, transforming a standard CRUD application into an intelligent logistics engine.
+
+### Food Safety Assessment
+* **Model Used**: CatBoost Classifier
+* **Purpose**: Determines if donated food is safe for human consumption and estimates remaining shelf life.
+* **Inputs**: Ingredients, ambient temperature, humidity, and storage conditions.
+* **Outputs**: Binary safety classification (Safe/Unsafe), estimated shelf life in hours, and a confidence score.
+* **Reason for Choosing**: CatBoost natively handles categorical features without extensive preprocessing and provides robust performance on tabular data.
+* **Implementation**: The model is serialized via Joblib, loaded lazily at application startup, and exposed via FastAPI endpoints.
+
+### Urgency Prediction
+* **Model Used**: Gradient Boosting Regressor (Scikit-Learn)
+* **Purpose**: Calculates a priority score determining logistics priority.
+* **Inputs**: Estimated shelf life, current time, and food category.
+* **Outputs**: Priority score (0-100) and discrete ranking (Critical, High, Low).
+* **Reason for Choosing**: Gradient boosting effectively captures non-linear relationships in temporal decay data.
+* **Implementation**: Integrated into the donation creation pipeline to automatically assign SLAs (Service Level Agreements) to new donations.
+
+### Natural Language Processing (NLP)
+* **Model Used**: Custom PyTorch BiLSTM + Attention Named Entity Recognition (NER)
+* **Purpose**: Parses unstructured text descriptions provided by donors into structured database fields.
+* **Inputs**: Raw text (e.g., "We have 20 kg of fresh rice available for pickup at MP Nagar.").
+* **Outputs**: Structured JSON extracting Food Item, Quantity, Location, and Pickup Time.
+* **Reason for Choosing**: BiLSTM architectures excel at sequence tagging, and the attention mechanism helps the model focus on highly relevant context words.
+* **Implementation**: Deployed natively in PyTorch. The inference pipeline tokenizes the string, passes it through the BiLSTM, and decodes the entities.
+
+### Smart Matching
+* **Logic**: A multi-objective optimization algorithm.
+* **Purpose**: Pairs donors with the optimal NGO.
+* **Implementation**: The matching engine evaluates:
+  1. **Haversine Distance**: Calculates strict geospatial proximity between coordinates.
+  2. **Compatibility**: Ensures the NGO accepts the specific food category.
+  3. **Urgency & Safety**: Prioritizes NGOs capable of immediate pickup for highly perishable items.
+  4. **Availability**: Checks real-time NGO operational hours.
+
+### Demand Forecasting
+* **Model Used**: PyTorch Deep Neural Network (DNN)
+* **Purpose**: Predicts future demand and surplus patterns in specific geographic zones.
+* **Inputs**: Historical donation volume, regional demographics, and temporal data.
+* **Outputs**: Predicted volume of required meals per zone.
+* **Reason for Choosing**: Deep Neural Networks scale efficiently with large historical datasets and capture complex multi-dimensional patterns.
+
+**Core ML Libraries Used:** PyTorch, Scikit-Learn, NumPy, Pandas, Joblib.
+
+---
+
+## Tech Stack
+
+### Frontend
+| Technology | Role |
+|---|---|
+| **React** | Core component-based UI library. |
+| **TypeScript** | Static typing for enterprise-grade safety. |
+| **Vite** | Extremely fast build tool and development server. |
+| **Tailwind CSS** | Utility-first framework for rapid, responsive styling. |
+| **React Router** | Client-side routing management. |
+| **Axios / Fetch** | Asynchronous HTTP client for API communication. |
+| **Lucide React** | Consistent, clean iconography. |
+
+### Backend
+| Technology | Role |
+|---|---|
+| **FastAPI** | High-performance, asynchronous Python web framework. |
+| **Python** | Core backend language. |
+| **Pydantic** | Strict data validation and settings management. |
+| **JWT** | Stateless authentication token generation. |
+| **Supabase SDK** | Official Python client for database interactions. |
+
+### Database & Authentication
+| Technology | Role |
+|---|---|
+| **Supabase PostgreSQL** | Highly scalable relational database. |
+| **Supabase Auth** | Manages user credentials and session initialization. |
+| **JWT** | Secures API endpoints. |
+| **Row Level Security (RLS)** | Ensures users can only access their authorized data. |
+
+### Machine Learning
+| Technology | Role |
+|---|---|
+| **PyTorch** | Powers the BiLSTM NER model and DNN forecasting. |
+| **Scikit-Learn** | Data preprocessing pipelines and Gradient Boosting. |
+| **Random Forest** | Used in ensemble predictions. |
+| **CatBoost** | Handles tabular food safety classification natively. |
+
+### Infrastructure
+| Technology | Role |
+|---|---|
+| **Render** | Hosts the FastAPI backend application. |
+| **Vercel** | Hosts the React frontend via Edge Networks. |
+| **Leaflet & OpenStreetMap** | Powers interactive geospatial mapping. |
+| **GitHub** | Source code management and version control. |
 
 ---
 
@@ -85,176 +261,109 @@ By automating logistics and intelligently evaluating the safety and perishabilit
 
 ```mermaid
 graph TD
-    A[React Frontend Vite] <-->|REST API / JWT| B[FastAPI Backend]
-    B <-->|ORM / SQL| C[(Supabase PostgreSQL)]
-    B <-->|Data Processing| D[Business Logic Layer]
-    D <-->|Joblib / Pickled Models| E[AI Models & Prediction Engine]
-    E --> F[Food Safety, Shelf Life & Matching]
-    F --> D
+    A[React Frontend] -->|REST API / JWT| B[FastAPI Backend]
+    B -->|Pydantic Validation| C[Business Logic]
+    C -->|Inference Request| D[AI Models]
+    D -->|NER / Food Safety| C
+    C -->|SQL Query| E[(Supabase PostgreSQL)]
+    E -->|Row Level Security| C
+    C -->|Geospatial Logic| F[Matching Engine]
+    F -->|Coordinate Data| G[Leaflet Maps]
+    F -->|Notification| H[NGO Dashboard]
 ```
 
 ---
 
-## Technology Stack
+## Workflow
 
-### Frontend
-| Technology | Description |
-|---|---|
-| **React** | Core UI library |
-| **Vite** | Fast frontend build tool |
-| **TailwindCSS** | Utility-first styling |
-| **Axios/Fetch** | API communication |
-
-### Backend
-| Technology | Description |
-|---|---|
-| **FastAPI** | High-performance async Python web framework |
-| **Pydantic** | Data validation and parsing |
-| **Uvicorn** | ASGI Web Server |
-| **Python-Multipart** | Form data parsing |
-
-### Database
-| Technology | Description |
-|---|---|
-| **Supabase** | Backend-as-a-Service |
-| **PostgreSQL** | Relational Database |
-
-### Machine Learning
-| Technology | Description |
-|---|---|
-| **PyTorch** | Deep Neural Networks & BiLSTM models |
-| **CatBoost / XGBoost** | Gradient boosting algorithms |
-| **Scikit-Learn** | Data preprocessing & Voting Ensembles |
-| **Joblib** | Model serialization |
-
-### Deployment & Tools
-| Technology | Description |
-|---|---|
-| **Vercel** | Frontend Edge Deployment |
-| **Render** | Backend Cloud Deployment |
-| **Swagger UI** | Auto-generated API Documentation |
-| **Git & GitHub** | Version Control |
+```mermaid
+graph TD
+    A[Donor Login] --> B[Donation Creation]
+    B --> C[NLP Entity Extraction]
+    C --> D[AI Food Safety Assessment]
+    D --> E[Urgency Prediction]
+    E --> F[Database Storage]
+    F --> G[Smart Matching Engine]
+    G --> H[NGO Acceptance]
+    H --> I[Map & Logistics Routing]
+    I --> J[Successful Food Rescue]
+```
 
 ---
 
-## Machine Learning Pipeline
+## REST API
 
-1. **BiLSTM-Attention Named Entity Recognition (NER)**: A custom PyTorch neural network that parses unstructured text descriptions provided by donors to extract food items, conditions, and properties automatically.
-2. **Food Safety Prediction**: A `CatBoostClassifier` trained to analyze ingredients, ambient temperature, humidity, and storage conditions to classify food as Safe or Unsafe.
-3. **Shelf Life Estimation**: A CatBoost Regressor that accurately predicts the remaining viable hours of food.
-4. **Urgency Prediction**: Calculates a priority score (0-100) determining the logistics priority using shelf-life utilization percentages.
-5. **Geospatial Smart Matching**: Utilizes the **Haversine Distance** formula to dynamically pair donors with the closest available NGO.
-6. **Confidence Scores**: Every AI prediction provides a confidence score, ensuring high reliability for critical human-consumption decisions.
+### Authentication
+* `POST /api/auth/signup` - Register a new donor or NGO.
+* `POST /api/auth/login` - Authenticate user and return JWT session.
 
----
+### Donations
+* `POST /api/donations/` - Create a new food donation record.
+* `GET /api/donations/` - Retrieve all available public donations.
+* `GET /api/donations/me` - Retrieve donations created by the authenticated user.
 
-## Project Workflow
+### Requests
+* `POST /api/requests/` - NGO initiates a request to claim a donation.
+* `GET /api/requests/me` - Retrieve all active requests for the authenticated NGO.
 
-1. **User Login**: Users authenticate securely via JWT as either a Donor or an NGO.
-2. **Donation Submission**: Donors submit food surplus details (or unstructured text).
-3. **NLP Entity Extraction**: The BiLSTM NER engine parses the text and standardizes the features.
-4. **Food Safety Prediction**: The CatBoost engine calculates the perishability and urgency level.
-5. **Database Storage**: The validated, AI-scored donation is stored in Supabase PostgreSQL.
-6. **Smart Matching**: The algorithm alerts nearby NGOs based on geospatial limits and matching criteria.
-7. **NGO Acceptance**: An NGO reviews the AI score and accepts the donation.
-8. **Logistics**: Routing and pickup workflows are initiated.
-9. **Completion**: The donation is collected, and analytics dashboards are updated.
-
----
-
-## Deployment Links
-
-* **Frontend (Vercel)**: [https://share-plate-ivory.vercel.app](https://share-plate-ivory.vercel.app)
-* **Backend (Render)**: [https://shareplate-6afu.onrender.com](https://shareplate-6afu.onrender.com)
-* **Swagger API Docs**: [https://shareplate-6afu.onrender.com/docs](https://shareplate-6afu.onrender.com/docs)
-
----
-
-## Screenshots
-
-### Landing Page
-<!-- Add screenshot -->
-
-### Dashboard
-<!-- Add screenshot -->
-
-### Donation Workflow
-<!-- Add screenshot -->
-
-### AI Prediction
-<!-- Add screenshot -->
+### AI Intelligence
+* `POST /api/ai/food-safety` - Execute the CatBoost model to predict food safety and shelf life.
+* `POST /api/ai/donation-ner` - Execute the PyTorch BiLSTM to extract entities from raw text.
 
 ### Smart Matching
-<!-- Add screenshot -->
-
-### Logistics & Maps
-<!-- Add screenshot -->
+* `GET /api/matches/me` - Execute geospatial matching logic to return recommended NGO/Donor pairs.
 
 ### Analytics
-<!-- Add screenshot -->
+* `GET /api/analytics/` - Retrieve platform-wide metrics (total meals, active zones).
 
 ---
 
-## API Reference
-
-SharePlate provides a fully documented REST API. Below are some of the critical endpoints:
-
-**Authentication**
-* `POST /api/auth/login` - User login
-* `POST /api/auth/signup` - User registration
-
-**Donations & Requests**
-* `POST /api/donations/` - Create a new donation
-* `GET /api/donations/` - Fetch available donations
-* `POST /api/requests/` - Create a new NGO request
-* `GET /api/requests/me` - View NGO's requests
-
-**AI Integration**
-* `POST /api/ai/food-safety` - Run food safety & urgency predictions
-* `POST /api/ai/donation-ner` - Extract entities via NLP
-
-**Analytics & Matching**
-* `GET /api/matches/me` - Fetch Smart Matches
-* `GET /api/analytics/` - Fetch global or user-specific impact data
-
-*For full interactive documentation, visit the [Swagger UI](https://shareplate-6afu.onrender.com/docs).*
-
----
-
-## Installation & Setup
+## Installation
 
 ### Prerequisites
-* Node.js (v18+)
-* Python 3.11+
-* Supabase Account
+* Node.js (v18 or higher)
+* Python (3.11 or higher)
+* Git
 
-### 1. Clone the repository
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/somiya-namdeo/SharePlate.git
 cd SharePlate
 ```
 
-### 2. Frontend Setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
-*Frontend runs on `http://localhost:5173`*
-
-### 3. Backend Setup
+### 2. Backend Setup
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+# Activate the virtual environment
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
+```
+
+### 3. Running the Backend
+```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
-*Backend runs on `http://localhost:8000`*
+*The backend will be available at `http://localhost:8000`*
+
+### 4. Frontend Setup
+```bash
+cd ../frontend
+npm install
+```
+
+### 5. Running the Frontend
+```bash
+npm run dev
+```
+*The frontend will be available at `http://localhost:5173`*
 
 ---
 
 ## Environment Variables
+
+To run this project, you will need to add the following environment variables.
 
 ### Frontend (`frontend/.env`)
 ```env
@@ -276,72 +385,74 @@ FRONTEND_URL=http://localhost:5173
 
 ```text
 SharePlate/
-├── backend/                  # FastAPI Application
+├── backend/
 │   ├── app/
-│   │   ├── routes/           # API Endpoints
-│   │   ├── services/         # ML & Business Logic
-│   │   └── database.py       # Supabase Config
-│   ├── requirements.txt      # Python Dependencies
-├── frontend/                 # React Vite Application
+│   │   ├── api/
+│   │   ├── core/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   ├── services/
+│   │   └── main.py
+│   ├── requirements.txt
+│   └── .env
+├── frontend/
+│   ├── public/
 │   ├── src/
-│   │   ├── components/       # UI Components
-│   │   ├── pages/            # Views & Layouts
-│   │   └── lib/              # API Client (apiFetch)
-│   ├── package.json          # Node Dependencies
-├── models/                   # Pickled ML Models (Joblib/CatBoost)
-├── notebooks/                # Jupyter Notebooks (ML Experiments)
-└── README.md                 # Project Documentation
+│   │   ├── assets/
+│   │   ├── components/
+│   │   │   ├── dashboard/
+│   │   │   ├── layout/
+│   │   │   ├── sections/
+│   │   │   └── ui/
+│   │   ├── lib/
+│   │   ├── pages/
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── .env
+├── models/
+│   ├── shareplate_food_safety_model.pkl
+│   ├── shareplate_ner_bilstm_attention_v2.pth
+│   └── shareplate_surplus_food_predictor.pkl
+└── README.md
 ```
 
 ---
 
-## Security Features
-* **JWT Authentication**: Stateless, secure token-based user verification.
-* **Role-Based Access Control (RBAC)**: Strict segregation between `Donor` and `NGO` routes.
-* **Protected Routes**: Frontend routing explicitly blocks unauthenticated access.
-* **Secure API Design**: FastAPI dependency injection used for endpoint security.
-* **Environment Variables**: Total isolation of keys and secrets.
-* **CORS Protection**: Restricted origins configured for production.
+## Security
+
+* **JWT Authentication**: Utilizes stateless, cryptographically signed JSON Web Tokens for API authorization.
+* **Role-Based Access Control (RBAC)**: Strict API routing ensures Donors cannot access NGO-specific logistics endpoints, and vice versa.
+* **Protected Routes**: React Router explicitly blocks unauthenticated access to dashboard views.
+* **Supabase Security**: Row Level Security (RLS) policies deployed in PostgreSQL prevent cross-tenant data leakage.
+* **Environment Variables**: Total isolation of database keys, secrets, and API URLs.
+* **CORS**: Configured in FastAPI to strictly allow only the verified frontend origin in production.
 
 ---
 
-## Performance Highlights
-* **Edge Deployment**: Frontend served globally via Vercel Edge Network.
-* **Asynchronous API**: FastAPI handles thousands of concurrent requests natively.
-* **Optimized ML Inference**: Pickled `joblib` models pre-loaded into memory during server startup to provide sub-100ms inference times.
+## Performance
+
+* **FastAPI Async Backend**: Handles thousands of concurrent HTTP requests natively without blocking the event loop.
+* **Optimized ML Inference**: Utilizes pre-compiled Scikit-Learn pipelines and fast CatBoost decision trees for sub-100ms inference times.
+* **Lazy Model Loading**: Serialized `.pkl` and `.pth` models are lazy-loaded into memory only upon their first invocation, preventing Out-Of-Memory (OOM) crashes during server startup and drastically reducing boot times.
+* **Frontend Optimization**: Built with Vite and React for aggressive code splitting, optimized asset delivery, and immediate Hot Module Replacement (HMR).
 
 ---
 
-## Future Improvements
-* Integration of real-time WebSockets for instant NGO notifications.
-* Mobile application via React Native.
-* Expansion of the Deep Neural Network to handle computer vision (image-based food spoilage detection).
-* IoT integration for refrigerated transport tracking.
+## Future Enhancements
 
----
-
-## Contributing
-Contributions are always welcome! 
-1. Fork the project.
-2. Create a Feature Branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4. Push to the Branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
-
----
-
-## License
-Distributed under the MIT License. See `LICENSE` for more information.
+* **Volunteer Application**: Introduce a third user role for independent volunteers to handle last-mile delivery.
+* **OCR-Based Donation Extraction**: Allow donors to scan physical inventory receipts using Optical Character Recognition.
+* **Image-Based Spoilage Detection**: Expand the PyTorch models to utilize Convolutional Neural Networks (CNNs) for visual spoilage detection from uploaded photos.
+* **Push Notifications**: Implement real-time WebSockets or Progressive Web App (PWA) notifications for critical matches.
+* **Route Optimization**: Integrate traveling salesperson algorithms to optimize multi-stop NGO pickups.
+* **Live Tracking**: Add real-time GPS tracking for active food deliveries.
 
 ---
 
 ## Author
 
-**Somiya Namdeo**
-* GitHub: [@somiya-namdeo](https://github.com/somiya-namdeo)
-* LinkedIn: [Placeholder]
-
-<br />
-<div align="center">
-Made with love to reduce global food waste.
-</div>
+**Name**: Somiya Namdeo  
+**GitHub**: [https://github.com/somiya-namdeo](https://github.com/somiya-namdeo)  
+**LinkedIn**: [https://www.linkedin.com/in/somiya-namdeo-/](https://www.linkedin.com/in/somiya-namdeo-/)
